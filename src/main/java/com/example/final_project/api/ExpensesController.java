@@ -45,6 +45,14 @@ public class ExpensesController {
         return ResponseEntity.created(URI.create("/expenses/" + expenseResponseDto.expenseId())).body(expenseResponseDto);
     }
 
+    @DeleteMapping("/{rawExpenseId}")
+    public ResponseEntity<ExpenseResponseDto> deleteExpense(@PathVariable String rawExpenseId) {
+        expensesService.getExpenseById(new ExpenseId(rawExpenseId))
+                .ifPresent(expense -> expensesService.deleteExpenseById(expense.expenseId()));
+        return ResponseEntity.noContent().build();
+    }
+
+
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {

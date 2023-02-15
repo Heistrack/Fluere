@@ -11,4 +11,6 @@ public interface ExpenseRepository {
 
     Optional<Expense> getExpenseById(ExpenseId expenseId);
 
+    void deleteExpenseById(ExpenseId expenseId);
+
 }

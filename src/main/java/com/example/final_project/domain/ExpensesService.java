@@ -6,4 +6,6 @@ import java.util.Optional;
 public interface ExpensesService {
     Expense registerNewExpense(String title, BigDecimal amount);
     Optional<Expense> getExpenseById(ExpenseId expenseId);
+
+    void deleteExpenseById(ExpenseId expenseId);
 }

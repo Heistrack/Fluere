@@ -29,4 +29,9 @@ public class DefaultExpensesService implements ExpensesService{
     public Optional<Expense> getExpenseById(ExpenseId expenseId) {
         return expenseRepository.getExpenseById(expenseId);
     }
+
+    @Override
+    public void deleteExpenseById(ExpenseId expenseId) {
+        expenseRepository.deleteExpenseById(expenseId);
+    }
 }

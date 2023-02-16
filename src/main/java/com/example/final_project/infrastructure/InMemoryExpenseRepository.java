@@ -5,6 +5,7 @@ import com.example.final_project.domain.ExpenseId;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -27,4 +28,17 @@ public class InMemoryExpenseRepository implements ExpenseRepository {
     public void deleteExpenseById(ExpenseId expenseId) {
         storage.remove(expenseId);
     }
+
+    @Override
+    public List<Expense> getAllExpenses() {
+        return storage.values().stream().toList();
+    }
+
+    @Override
+    public Expense updateExpenseById(Expense expense) {
+        storage.replace(expense.expenseId(), expense);
+        return expense;
+    }
+
+
 }

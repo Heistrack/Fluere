@@ -13,9 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static com.example.final_project.api.ExpensesController.EXPENSES_BASE_PATH;
 
@@ -34,6 +32,13 @@ public class ExpensesController {
     ) {
         Optional<Expense> expenseById = expensesService.getExpenseById(new ExpenseId(rawExpenseId));
         return ResponseEntity.of(expenseById.map(ExpenseResponseDto::fromDomain));
+    }
+
+    @GetMapping
+    ResponseEntity<List<ExpenseResponseDto>> getAllExpenses(){
+
+        List<Expense> expenses = expensesService.getExpenses();
+        return ResponseEntity.ok(expenses.stream().map(ExpenseResponseDto::fromDomain).toList());
     }
 
     @PostMapping
@@ -63,6 +68,13 @@ public class ExpensesController {
             errors.put(fieldName, errorMessage);
         });
         return errors;
+    }
+
+    @PutMapping("/{rawExpenseId}")
+    public ResponseEntity<ExpenseResponseDto> updateExpense(@PathVariable UUID rawExpenseId, @RequestBody RegisterExpenseRequest request){
+        Expense updatedExpense = expensesService.updateExpenseById(new ExpenseId(rawExpenseId.toString()), request.title(), request.amount());
+
+        return ResponseEntity.ok(ExpenseResponseDto.fromDomain(updatedExpense));
     }
 
     static final String EXPENSES_BASE_PATH = "/expenses";

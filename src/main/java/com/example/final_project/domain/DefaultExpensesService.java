@@ -4,6 +4,7 @@ import com.example.final_project.infrastructure.ExpenseRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -33,5 +34,15 @@ public class DefaultExpensesService implements ExpensesService{
     @Override
     public void deleteExpenseById(ExpenseId expenseId) {
         expenseRepository.deleteExpenseById(expenseId);
+    }
+
+    @Override
+    public List<Expense> getExpenses() {
+        return expenseRepository.getAllExpenses();
+    }
+
+    @Override
+    public Expense updateExpenseById(ExpenseId expenseId, String title, BigDecimal amount) {
+        return expenseRepository.updateExpenseById(new Expense(expenseId, title, amount));
     }
 }

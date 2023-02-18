@@ -9,6 +9,7 @@ public interface ExpensesService {
     Optional<Expense> getExpenseById(ExpenseId expenseId);
 
     void deleteExpenseById(ExpenseId expenseId);
+    Optional<Expense> updateExpenseContent(ExpenseId expenseId, Optional<String> title, Optional<BigDecimal> amount);
 
     List<Expense> getExpenses();
 

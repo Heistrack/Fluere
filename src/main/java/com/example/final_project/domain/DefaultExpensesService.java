@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 @Service
-public class DefaultExpensesService implements ExpensesService{
+public class DefaultExpensesService implements ExpensesService {
 
     private final ExpenseRepository expenseRepository;
     private final Supplier<ExpenseId> expenseIdSupplier;
@@ -34,6 +34,14 @@ public class DefaultExpensesService implements ExpensesService{
     @Override
     public void deleteExpenseById(ExpenseId expenseId) {
         expenseRepository.deleteExpenseById(expenseId);
+    }
+
+    @Override
+    public Optional<Expense> updateExpenseContent(ExpenseId expenseId, Optional<String> title, Optional<BigDecimal> amount) {
+        expenseRepository.getExpenseById(expenseId).map(
+                expenseFromRepository -> new Expense(expenseId, title.orElse(expenseFromRepository.title()), amount.orElse(expenseFromRepository.amount())
+                )).ifPresent(expenseRepository::save);
+        return expenseRepository.getExpenseById(expenseId);
     }
 
     @Override

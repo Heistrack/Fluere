@@ -3,6 +3,7 @@ package com.example.final_project.infrastructure;
 import com.example.final_project.domain.Expense;
 import com.example.final_project.domain.ExpenseId;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,5 +19,6 @@ public interface ExpenseRepository {
     List<Expense> getAllExpenses();
 
     Expense updateExpenseById(Expense expense);
+
 
 }

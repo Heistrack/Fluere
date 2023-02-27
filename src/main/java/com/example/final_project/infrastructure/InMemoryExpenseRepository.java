@@ -39,6 +39,4 @@ public class InMemoryExpenseRepository implements ExpenseRepository {
         storage.replace(expense.expenseId(), expense);
         return expense;
     }
-
-
 }

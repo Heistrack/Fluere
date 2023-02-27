@@ -36,7 +36,6 @@ public class ExpensesController {
     ) {
         Optional<Expense> expenseById = expensesService.getExpenseById(new ExpenseId(rawExpenseId));
         return ResponseEntity.of(expenseById.map(ExpenseResponseDto::fromDomain));
-        ResponseEntity.ok()
     }
 
     @GetMapping
@@ -77,17 +76,20 @@ public class ExpensesController {
     }
 
     @PutMapping("/{rawExpenseId}")
-    public ResponseEntity<ExpenseResponseDto> updateExpense(@PathVariable UUID rawExpenseId, @RequestBody @Valid RegisterExpenseRequest request) {
-        Expense updatedExpense = expensesService.updateExpenseById(new ExpenseId(rawExpenseId.toString()), request.title(), request.amount());
+    public ResponseEntity<ExpenseResponseDto> updateExpense(@PathVariable UUID rawExpenseId,
+                                                            @RequestBody @Valid RegisterExpenseRequest request) {
+        Expense updatedExpense = expensesService.updateExpenseById(new ExpenseId(rawExpenseId.toString()),
+                request.title(), request.amount());
 
         return ResponseEntity.ok(ExpenseResponseDto.fromDomain(updatedExpense));
     }
 
     @PatchMapping("/{rawExpenseId}")
-    public ResponseEntity<ExpenseResponseDto> updateExpenseField(@PathVariable UUID rawExpenseId, @RequestBody UpdateExpenseRequest request) {
-        Optional <BigDecimal> amount = (Optional.ofNullable(request.amount()));
+    public ResponseEntity<ExpenseResponseDto> updateExpenseField(@PathVariable UUID rawExpenseId,
+                                                                 @RequestBody UpdateExpenseRequest request) {
+        Optional<BigDecimal> amount = (Optional.ofNullable(request.amount()));
         Optional<String> title = Optional.ofNullable(request.title());
-        return ResponseEntity.of(expensesService.updateExpenseContent(new ExpenseId(rawExpenseId.toString()),title, amount)
+        return ResponseEntity.of(expensesService.updateExpenseContent(new ExpenseId(rawExpenseId.toString()), title, amount)
                 .map(ExpenseResponseDto::fromDomain));
     }
 

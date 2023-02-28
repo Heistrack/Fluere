@@ -1,6 +1,6 @@
 package com.example.final_project.domain.expenses;
 
-import com.example.final_project.infrastructure.ExpenseRepository;
+import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -39,7 +39,9 @@ public class DefaultExpensesService implements ExpensesService {
     @Override
     public Optional<Expense> updateExpenseContent(ExpenseId expenseId, Optional<String> title, Optional<BigDecimal> amount) {
         expenseRepository.findExpenseByExpenseId(expenseId).map(
-                expenseFromRepository -> new Expense(expenseId, title.orElse(expenseFromRepository.title()), amount.orElse(expenseFromRepository.amount())
+                expenseFromRepository -> new Expense(expenseId,
+                        title.orElse(expenseFromRepository.title()),
+                        amount.orElse(expenseFromRepository.amount())
                 )).ifPresent(expenseRepository::save);
         return expenseRepository.findExpenseByExpenseId(expenseId);
     }

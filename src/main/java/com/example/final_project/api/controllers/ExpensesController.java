@@ -87,5 +87,5 @@ public class ExpensesController {
                 .map(ExpenseResponseDto::fromDomain));
     }
 
-    static final String EXPENSES_BASE_PATH = "/expenses";
+    public static final String EXPENSES_BASE_PATH = "/expenses";
 }

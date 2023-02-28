@@ -6,6 +6,7 @@ import com.example.final_project.api.requests.expenses.RegisterExpenseRequest;
 import com.example.final_project.api.responses.ExpenseResponseDto;
 import com.example.final_project.domain.expenses.ExpensesService;
 import com.example.final_project.infrastructure.ExpenseRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -61,6 +62,30 @@ class ExpensesIntegrationTests {
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody().title()).isEqualTo(title);
         assertThat(response.getBody().amount()).isEqualByComparingTo(expectedAmount);
+    }
+
+    void registerNewExpense(String title, BigDecimal expectedAmount){
+
+        RegisterExpenseRequest request = new RegisterExpenseRequest(title, expectedAmount);
+        // when
+        ResponseEntity<ExpenseResponseDto> response = testRestTemplate.postForEntity("/expenses", request, ExpenseResponseDto.class);
+
+    }
+
+    @AfterEach
+    void tearDown() {
+        expenseRepository.deleteAll();
+    }
+
+    @Test
+    void shouldReturnAllExpenses(){
+        registerNewExpense("first", BigDecimal.valueOf(1));
+        registerNewExpense("second", BigDecimal.valueOf(2));
+        registerNewExpense("third", BigDecimal.valueOf(3));
+        registerNewExpense("fourth", BigDecimal.valueOf(4));
+
+
+
     }
 
 

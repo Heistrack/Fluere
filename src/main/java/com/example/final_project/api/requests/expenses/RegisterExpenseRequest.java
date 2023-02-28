@@ -1,4 +1,4 @@
-package com.example.final_project.api.requests;
+package com.example.final_project.api.requests.expenses;
 
 import org.hibernate.validator.constraints.Length;
 

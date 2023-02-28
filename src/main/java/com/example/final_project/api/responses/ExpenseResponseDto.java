@@ -1,6 +1,6 @@
 package com.example.final_project.api.responses;
 
-import com.example.final_project.domain.Expense;
+import com.example.final_project.domain.expenses.Expense;
 
 import java.math.BigDecimal;
 

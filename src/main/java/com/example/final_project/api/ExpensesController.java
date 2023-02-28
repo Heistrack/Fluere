@@ -1,11 +1,11 @@
 package com.example.final_project.api;
 
-import com.example.final_project.api.requests.RegisterExpenseRequest;
-import com.example.final_project.api.requests.UpdateExpenseRequest;
+import com.example.final_project.api.requests.expenses.RegisterExpenseRequest;
+import com.example.final_project.api.requests.expenses.UpdateExpenseRequest;
 import com.example.final_project.api.responses.ExpenseResponseDto;
-import com.example.final_project.domain.Expense;
-import com.example.final_project.domain.ExpenseId;
-import com.example.final_project.domain.ExpensesService;
+import com.example.final_project.domain.expenses.Expense;
+import com.example.final_project.domain.expenses.ExpenseId;
+import com.example.final_project.domain.expenses.ExpensesService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;

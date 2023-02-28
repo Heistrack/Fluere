@@ -1,7 +1,7 @@
 //package com.example.final_project.infrastructure;
 //
-//import com.example.final_project.domain.Expense;
-//import com.example.final_project.domain.ExpenseId;
+//import com.example.final_project.domain.expenses.Expense;
+//import com.example.final_project.domain.expenses.ExpenseId;
 //import org.springframework.stereotype.Repository;
 //
 //import java.util.HashMap;

@@ -1,4 +1,4 @@
-package com.example.final_project.domain;
+package com.example.final_project.domain.expenses;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 

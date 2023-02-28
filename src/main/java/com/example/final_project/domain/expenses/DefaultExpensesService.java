@@ -1,4 +1,4 @@
-package com.example.final_project.domain;
+package com.example.final_project.domain.expenses;
 
 import com.example.final_project.infrastructure.ExpenseRepository;
 import org.springframework.stereotype.Service;

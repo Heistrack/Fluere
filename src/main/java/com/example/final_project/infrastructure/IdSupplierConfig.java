@@ -1,6 +1,6 @@
 package com.example.final_project.infrastructure;
 
-import com.example.final_project.domain.ExpenseId;
+import com.example.final_project.domain.expenses.ExpenseId;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

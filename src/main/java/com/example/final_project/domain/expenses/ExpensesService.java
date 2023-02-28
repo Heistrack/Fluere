@@ -1,4 +1,4 @@
-package com.example.final_project.domain;
+package com.example.final_project.domain.expenses;
 
 import java.math.BigDecimal;
 import java.util.List;

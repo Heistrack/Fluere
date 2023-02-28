@@ -1,17 +1,7 @@
 version: '3.8'
-
 services:
-#  Nazwa własna contenera
   mongodb_container:
     image: mongo:6.0.4
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+
     ports:
       - "27017:27017"
-#      Volumes oznacza lokalizacje do kontenera nawet jak wyłączymy apkę
-#    volumes:
-#      - mongodb_data_container:/data/db
-
-#volumes:
-#  mongodb_data_container:

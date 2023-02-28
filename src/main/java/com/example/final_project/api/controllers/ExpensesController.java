@@ -1,4 +1,4 @@
-package com.example.final_project.api;
+package com.example.final_project.api.controllers;
 
 import com.example.final_project.api.requests.expenses.RegisterExpenseRequest;
 import com.example.final_project.api.requests.expenses.UpdateExpenseRequest;
@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.util.*;
 
-import static com.example.final_project.api.ExpensesController.EXPENSES_BASE_PATH;
+import static com.example.final_project.api.controllers.ExpensesController.EXPENSES_BASE_PATH;
 
 @RestController
 @RequestMapping(EXPENSES_BASE_PATH)

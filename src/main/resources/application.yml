@@ -1,0 +1,7 @@
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant-path-matcher
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/Budget

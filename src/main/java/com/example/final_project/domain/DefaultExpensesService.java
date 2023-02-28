@@ -28,29 +28,29 @@ public class DefaultExpensesService implements ExpensesService {
 
     @Override
     public Optional<Expense> getExpenseById(ExpenseId expenseId) {
-        return expenseRepository.getExpenseById(expenseId);
+        return expenseRepository.findExpenseByExpenseId(expenseId);
     }
 
     @Override
     public void deleteExpenseById(ExpenseId expenseId) {
-        expenseRepository.deleteExpenseById(expenseId);
+        expenseRepository.deleteById(expenseId);
     }
 
     @Override
     public Optional<Expense> updateExpenseContent(ExpenseId expenseId, Optional<String> title, Optional<BigDecimal> amount) {
-        expenseRepository.getExpenseById(expenseId).map(
+        expenseRepository.findExpenseByExpenseId(expenseId).map(
                 expenseFromRepository -> new Expense(expenseId, title.orElse(expenseFromRepository.title()), amount.orElse(expenseFromRepository.amount())
                 )).ifPresent(expenseRepository::save);
-        return expenseRepository.getExpenseById(expenseId);
+        return expenseRepository.findExpenseByExpenseId(expenseId);
     }
 
     @Override
     public List<Expense> getExpenses() {
-        return expenseRepository.getAllExpenses();
+        return expenseRepository.findAll();
     }
 
     @Override
     public Expense updateExpenseById(ExpenseId expenseId, String title, BigDecimal amount) {
-        return expenseRepository.updateExpenseById(new Expense(expenseId, title, amount));
+        return expenseRepository.save(new Expense(expenseId, title, amount));
     }
 }

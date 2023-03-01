@@ -1,6 +1,8 @@
 package com.example.final_project.domain.expenses;
 
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -54,5 +56,10 @@ public class DefaultExpensesService implements ExpensesService {
     @Override
     public Expense updateExpenseById(ExpenseId expenseId, String title, BigDecimal amount) {
         return expenseRepository.save(new Expense(expenseId, title, amount));
+    }
+
+    @Override
+    public Page<Expense> findAllByPage(Pageable pageable) {
+        return expenseRepository.findAll(pageable);
     }
 }

@@ -6,6 +6,9 @@ import com.example.final_project.api.responses.ExpenseResponseDto;
 import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.expenses.ExpenseId;
 import com.example.final_project.domain.expenses.ExpensesService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -37,12 +40,14 @@ public class ExpensesController {
     }
 
     @GetMapping
-    ResponseEntity<List<ExpenseResponseDto>> getAllExpenses(){
-
-        List<Expense> expenses = expensesService.getExpenses();
-        return ResponseEntity.ok(expenses.stream().map(ExpenseResponseDto::fromDomain).toList());
+    ResponseEntity<Page<ExpenseResponseDto>> getExpensesByPage(
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "25") Integer size,
+            @RequestParam(required = false, defaultValue = "expenseId") String sortBy
+    ) {
+        return ResponseEntity.ok(expensesService.findAllByPage((PageRequest.of(page, size, Sort.by(sortBy).descending())))
+                .map(ExpenseResponseDto::fromDomain));
     }
-
     @PostMapping
     ResponseEntity<ExpenseResponseDto> registerNewExpense(
             @RequestBody @Valid RegisterExpenseRequest request
@@ -73,11 +78,12 @@ public class ExpensesController {
     }
 
     @PutMapping("/{rawExpenseId}")
-    public ResponseEntity<ExpenseResponseDto> updateExpense(@PathVariable UUID rawExpenseId, @RequestBody RegisterExpenseRequest request){
+    public ResponseEntity<ExpenseResponseDto> updateExpense(@PathVariable UUID rawExpenseId, @RequestBody RegisterExpenseRequest request) {
         Expense updatedExpense = expensesService.updateExpenseById(new ExpenseId(rawExpenseId.toString()), request.title(), request.amount());
 
         return ResponseEntity.ok(ExpenseResponseDto.fromDomain(updatedExpense));
     }
+
     @PatchMapping("/{rawExpenseId}")
     public ResponseEntity<ExpenseResponseDto> updateExpenseField(@PathVariable UUID rawExpenseId,
                                                                  @RequestBody UpdateExpenseRequest request) {

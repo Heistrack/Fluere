@@ -2,10 +2,14 @@ package com.example.final_project.api.controllers;
 import com.example.final_project.api.requests.budgets.RegisterBudgetRequest;
 import com.example.final_project.api.requests.budgets.UpdateBudgetRequest;
 import com.example.final_project.api.responses.BudgetResponseDto;
+import com.example.final_project.api.responses.ExpenseResponseDto;
 import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetId;
 import com.example.final_project.domain.budgets.BudgetService;
 import com.example.final_project.domain.budgets.TypeOfBudget;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -38,10 +42,13 @@ public class BudgetController {
     }
 
     @GetMapping
-    ResponseEntity<List<BudgetResponseDto>> getAllBudgets() {
-
-        List<Budget> budgets = budgetService.getBudgets();
-        return ResponseEntity.ok(budgets.stream().map(BudgetResponseDto::fromDomain).toList());
+    ResponseEntity<Page<BudgetResponseDto>> getBudgetByPage(
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "25") Integer size,
+            @RequestParam(required = false, defaultValue = "budgetId") String sortBy
+    ) {
+        return ResponseEntity.ok(budgetService.findAllByPage((PageRequest.of(page, size, Sort.by(sortBy).descending())))
+                .map(BudgetResponseDto::fromDomain));
     }
 
     @PostMapping

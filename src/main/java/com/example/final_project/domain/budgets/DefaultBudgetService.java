@@ -1,6 +1,9 @@
 package com.example.final_project.domain.budgets;
 
+import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -73,5 +76,10 @@ public class DefaultBudgetService implements BudgetService {
                 typeOfBudget,
                 maxSingleExpense
                 ));
+    }
+
+    @Override
+    public Page<Budget> findAllByPage(Pageable pageable) {
+        return budgetRepository.findAll(pageable);
     }
 }

@@ -1,13 +1,11 @@
 package com.example.final_project;
 
-
-import com.example.final_project.api.ExpensesController;
 import com.example.final_project.api.requests.expenses.RegisterExpenseRequest;
 import com.example.final_project.api.responses.ExpenseResponseDto;
 import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.expenses.ExpenseId;
 import com.example.final_project.domain.expenses.ExpensesService;
-import com.example.final_project.infrastructure.ExpenseRepository;
+import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,9 +15,7 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -136,8 +132,37 @@ class ExpensesIntegrationTests {
 
         assertThat(expenseRepository.findById(id)).isEmpty();
 
+    }
+    @Test
+    void shouldUpdateExpense(){
+        //Given
+        ExpenseResponseDto response = registerNewExpenseWithReturn("title",BigDecimal.valueOf(50));
+        ExpenseId id = new ExpenseId(response.expenseId());
+        RegisterExpenseRequest updateRequest = new RegisterExpenseRequest("update Title",BigDecimal.valueOf(100));
+        //When
+        ResponseEntity<ExpenseResponseDto> updateResponse = testRestTemplate.exchange("/expenses/" + id.value(), HttpMethod.PUT, new HttpEntity<>(updateRequest), ExpenseResponseDto.class);
+        //Then
+        assertThat(updateResponse.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(updateResponse.getBody().title()).isEqualTo(updateRequest.title());
+        assertThat(updateResponse.getBody().amount()).isEqualTo(updateRequest.amount());
 
     }
+//    @Test
+//    void shouldUpdateExpenses(){
+//        //Given
+//        ExpenseResponseDto response = registerNewExpenseWithReturn("title",BigDecimal.valueOf(20));
+//        ExpenseId id = new ExpenseId(response.expenseId());
+//        RegisterExpenseRequest updateRequest = new RegisterExpenseRequest("update Title",BigDecimal.valueOf(0));
+//        //When
+//        ResponseEntity<ExpenseResponseDto> updateResponse = testRestTemplate.exchange("/expenses/" + id.value(), HttpMethod.PATCH, new HttpEntity<>(updateRequest), ExpenseResponseDto.class);
+//        //Then
+//        assertThat(updateResponse.getStatusCode().is2xxSuccessful()).isTrue();
+//        assertThat(updateResponse.getBody().title()).isEqualTo(updateRequest.title());
+//
+//
+//
+//
+//    }
 
 
 

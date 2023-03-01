@@ -4,6 +4,8 @@ package com.example.final_project;
 import com.example.final_project.api.ExpensesController;
 import com.example.final_project.api.requests.expenses.RegisterExpenseRequest;
 import com.example.final_project.api.responses.ExpenseResponseDto;
+import com.example.final_project.domain.expenses.Expense;
+import com.example.final_project.domain.expenses.ExpenseId;
 import com.example.final_project.domain.expenses.ExpensesService;
 import com.example.final_project.infrastructure.ExpenseRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -14,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -24,6 +28,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -72,6 +77,15 @@ class ExpensesIntegrationTests {
 
     }
 
+
+    ExpenseResponseDto registerNewExpenseWithReturn(String title, BigDecimal expectedAmount){
+        RegisterExpenseRequest request = new RegisterExpenseRequest(title, expectedAmount);
+        // when
+        ResponseEntity<ExpenseResponseDto> response = testRestTemplate.postForEntity("/expenses", request, ExpenseResponseDto.class);
+
+        return response.getBody();
+    }
+
     @AfterEach
     void tearDown() {
         expenseRepository.deleteAll();
@@ -79,14 +93,53 @@ class ExpensesIntegrationTests {
 
     @Test
     void shouldReturnAllExpenses(){
+
+        // given
         registerNewExpense("first", BigDecimal.valueOf(1));
         registerNewExpense("second", BigDecimal.valueOf(2));
         registerNewExpense("third", BigDecimal.valueOf(3));
         registerNewExpense("fourth", BigDecimal.valueOf(4));
+        // when
 
+
+        ResponseEntity<List<ExpenseResponseDto>> response = testRestTemplate.exchange("/expenses", HttpMethod.GET, null,
+                new ParameterizedTypeReference<List<ExpenseResponseDto>>() {});
+
+
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        List<ExpenseResponseDto> expenses = response.getBody();
+        assertThat(expenses).hasSize(4);
+        assertThat(expenses).extracting(ExpenseResponseDto::title).contains("first", "second", "third", "fourth");
+        assertThat(expenses).extracting(ExpenseResponseDto::amount).contains(BigDecimal.valueOf(1), BigDecimal.valueOf(2), BigDecimal.valueOf(3), BigDecimal.valueOf(4));
+
+    }
+    @Test
+    void shouldDeleteSingleExpense(){
+//        //given
+//        ExpenseId expenseId = new ExpenseId("1");
+//        String title = "first";
+//        BigDecimal amount = BigDecimal.valueOf(1);
+//        Expense expense = new Expense(expenseId, title, amount);
+//
+//        ResponseEntity<ExpenseResponseDto> response = testRestTemplate.exchange("/expenses{1}", HttpMethod.DELETE, null, )
+
+        // given
+        ExpenseResponseDto response = registerNewExpenseWithReturn("My test expense", BigDecimal.valueOf(100));
+        ExpenseId id = new ExpenseId(response.expenseId());
+        System.out.println(id);
+
+        // when
+        testRestTemplate.delete("/expenses/" + id.value());
+
+        // then
+//        assertThat(deleteResponse.getStatusCode().is2xxSuccessful()).isTrue();
+
+        assertThat(expenseRepository.findById(id)).isEmpty();
 
 
     }
+
+
 
 
 }

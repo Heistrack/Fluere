@@ -1,5 +1,10 @@
 package com.example.final_project.domain.expenses;
 
+import com.example.final_project.api.responses.ExpenseResponseDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -14,4 +19,6 @@ public interface ExpensesService {
     List<Expense> getExpenses();
 
     Expense updateExpenseById(ExpenseId expenseId, String title, BigDecimal amount);
+
+    Page<Expense> findAllByPage(Pageable pageable);
 }

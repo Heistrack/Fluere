@@ -1,29 +1,26 @@
 package com.example.final_project;
 
 import com.example.final_project.api.requests.expenses.RegisterExpenseRequest;
+import com.example.final_project.api.requests.expenses.UpdateExpenseRequest;
 import com.example.final_project.api.responses.ExpenseResponseDto;
-import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.expenses.ExpenseId;
 import com.example.final_project.domain.expenses.ExpensesService;
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -39,6 +36,9 @@ class ExpensesIntegrationTests {
     private ExpenseRepository expenseRepository;
     @Autowired
     private TestRestTemplate testRestTemplate;
+
+    @Autowired
+    private WebTestClient webClient;
 
     @Autowired
     private ExpensesService expensesService;
@@ -65,7 +65,7 @@ class ExpensesIntegrationTests {
         assertThat(response.getBody().amount()).isEqualByComparingTo(expectedAmount);
     }
 
-    void registerNewExpense(String title, BigDecimal expectedAmount){
+    void registerNewExpense(String title, BigDecimal expectedAmount) {
 
         RegisterExpenseRequest request = new RegisterExpenseRequest(title, expectedAmount);
         // when
@@ -74,7 +74,7 @@ class ExpensesIntegrationTests {
     }
 
 
-    ExpenseResponseDto registerNewExpenseWithReturn(String title, BigDecimal expectedAmount){
+    ExpenseResponseDto registerNewExpenseWithReturn(String title, BigDecimal expectedAmount) {
         RegisterExpenseRequest request = new RegisterExpenseRequest(title, expectedAmount);
         // when
         ResponseEntity<ExpenseResponseDto> response = testRestTemplate.postForEntity("/expenses", request, ExpenseResponseDto.class);
@@ -88,7 +88,7 @@ class ExpensesIntegrationTests {
     }
 
     @Test
-    void shouldReturnAllExpenses(){
+    void shouldReturnAllExpenses() {
 
         // given
         registerNewExpense("first", BigDecimal.valueOf(1));
@@ -99,7 +99,8 @@ class ExpensesIntegrationTests {
 
 
         ResponseEntity<List<ExpenseResponseDto>> response = testRestTemplate.exchange("/expenses", HttpMethod.GET, null,
-                new ParameterizedTypeReference<List<ExpenseResponseDto>>() {});
+                new ParameterizedTypeReference<List<ExpenseResponseDto>>() {
+                });
 
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -109,8 +110,9 @@ class ExpensesIntegrationTests {
         assertThat(expenses).extracting(ExpenseResponseDto::amount).contains(BigDecimal.valueOf(1), BigDecimal.valueOf(2), BigDecimal.valueOf(3), BigDecimal.valueOf(4));
 
     }
+
     @Test
-    void shouldDeleteSingleExpense(){
+    void shouldDeleteSingleExpense() {
 //        //given
 //        ExpenseId expenseId = new ExpenseId("1");
 //        String title = "first";
@@ -134,11 +136,11 @@ class ExpensesIntegrationTests {
 
     }
     @Test
-    void shouldUpdateExpense(){
+    void shouldPutExpense() {
         //Given
-        ExpenseResponseDto response = registerNewExpenseWithReturn("title",BigDecimal.valueOf(50));
+        ExpenseResponseDto response = registerNewExpenseWithReturn("title", BigDecimal.valueOf(50));
         ExpenseId id = new ExpenseId(response.expenseId());
-        RegisterExpenseRequest updateRequest = new RegisterExpenseRequest("update Title",BigDecimal.valueOf(100));
+        RegisterExpenseRequest updateRequest = new RegisterExpenseRequest("update Title", BigDecimal.valueOf(100));
         //When
         ResponseEntity<ExpenseResponseDto> updateResponse = testRestTemplate.exchange("/expenses/" + id.value(), HttpMethod.PUT, new HttpEntity<>(updateRequest), ExpenseResponseDto.class);
         //Then
@@ -147,24 +149,18 @@ class ExpensesIntegrationTests {
         assertThat(updateResponse.getBody().amount()).isEqualTo(updateRequest.amount());
 
     }
-//    @Test
-//    void shouldUpdateExpenses(){
-//        //Given
-//        ExpenseResponseDto response = registerNewExpenseWithReturn("title",BigDecimal.valueOf(20));
-//        ExpenseId id = new ExpenseId(response.expenseId());
-//        RegisterExpenseRequest updateRequest = new RegisterExpenseRequest("update Title",BigDecimal.valueOf(0));
-//        //When
-//        ResponseEntity<ExpenseResponseDto> updateResponse = testRestTemplate.exchange("/expenses/" + id.value(), HttpMethod.PATCH, new HttpEntity<>(updateRequest), ExpenseResponseDto.class);
-//        //Then
-//        assertThat(updateResponse.getStatusCode().is2xxSuccessful()).isTrue();
-//        assertThat(updateResponse.getBody().title()).isEqualTo(updateRequest.title());
-//
-//
-//
-//
-//    }
+    @Test
+    void shouldPathExpenses() {
+        //Given
+        ExpenseResponseDto response = registerNewExpenseWithReturn("title", BigDecimal.valueOf(20));
+        ExpenseId id = new ExpenseId(response.expenseId());
+        UpdateExpenseRequest updateRequest = new UpdateExpenseRequest("update Title", null);
+        ExpenseResponseDto expectedResponseDto = new ExpenseResponseDto("update Title", response.expenseId(), BigDecimal.valueOf(20));
+        //When
+        var responseSpec = webClient.patch().uri("/expenses/" + id.value()).bodyValue(updateRequest).exchange();
+        //Then
+        responseSpec.expectStatus().is2xxSuccessful();
+        responseSpec.expectBody(ExpenseResponseDto.class).isEqualTo(expectedResponseDto);
 
-
-
-
+    }
 }

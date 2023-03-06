@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Sort.Direction;
 
 import javax.validation.Valid;
 import java.math.BigDecimal;
@@ -43,11 +44,14 @@ public class ExpensesController {
     ResponseEntity<Page<ExpenseResponseDto>> getExpensesByPage(
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "25") Integer size,
-            @RequestParam(required = false, defaultValue = "expenseId") String sortBy
+            @RequestParam(required = false, defaultValue = "expenseId") String sortBy,
+            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
     ) {
-        return ResponseEntity.ok(expensesService.findAllByPage((PageRequest.of(page, size, Sort.by(sortBy).descending())))
+        return ResponseEntity.ok(expensesService.findAllByPage(PageRequest.of(page, size, Sort.by(sortDirection, sortBy)))
                 .map(ExpenseResponseDto::fromDomain));
     }
+
+
     @PostMapping
     ResponseEntity<ExpenseResponseDto> registerNewExpense(
             @RequestBody @Valid RegisterExpenseRequest request

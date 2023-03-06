@@ -47,9 +47,10 @@ public class BudgetController {
     ResponseEntity<Page<BudgetResponseDto>> getBudgetByPage(
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "25") Integer size,
-            @RequestParam(required = false, defaultValue = "budgetId") String sortBy
+            @RequestParam(required = false, defaultValue = "budgetId") String sortBy,
+            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
     ) {
-        return ResponseEntity.ok(budgetService.findAllByPage((PageRequest.of(page, size, Sort.by(sortBy).descending())))
+        return ResponseEntity.ok(budgetService.findAllByPage((PageRequest.of(page, size, Sort.by(sortDirection, sortBy))))
                 .map(BudgetResponseDto::fromDomain));
     }
 

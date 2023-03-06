@@ -1,4 +1,5 @@
 package com.example.final_project.api.controllers;
+
 import com.example.final_project.api.requests.budgets.RegisterBudgetRequest;
 import com.example.final_project.api.requests.budgets.UpdateBudgetRequest;
 import com.example.final_project.api.responses.BudgetResponseDto;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.net.URI;
@@ -50,6 +52,12 @@ public class BudgetController {
         return ResponseEntity.ok(budgetService.findAllByPage((PageRequest.of(page, size, Sort.by(sortBy).descending())))
                 .map(BudgetResponseDto::fromDomain));
     }
+
+//    @GetMapping
+//    ResponseEntity<TypeOfBudget> getBudgetTypes(
+//    ) {
+//        return ResponseEntity.ok(budgetService.)
+//    }
 
     @PostMapping
     ResponseEntity<BudgetResponseDto> registerNewBudget(
@@ -89,21 +97,12 @@ public class BudgetController {
         Optional<BigDecimal> maxSingleExpense = Optional.ofNullable(request.maxSingleExpense());
 
         return ResponseEntity.of(budgetService.updateBudgetContent(new BudgetId(rawBudgetId.toString()), title,
-                limit,
-                typeOfBudget,
-                maxSingleExpense)
+                        limit,
+                        typeOfBudget,
+                        maxSingleExpense)
                 .map(BudgetResponseDto::fromDomain));
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return errors;
-    }
+
+
 }

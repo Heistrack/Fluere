@@ -12,6 +12,7 @@ public record Budget(
         String title,
         BigDecimal limit,
         TypeOfBudget typeOfBudget,
-        BigDecimal maxSingleExpense
+        BigDecimal maxSingleExpense,
+        String userId
 ) {
 }

@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +40,8 @@ public class BudgetController {
     ResponseEntity<BudgetResponseDto> getSingleBudget(
             @PathVariable String rawBudgetId
     ) {
-        Optional<Budget> budgetById = budgetService.getBudgetById(new BudgetId(rawBudgetId));
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<Budget> budgetById = budgetService.getBudgetById(new BudgetId(rawBudgetId), userId);
         return ResponseEntity.of(budgetById.map(BudgetResponseDto::fromDomain));
     }
 
@@ -50,7 +52,8 @@ public class BudgetController {
             @RequestParam(required = false, defaultValue = "budgetId") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
     ) {
-        return ResponseEntity.ok(budgetService.findAllByPage((PageRequest.of(page, size, Sort.by(sortDirection, sortBy))))
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(budgetService.findAllByPage(userId, PageRequest.of(page, size, Sort.by(sortDirection, sortBy)))
                 .map(BudgetResponseDto::fromDomain));
     }
 
@@ -64,33 +67,38 @@ public class BudgetController {
     ResponseEntity<BudgetResponseDto> registerNewBudget(
             @RequestBody @Valid RegisterBudgetRequest request
     ) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         Budget newBudget = budgetService.registerNewBudget(request.title(), request.limit(),
-                request.typeOfBudget(), request.maxSingleExpense());
+                request.typeOfBudget(), request.maxSingleExpense(), userId);
         BudgetResponseDto budgetResponseDto = BudgetResponseDto.fromDomain(newBudget);
         return ResponseEntity.created(URI.create("/expenses/" + budgetResponseDto.budgetId())).body(budgetResponseDto);
     }
 
     @DeleteMapping("/{rawBudgetId}")
     public ResponseEntity<BudgetResponseDto> deleteBudget(@PathVariable String rawBudgetId) {
-        budgetService.getBudgetById(new BudgetId(rawBudgetId))
-                .ifPresent(budget -> budgetService.deleteBudgetById(budget.budgetId()));
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        budgetService.getBudgetById(new BudgetId(rawBudgetId), userId)
+                .ifPresent(budget -> budgetService.deleteBudgetById(budget.budgetId(), userId));
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{rawBudgetId}")
     public ResponseEntity<BudgetResponseDto> updateBudget(@PathVariable UUID rawBudgetId, @RequestBody RegisterBudgetRequest request) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         Budget updatedBudget = budgetService.updateBudgetById(new BudgetId(
                         rawBudgetId.toString()),
                 request.title(),
                 request.limit(),
                 request.typeOfBudget(),
-                request.maxSingleExpense());
+                request.maxSingleExpense(),
+                userId);
         return ResponseEntity.ok(BudgetResponseDto.fromDomain(updatedBudget));
     }
 
     @PatchMapping("/{rawBudgetId}")
     public ResponseEntity<BudgetResponseDto> updateBudgetField(@PathVariable UUID rawBudgetId,
                                                                @RequestBody UpdateBudgetRequest request) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
 
         Optional<String> title = Optional.ofNullable(request.title());
         Optional<BigDecimal> limit = Optional.ofNullable(request.limit());
@@ -100,7 +108,8 @@ public class BudgetController {
         return ResponseEntity.of(budgetService.updateBudgetContent(new BudgetId(rawBudgetId.toString()), title,
                         limit,
                         typeOfBudget,
-                        maxSingleExpense)
+                        maxSingleExpense,
+                        userId)
                 .map(BudgetResponseDto::fromDomain));
     }
 

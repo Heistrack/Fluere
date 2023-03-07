@@ -10,6 +10,7 @@ public record Expense(
         @Id ExpenseId expenseId,
         String title,
         BigDecimal amount,
-        BudgetId budgetId
+        BudgetId budgetId,
+        String userId
 ) {
 }

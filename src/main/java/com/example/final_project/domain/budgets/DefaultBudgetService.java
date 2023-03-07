@@ -25,20 +25,20 @@ public class DefaultBudgetService implements BudgetService {
 
 
     @Override
-    public Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget, BigDecimal maxSingleExpense) {
-        Budget budget = new Budget(budgetIdSupplier.get(), title, limit, typeOfBudget, maxSingleExpense);
+    public Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget, BigDecimal maxSingleExpense, String userId) {
+        Budget budget = new Budget(budgetIdSupplier.get(), title, limit, typeOfBudget, maxSingleExpense, userId);
         budgetRepository.save(budget);
         return budget;
     }
 
     @Override
-    public Optional<Budget> getBudgetById(BudgetId budgetId) {
-        return budgetRepository.findBudgetByBudgetId(budgetId);
+    public Optional<Budget> getBudgetById(BudgetId budgetId, String userId) {
+        return budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId);
     }
 
     @Override
-    public void deleteBudgetById(BudgetId budgetId) {
-        budgetRepository.deleteById(budgetId);
+    public void deleteBudgetById(BudgetId budgetId, String userId) {
+        budgetRepository.deleteBudgetByBudgetIdAndUserId(budgetId, userId);
     }
 
     @Override
@@ -46,20 +46,25 @@ public class DefaultBudgetService implements BudgetService {
                                                 Optional<String> title,
                                                 Optional<BigDecimal> limit,
                                                 Optional<TypeOfBudget> typeOfBudget,
-                                                Optional<BigDecimal> maxSingleExpense
+                                                Optional<BigDecimal> maxSingleExpense,
+                                                String userId
     ) {
-        budgetRepository.findBudgetByBudgetId(budgetId).map(
+        budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).map(
                 budgetFromRepository -> new Budget(budgetId,
                         title.orElse(budgetFromRepository.title()),
                         limit.orElse(budgetFromRepository.limit()),
                         typeOfBudget.orElse(budgetFromRepository.typeOfBudget()),
-                        maxSingleExpense.orElse(budgetFromRepository.maxSingleExpense())
+                        maxSingleExpense.orElse(budgetFromRepository.maxSingleExpense()),
+                        userId
                         )).ifPresent(budgetRepository::save);
-        return budgetRepository.findBudgetByBudgetId(budgetId);
+        return budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId);
     }
 
-    public List<Budget> getBudgets() {
-        return budgetRepository.findAll();
+
+
+    @Override
+    public List<Budget> getBudgets(String userId) {
+        return budgetRepository.findAllByUserId(userId);
     }
 
     @Override
@@ -67,19 +72,23 @@ public class DefaultBudgetService implements BudgetService {
                                    String title,
                                    BigDecimal limit,
                                    TypeOfBudget typeOfBudget,
-                                   BigDecimal maxSingleExpense) {
+                                   BigDecimal maxSingleExpense,
+                                   String userId) {
 
         return budgetRepository.save(new Budget(
                 budgetId,
                 title,
                 limit,
                 typeOfBudget,
-                maxSingleExpense
+                maxSingleExpense,
+                userId
                 ));
     }
 
     @Override
-    public Page<Budget> findAllByPage(Pageable pageable) {
-        return budgetRepository.findAll(pageable);
+    public Page<Budget> findAllByPage(String userId, Pageable pageable) {
+        return budgetRepository.findAllByUserId(userId, pageable);
     }
+
+
 }

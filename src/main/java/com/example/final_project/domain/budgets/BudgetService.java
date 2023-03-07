@@ -16,16 +16,16 @@ import java.util.Optional;
 
 public interface BudgetService {
 
-    Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget, BigDecimal maxSingleExpense);
-    Optional<Budget> getBudgetById(BudgetId budgetId);
+    Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget, BigDecimal maxSingleExpense, String userId);
+    Optional<Budget> getBudgetById(BudgetId budgetId, String userId);
 
-    void deleteBudgetById(BudgetId budgetId);
+    void deleteBudgetById(BudgetId budgetId, String userId);
     Optional<Budget> updateBudgetContent(BudgetId budgetId, Optional<String> title, Optional<BigDecimal> limit,
-                                         Optional<TypeOfBudget> typeOfBudget, Optional<BigDecimal> maxSingleExpense);
-    List<Budget> getBudgets();
+                                         Optional<TypeOfBudget> typeOfBudget, Optional<BigDecimal> maxSingleExpense, String userId);
+    List<Budget> getBudgets(String userId);
 
     Budget updateBudgetById(BudgetId BudgetId, String title, BigDecimal limit, TypeOfBudget typeOfBudget,
-                            BigDecimal maxSingleExpense);
+                            BigDecimal maxSingleExpense, String userId);
 
-    Page<Budget> findAllByPage(Pageable pageable);
+    Page<Budget> findAllByPage(String userId, Pageable pageable);
 }

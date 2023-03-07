@@ -11,15 +11,15 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ExpensesService {
-    Expense registerNewExpense(String title, BigDecimal amount, BudgetId budgetId);
-    Optional<Expense> getExpenseById(ExpenseId expenseId);
+    Expense registerNewExpense(String title, BigDecimal amount, BudgetId budgetId, String userId);
+    Optional<Expense> getExpenseById(ExpenseId expenseId, String userId);
 
-    void deleteExpenseById(ExpenseId expenseId);
-    Optional<Expense> updateExpenseContent(ExpenseId expenseId, Optional<String> title, Optional<BigDecimal> amount);
+    void deleteExpenseById(ExpenseId expenseId, String userId);
+    Optional<Expense> updateExpenseContent(ExpenseId expenseId, Optional<String> title, Optional<BigDecimal> amount, String userId);
 
-    List<Expense> getExpenses();
+    List<Expense> getExpenses(String userId);
 
-    Expense updateExpenseById(ExpenseId expenseId, String title, BigDecimal amount);
+    Expense updateExpenseById(ExpenseId expenseId, String title, BigDecimal amount, String userId);
 
-    Page<Expense> findAllByPage(Pageable pageable);
+    Page<Expense> findAllByPage(Pageable pageable, String userId);
 }

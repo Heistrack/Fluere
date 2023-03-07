@@ -34,50 +34,52 @@ public class DefaultExpensesService implements ExpensesService {
 //    }
 
     @Override
-    public Expense registerNewExpense(String title, BigDecimal amount, BudgetId budgetId) {
+    public Expense registerNewExpense(String title, BigDecimal amount, BudgetId budgetId, String userId) {
         Budget budget = budgetRepository.findById(budgetId).orElseThrow();
-        BigDecimal totalAmount = ExpenseRepository.findExpenseByBudgetId(budget.budgetId())
+        BigDecimal totalAmount = expenseRepository.findExpenseByBudgetIdAndUserId(budget.budgetId(), userId)
                 .stream()
                 .map(Expense::amount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        Expense expense = new Expense(expenseIdSupplier.get(), title, amount, budgetId);
+        Expense expense = new Expense(expenseIdSupplier.get(), title, amount, budgetId, userId);
 
         return null;
     }
 
     @Override
-    public Optional<Expense> getExpenseById(ExpenseId expenseId) {
-        return expenseRepository.findExpenseByExpenseId(expenseId);
+    public Optional<Expense> getExpenseById(ExpenseId expenseId, String userId) {
+        return expenseRepository.findExpenseByExpenseIdAndUserId(expenseId, userId);
     }
 
     @Override
-    public void deleteExpenseById(ExpenseId expenseId) {
-        expenseRepository.deleteById(expenseId);
+    public void deleteExpenseById(ExpenseId expenseId, String userId) {
+        expenseRepository.deleteExpenseByExpenseIdAndUserId(expenseId, userId);
     }
 
     @Override
-    public Optional<Expense> updateExpenseContent(ExpenseId expenseId, Optional<String> title, Optional<BigDecimal> amount) {
-        expenseRepository.findExpenseByExpenseId(expenseId).map(
+    public Optional<Expense> updateExpenseContent(ExpenseId expenseId, Optional<String> title, Optional<BigDecimal> amount, String userId) {
+        expenseRepository.findExpenseByExpenseIdAndUserId(expenseId, userId).map(
                 expenseFromRepository -> new Expense(expenseId,
                         title.orElse(expenseFromRepository.title()),
                         amount.orElse(expenseFromRepository.amount()),
-                        null
+                        null,
+                        userId
                 )).ifPresent(expenseRepository::save);
-        return expenseRepository.findExpenseByExpenseId(expenseId);
+        return expenseRepository.findExpenseByExpenseIdAndUserId(expenseId, userId);
+    }
+
+
+    @Override
+    public List<Expense> getExpenses(String userId) {
+        return expenseRepository.findAllByUserId(userId);
     }
 
     @Override
-    public List<Expense> getExpenses() {
-        return expenseRepository.findAll();
+    public Expense updateExpenseById(ExpenseId expenseId, String title, BigDecimal amount, String userId) {
+        return expenseRepository.save(new Expense(expenseId, title, amount, null, userId));
     }
 
     @Override
-    public Expense updateExpenseById(ExpenseId expenseId, String title, BigDecimal amount) {
-        return expenseRepository.save(new Expense(expenseId, title, amount, null));
-    }
-
-    @Override
-    public Page<Expense> findAllByPage(Pageable pageable) {
-        return expenseRepository.findAll(pageable);
+    public Page<Expense> findAllByPage(Pageable pageable, String userId) {
+        return expenseRepository.findExpensesByUserId(userId, pageable);
     }
 }

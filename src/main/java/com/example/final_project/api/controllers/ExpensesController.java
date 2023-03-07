@@ -3,6 +3,7 @@ package com.example.final_project.api.controllers;
 import com.example.final_project.api.requests.expenses.RegisterExpenseRequest;
 import com.example.final_project.api.requests.expenses.UpdateExpenseRequest;
 import com.example.final_project.api.responses.ExpenseResponseDto;
+import com.example.final_project.domain.budgets.BudgetId;
 import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.expenses.ExpenseId;
 import com.example.final_project.domain.expenses.ExpensesService;
@@ -56,7 +57,7 @@ public class ExpensesController {
     ResponseEntity<ExpenseResponseDto> registerNewExpense(
             @RequestBody @Valid RegisterExpenseRequest request
     ) {
-        Expense newExpense = expensesService.registerNewExpense(request.title(), request.amount());
+        Expense newExpense = expensesService.registerNewExpense(request.title(), request.amount(), BudgetId.newOf(request.budgetId()));
         ExpenseResponseDto expenseResponseDto = ExpenseResponseDto.fromDomain(newExpense);
         return ResponseEntity.created(URI.create("/expenses/" + expenseResponseDto.expenseId())).body(expenseResponseDto);
     }

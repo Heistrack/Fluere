@@ -1,5 +1,8 @@
 package com.example.final_project.domain.expenses;
 
+import com.example.final_project.domain.budgets.Budget;
+import com.example.final_project.domain.budgets.BudgetId;
+import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,17 +18,31 @@ public class DefaultExpensesService implements ExpensesService {
 
     private final ExpenseRepository expenseRepository;
     private final Supplier<ExpenseId> expenseIdSupplier;
+    private final BudgetRepository budgetRepository;
 
-    public DefaultExpensesService(ExpenseRepository expenseRepository, Supplier<ExpenseId> expenseIdSupplier) {
+    public DefaultExpensesService(ExpenseRepository expenseRepository, Supplier<ExpenseId> expenseIdSupplier, BudgetRepository budgetRepository) {
         this.expenseRepository = expenseRepository;
         this.expenseIdSupplier = expenseIdSupplier;
+        this.budgetRepository = budgetRepository;
     }
 
+//    @Override
+//    public Expense registerNewExpense(String title, BigDecimal amount) {
+//        Expense expense = new Expense(expenseIdSupplier.get(), title, amount);
+//        expenseRepository.save(expense);
+//        return expense;
+//    }
+
     @Override
-    public Expense registerNewExpense(String title, BigDecimal amount) {
-        Expense expense = new Expense(expenseIdSupplier.get(), title, amount);
-        expenseRepository.save(expense);
-        return expense;
+    public Expense registerNewExpense(String title, BigDecimal amount, BudgetId budgetId) {
+        Budget budget = budgetRepository.findById(budgetId).orElseThrow();
+        BigDecimal totalAmount = ExpenseRepository.findExpenseByBudgetId(budget.budgetId())
+                .stream()
+                .map(Expense::amount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        Expense expense = new Expense(expenseIdSupplier.get(), title, amount, budgetId);
+
+        return null;
     }
 
     @Override
@@ -43,7 +60,8 @@ public class DefaultExpensesService implements ExpensesService {
         expenseRepository.findExpenseByExpenseId(expenseId).map(
                 expenseFromRepository -> new Expense(expenseId,
                         title.orElse(expenseFromRepository.title()),
-                        amount.orElse(expenseFromRepository.amount())
+                        amount.orElse(expenseFromRepository.amount()),
+                        null
                 )).ifPresent(expenseRepository::save);
         return expenseRepository.findExpenseByExpenseId(expenseId);
     }
@@ -55,7 +73,7 @@ public class DefaultExpensesService implements ExpensesService {
 
     @Override
     public Expense updateExpenseById(ExpenseId expenseId, String title, BigDecimal amount) {
-        return expenseRepository.save(new Expense(expenseId, title, amount));
+        return expenseRepository.save(new Expense(expenseId, title, amount, null));
     }
 
     @Override

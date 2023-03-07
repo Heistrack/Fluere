@@ -16,6 +16,8 @@ public record UpdateExpenseRequest(
     )
     String title,
     @Positive(message = "Expense amount cannot be negative or zero")
-    BigDecimal amount
-            ) {
+    BigDecimal amount,
+
+    String budgetId
+) {
 }

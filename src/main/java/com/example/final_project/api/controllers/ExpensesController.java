@@ -3,6 +3,7 @@ package com.example.final_project.api.controllers;
 import com.example.final_project.api.requests.expenses.RegisterExpenseRequest;
 import com.example.final_project.api.requests.expenses.UpdateExpenseRequest;
 import com.example.final_project.api.responses.ExpenseResponseDto;
+import com.example.final_project.domain.budgets.BudgetId;
 import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.expenses.ExpenseId;
 import com.example.final_project.domain.expenses.ExpensesService;
@@ -14,12 +15,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.data.domain.Sort.Direction;
 
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.net.URI;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import static com.example.final_project.api.controllers.ExpensesController.EXPENSES_BASE_PATH;
 
@@ -56,7 +59,7 @@ public class ExpensesController {
     ResponseEntity<ExpenseResponseDto> registerNewExpense(
             @RequestBody @Valid RegisterExpenseRequest request
     ) {
-        Expense newExpense = expensesService.registerNewExpense(request.title(), request.amount());
+        Expense newExpense = expensesService.registerNewExpense(request.title(), request.amount(), BudgetId.newOf(request.budgetId()));
         ExpenseResponseDto expenseResponseDto = ExpenseResponseDto.fromDomain(newExpense);
         return ResponseEntity.created(URI.create("/expenses/" + expenseResponseDto.expenseId())).body(expenseResponseDto);
     }

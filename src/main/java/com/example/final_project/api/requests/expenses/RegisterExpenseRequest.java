@@ -1,5 +1,6 @@
 package com.example.final_project.api.requests.expenses;
 
+import com.example.final_project.domain.budgets.BudgetId;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotEmpty;
@@ -24,5 +25,6 @@ public record RegisterExpenseRequest(
         @NotNull
         @NotEmpty
         String budgetId
+
 ) {
 }

@@ -6,7 +6,10 @@ import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -48,7 +51,7 @@ public class DefaultExpensesService implements ExpensesService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         Expense expense = new Expense(expenseIdSupplier.get(), title, amount, budgetId, userId);
-
+        expenseRepository.save(expense);
         return expense;
     }
 
@@ -94,7 +97,6 @@ public class DefaultExpensesService implements ExpensesService {
     public Page<Expense> findAllByPage(Pageable pageable, String userId) {
         return expenseRepository.findExpensesByUserId(userId, pageable);
     }
-
     void singleMaxExpValidation(BigDecimal amount, Budget budget) {
         if (budget.maxSingleExpense().compareTo(amount) < 0) {
             throw new ExpenseTooBigException("Wydatek przekracza możliwy maksymalny wydatek w budżecie!");
@@ -102,24 +104,18 @@ public class DefaultExpensesService implements ExpensesService {
     }
 
     void checkBudgetLimit(BigDecimal amount, Budget budget) {
-        System.out.println(budget.typeOfBudget().getValue());
-        System.out.println(amount + " Expense amount");
         if (budget.typeOfBudget().getValue().compareTo(BigDecimal.valueOf(0)) < 0) {
             return;
         }
 
         var totalBudgetLimit = budget.limit().multiply(budget.typeOfBudget().getValue());
-        System.out.println(totalBudgetLimit);
 
         var totalExpensesAmount = expenseRepository.findExpensesByBudgetId(budget.budgetId())
                 .stream()
                 .map(Expense::amount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        System.out.println(totalExpensesAmount);
-
         var amountLeft = totalBudgetLimit.subtract(totalExpensesAmount);
-        System.out.println(amountLeft);
 
         if (amountLeft.compareTo(amount) < 0) {
             throw new ExpenseTooBigException("Wydatek przekroczy limit budzetu!");

@@ -2,6 +2,7 @@ package com.example.final_project.api.controllers;
 
 import com.example.final_project.api.requests.expenses.RegisterExpenseRequest;
 import com.example.final_project.api.requests.expenses.UpdateExpenseRequest;
+import com.example.final_project.api.responses.ErrorDTO;
 import com.example.final_project.api.responses.ExpenseResponseDto;
 import com.example.final_project.domain.budgets.BudgetId;
 import com.example.final_project.domain.expenses.Expense;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Sort.Direction;
@@ -21,7 +23,10 @@ import org.springframework.data.domain.Sort.Direction;
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.example.final_project.api.controllers.ExpensesController.EXPENSES_BASE_PATH;
 
@@ -56,7 +61,6 @@ public class ExpensesController {
     }
 
 
-
     @PostMapping
     ResponseEntity<ExpenseResponseDto> registerNewExpense(
             @RequestBody @Valid RegisterExpenseRequest request
@@ -79,14 +83,16 @@ public class ExpensesController {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return errors;
+    public ResponseEntity<ErrorDTO> handleValidationExceptions(MethodArgumentNotValidException ex) {
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorDTO.newOf(ex
+                        .getBindingResult()
+                        .getAllErrors()
+                        .stream()
+                        .map(ObjectError::getDefaultMessage)
+                        .collect(Collectors.joining(" , ")),
+                HttpStatus.BAD_REQUEST,
+                LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)));
     }
 
     @PutMapping("/{rawExpenseId}")

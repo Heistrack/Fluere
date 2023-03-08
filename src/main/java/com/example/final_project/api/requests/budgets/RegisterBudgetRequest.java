@@ -1,5 +1,7 @@
 package com.example.final_project.api.requests.budgets;
 
+import com.example.final_project.domain.budgets.Budget;
+import com.example.final_project.domain.budgets.BudgetId;
 import com.example.final_project.domain.budgets.TypeOfBudget;
 import org.hibernate.validator.constraints.Length;
 

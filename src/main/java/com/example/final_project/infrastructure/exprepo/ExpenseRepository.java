@@ -1,5 +1,6 @@
 package com.example.final_project.infrastructure.exprepo;
 
+import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetId;
 import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.expenses.ExpenseId;
@@ -22,7 +23,7 @@ public interface ExpenseRepository extends MongoRepository<Expense,ExpenseId> {
     Page<Expense> findExpensesByUserId(String userId, Pageable pageable);
 
     void deleteExpenseByExpenseIdAndUserId(ExpenseId expenseId, String userId);
-
-
     List<Expense> findAllByUserId(String userId);
+    List<Expense> findExpensesByBudgetId(BudgetId budgetId);
+    Budget findBudgetByExpenseId(ExpenseId expenseId);
 }

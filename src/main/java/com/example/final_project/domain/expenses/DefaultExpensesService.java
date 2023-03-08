@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -33,16 +34,22 @@ public class DefaultExpensesService implements ExpensesService {
 //        return expense;
 //    }
 
+
     @Override
     public Expense registerNewExpense(String title, BigDecimal amount, BudgetId budgetId, String userId) {
-        Budget budget = budgetRepository.findById(budgetId).orElseThrow();
+        Budget budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId,userId).orElseThrow();
+
+        singleMaxExpValidation(amount,budget);
+        checkBudgetLimit(amount,budget);
+
         BigDecimal totalAmount = expenseRepository.findExpenseByBudgetIdAndUserId(budget.budgetId(), userId)
                 .stream()
                 .map(Expense::amount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         Expense expense = new Expense(expenseIdSupplier.get(), title, amount, budgetId, userId);
 
-        return null;
+        return expense;
     }
 
     @Override
@@ -57,6 +64,11 @@ public class DefaultExpensesService implements ExpensesService {
 
     @Override
     public Optional<Expense> updateExpenseContent(ExpenseId expenseId, Optional<String> title, Optional<BigDecimal> amount, String userId) {
+        var budget = expenseRepository.findBudgetByExpenseId(expenseId);
+
+        singleMaxExpValidation(amount.get(),budget);
+        checkBudgetLimit(amount.get(),budget);
+
         expenseRepository.findExpenseByExpenseIdAndUserId(expenseId, userId).map(
                 expenseFromRepository -> new Expense(expenseId,
                         title.orElse(expenseFromRepository.title()),
@@ -81,5 +93,36 @@ public class DefaultExpensesService implements ExpensesService {
     @Override
     public Page<Expense> findAllByPage(Pageable pageable, String userId) {
         return expenseRepository.findExpensesByUserId(userId, pageable);
+    }
+
+    void singleMaxExpValidation(BigDecimal amount, Budget budget) {
+        if (budget.maxSingleExpense().compareTo(amount) < 0) {
+            throw new ExpenseTooBigException("Wydatek przekracza możliwy maksymalny wydatek w budżecie!");
+        }
+    }
+
+    void checkBudgetLimit(BigDecimal amount, Budget budget) {
+        System.out.println(budget.typeOfBudget().getValue());
+        System.out.println(amount + " Expense amount");
+        if (budget.typeOfBudget().getValue().compareTo(BigDecimal.valueOf(0)) < 0) {
+            return;
+        }
+
+        var totalBudgetLimit = budget.limit().multiply(budget.typeOfBudget().getValue());
+        System.out.println(totalBudgetLimit);
+
+        var totalExpensesAmount = expenseRepository.findExpensesByBudgetId(budget.budgetId())
+                .stream()
+                .map(Expense::amount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        System.out.println(totalExpensesAmount);
+
+        var amountLeft = totalBudgetLimit.subtract(totalExpensesAmount);
+        System.out.println(amountLeft);
+
+        if (amountLeft.compareTo(amount) < 0) {
+            throw new ExpenseTooBigException("Wydatek przekroczy limit budzetu!");
+        }
     }
 }

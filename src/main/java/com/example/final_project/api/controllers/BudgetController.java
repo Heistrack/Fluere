@@ -57,12 +57,6 @@ public class BudgetController {
                 .map(BudgetResponseDto::fromDomain));
     }
 
-//    @GetMapping
-//    ResponseEntity<TypeOfBudget> getBudgetTypes(
-//    ) {
-//        return ResponseEntity.ok(budgetService.)
-//    }
-
     @PostMapping
     ResponseEntity<BudgetResponseDto> registerNewBudget(
             @RequestBody @Valid RegisterBudgetRequest request
@@ -112,7 +106,4 @@ public class BudgetController {
                         userId)
                 .map(BudgetResponseDto::fromDomain));
     }
-
-
-
 }

@@ -7,6 +7,7 @@ import com.example.final_project.api.responses.ExpenseResponseDto;
 import com.example.final_project.domain.budgets.BudgetId;
 import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.expenses.ExpenseId;
+import com.example.final_project.domain.expenses.ExpenseTooBigException;
 import com.example.final_project.domain.expenses.ExpensesService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -92,6 +93,16 @@ public class ExpensesController {
                         .map(ObjectError::getDefaultMessage)
                         .collect(Collectors.joining(" , ")),
                 HttpStatus.BAD_REQUEST,
+                LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)));
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(ExpenseTooBigException.class)
+    public ResponseEntity<ErrorDTO> handleValidationExceptions(ExpenseTooBigException ex) {
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorDTO.newOf(ex
+                        .getMessage(),
+                HttpStatus.CONFLICT,
                 LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)));
     }
 

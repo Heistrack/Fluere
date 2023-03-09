@@ -16,8 +16,8 @@ import java.util.Optional;
 
 public interface BudgetService {
 
-    Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget, BigDecimal maxSingleExpense);
-    Optional<Budget> getBudgetById(BudgetId budgetId);
+    Budget registerNewBudget(String userId,String title, BigDecimal limit, TypeOfBudget typeOfBudget, BigDecimal maxSingleExpense);
+    Optional<Budget> getBudgetById(BudgetId budgetId,String userId);
 
     void deleteBudgetById(BudgetId budgetId);
     Optional<Budget> updateBudgetContent(BudgetId budgetId, Optional<String> title, Optional<BigDecimal> limit,

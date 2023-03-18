@@ -6,13 +6,8 @@ import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -30,20 +25,13 @@ public class DefaultExpensesService implements ExpensesService {
         this.budgetRepository = budgetRepository;
     }
 
-//    @Override
-//    public Expense registerNewExpense(String title, BigDecimal amount) {
-//        Expense expense = new Expense(expenseIdSupplier.get(), title, amount);
-//        expenseRepository.save(expense);
-//        return expense;
-//    }
-
 
     @Override
     public Expense registerNewExpense(String title, BigDecimal amount, BudgetId budgetId, String userId) {
-        Budget budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId,userId).orElseThrow();
+        Budget budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).orElseThrow();
 
-        singleMaxExpValidation(amount,budget);
-        checkBudgetLimit(amount,budget);
+        singleMaxExpValidation(amount, budget);
+        checkBudgetLimit(amount, budget);
 
         BigDecimal totalAmount = expenseRepository.findExpenseByBudgetIdAndUserId(budget.budgetId(), userId)
                 .stream()
@@ -69,8 +57,8 @@ public class DefaultExpensesService implements ExpensesService {
     public Optional<Expense> updateExpenseContent(ExpenseId expenseId, Optional<String> title, Optional<BigDecimal> amount, String userId) {
         var budget = expenseRepository.findBudgetByExpenseId(expenseId);
 
-        singleMaxExpValidation(amount.get(),budget);
-        checkBudgetLimit(amount.get(),budget);
+        singleMaxExpValidation(amount.get(), budget);
+        checkBudgetLimit(amount.get(), budget);
 
         expenseRepository.findExpenseByExpenseIdAndUserId(expenseId, userId).map(
                 expenseFromRepository -> new Expense(expenseId,
@@ -97,6 +85,7 @@ public class DefaultExpensesService implements ExpensesService {
     public Page<Expense> findAllByPage(Pageable pageable, String userId) {
         return expenseRepository.findExpensesByUserId(userId, pageable);
     }
+
     void singleMaxExpValidation(BigDecimal amount, Budget budget) {
         if (budget.maxSingleExpense().compareTo(amount) < 0) {
             throw new ExpenseTooBigException("Wydatek przekracza możliwy maksymalny wydatek w budżecie!");
@@ -110,7 +99,7 @@ public class DefaultExpensesService implements ExpensesService {
 
         var totalBudgetLimit = budget.limit().multiply(budget.typeOfBudget().getValue());
 
-        var totalExpensesAmount = expenseRepository.findExpensesByBudgetId(budget.budgetId())
+        var totalExpensesAmount = expenseRepository.findExpensesByBudgetIdAndUserId(budget.budgetId(), budget.userId())
                 .stream()
                 .map(Expense::amount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);

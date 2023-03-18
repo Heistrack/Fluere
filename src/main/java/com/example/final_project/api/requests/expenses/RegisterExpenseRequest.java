@@ -1,12 +1,10 @@
 package com.example.final_project.api.requests.expenses;
 
-import com.example.final_project.domain.budgets.BudgetId;
-import org.hibernate.validator.constraints.Length;
 
+import org.hibernate.validator.constraints.Length;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
-
 import java.math.BigDecimal;
 
 public record RegisterExpenseRequest(

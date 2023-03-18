@@ -1,7 +1,9 @@
 package com.example.final_project.domain.budgets;
 
+import com.example.final_project.api.responses.BudgetStatusDTO;
 import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
+import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,11 +17,13 @@ import java.util.function.Supplier;
 public class DefaultBudgetService implements BudgetService {
 
     private final BudgetRepository budgetRepository;
+    private final ExpenseRepository expenseRepository;
 
     private final Supplier<BudgetId> budgetIdSupplier;
 
-    public DefaultBudgetService(BudgetRepository budgetRepository, Supplier<BudgetId> budgetIdSupplier) {
+    public DefaultBudgetService(BudgetRepository budgetRepository, ExpenseRepository expenseRepository, Supplier<BudgetId> budgetIdSupplier) {
         this.budgetRepository = budgetRepository;
+        this.expenseRepository = expenseRepository;
         this.budgetIdSupplier = budgetIdSupplier;
     }
 
@@ -56,10 +60,9 @@ public class DefaultBudgetService implements BudgetService {
                         typeOfBudget.orElse(budgetFromRepository.typeOfBudget()),
                         maxSingleExpense.orElse(budgetFromRepository.maxSingleExpense()),
                         userId
-                        )).ifPresent(budgetRepository::save);
+                )).ifPresent(budgetRepository::save);
         return budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId);
     }
-
 
 
     @Override
@@ -82,12 +85,32 @@ public class DefaultBudgetService implements BudgetService {
                 typeOfBudget,
                 maxSingleExpense,
                 userId
-                ));
+        ));
     }
 
     @Override
     public Page<Budget> findAllByPage(String userId, Pageable pageable) {
         return budgetRepository.findAllByUserId(userId, pageable);
+    }
+
+    private BigDecimal totalExpensesValue(BudgetId budgetId, String userId) {
+        var totalExpensesAmount = expenseRepository.findExpensesByBudgetIdAndUserId(budgetId, userId)
+                .stream()
+                .map(Expense::amount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return totalExpensesAmount;
+    }
+
+    private BigDecimal budgetFullFillPerc(BigDecimal base, BigDecimal actual) {
+        return actual.multiply(BigDecimal.valueOf(100)).divide(base);
+    }
+
+    @Override
+    public BudgetStatusDTO getBudgetStatus(BudgetId budgetId, String userId) {
+        Optional<Budget> budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId);
+        BigDecimal amountLeft = budget.get().limit().subtract(totalExpensesValue(budgetId, userId));
+        BigDecimal budgetFullFillPerc = budgetFullFillPerc(budget.get().limit(), totalExpensesValue(budgetId, userId));
+        return BudgetStatusDTO.newOf(totalExpensesValue(budgetId, userId), amountLeft, budgetFullFillPerc, budget.get().typeOfBudget().getTitle());
     }
 
 

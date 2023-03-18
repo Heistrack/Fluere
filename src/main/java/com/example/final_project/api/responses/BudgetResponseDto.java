@@ -14,7 +14,7 @@ public record BudgetResponseDto(
         BigDecimal maxSingleExpense
 ) {
 
-    public static BudgetResponseDto fromDomain(Budget budget){
+    public static BudgetResponseDto fromDomain(Budget budget) {
         return new BudgetResponseDto(
                 budget.budgetId().value(),
                 budget.title(),

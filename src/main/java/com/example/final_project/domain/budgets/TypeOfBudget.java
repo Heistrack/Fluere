@@ -1,9 +1,9 @@
 package com.example.final_project.domain.budgets;
 
-import lombok.Data;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+
 @ToString
 public enum TypeOfBudget {
     HALF("can be exceeded to half of total value", BigDecimal.valueOf(1.5)),
@@ -13,7 +13,7 @@ public enum TypeOfBudget {
     private final String title;
     private final BigDecimal value;
 
-    TypeOfBudget(String title, BigDecimal value){
+    TypeOfBudget(String title, BigDecimal value) {
         this.title = title;
         this.value = value;
     }

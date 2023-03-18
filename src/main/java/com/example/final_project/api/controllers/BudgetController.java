@@ -3,7 +3,7 @@ package com.example.final_project.api.controllers;
 import com.example.final_project.api.requests.budgets.RegisterBudgetRequest;
 import com.example.final_project.api.requests.budgets.UpdateBudgetRequest;
 import com.example.final_project.api.responses.BudgetResponseDto;
-import com.example.final_project.api.responses.ExpenseResponseDto;
+import com.example.final_project.api.responses.BudgetStatusDTO;
 import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetId;
 import com.example.final_project.domain.budgets.BudgetService;
@@ -14,10 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.net.URI;
@@ -55,6 +52,15 @@ public class BudgetController {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.ok(budgetService.findAllByPage(userId, PageRequest.of(page, size, Sort.by(sortDirection, sortBy)))
                 .map(BudgetResponseDto::fromDomain));
+    }
+
+    @GetMapping("/status/{rawBudgetId}")
+    ResponseEntity<BudgetStatusDTO> getBudgetStatus(@PathVariable String rawBudgetId) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                budgetService.getBudgetStatus(new BudgetId(rawBudgetId), userId)
+        );
     }
 
     @PostMapping

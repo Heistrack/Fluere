@@ -7,7 +7,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 @Configuration
-public class IdSupplierConfigExp {
+class IdSupplierConfigExp {
 
     @Bean
     public Supplier<ExpenseId> expenseIdSupplier() {

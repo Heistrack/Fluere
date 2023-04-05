@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 
 
 @Configuration
-public class IdSupplierConfigUser {
+class IdSupplierConfigUser {
 
     @Bean
     public Supplier<UserId> userIdSupplier() {

@@ -1,7 +1,6 @@
-package com.example.final_project.api.security;
+package com.example.final_project.domain.users;
 
 
-import com.example.final_project.domain.users.MongoUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,20 +15,20 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @EnableWebSecurity
 @Configuration
-public class AppSecurityConfig {
+class AppSecurityConfig {
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationManager customAuthenticationManager(HttpSecurity httpSecurity, MongoUserDetailsService service, PasswordEncoder encoder) throws Exception {
+    AuthenticationManager customAuthenticationManager(HttpSecurity httpSecurity, MongoUserDetailsService service, PasswordEncoder encoder) throws Exception {
         return httpSecurity.getSharedObject(AuthenticationManagerBuilder.class).userDetailsService(service).passwordEncoder(encoder).and().build();
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity security) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity security) throws Exception {
         return security
                 .cors()
                 .disable()

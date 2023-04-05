@@ -8,7 +8,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 @Configuration
-public class IdSupplierConfigBud {
+class IdSupplierConfigBud {
     @Bean
     public Supplier<BudgetId> budgetIdSupplier() {
         return () -> BudgetId.newOf(UUID.randomUUID().toString());

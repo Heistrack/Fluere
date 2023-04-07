@@ -92,7 +92,7 @@
 
 ### Built With
 
-* [![Java][Java.js]][Java-url]
+* <a href="https://www.java.com"> <img src="images/JAVA-CA3132.svg" alt="Logo" width="77" height="28">
 * [![Maven][Maven.js]][Maven-url]
 * [![Spring][Spring.js]][Spring-url]
 * [![Mongo][Mongo.js]][Mongo-url]

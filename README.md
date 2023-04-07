@@ -31,7 +31,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/Heistrack/Fluere">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="images/FLUERE.png" alt="Logo" width="400" height="400">
   </a>
 
 <h3 align="center">Fluere</h3>
@@ -192,7 +192,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 [gmail-shield]: https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white
 [gmail-url-jg]: mailto:jgrzanka@sep.gda.pl
 [gmail-url-sk]: mailto:ximonq@gmail.com
-[github-shield]: 	https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white
+[github-shield]: https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white
 [github-url-sk]: https://github.com/ximq33
 [github-url-jg]: https://github.com/Heistrack
 

@@ -83,7 +83,12 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+&ensp;&ensp;
+Fluere helps to record each expense and assaign it to the budget. Each user has opportunity to independently determine the budget conditions,
+which include maximum one-off expense and total maximum value to spend. The app sends messages of the percentage of budget fill.
+
+
+&ensp;&ensp;Greater control over cash flow and realisation of expenses importance rises user awerness, resulting in cost savings.
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

@@ -5,7 +5,10 @@ import com.example.final_project.api.responses.UserDetailsResponse;
 import com.example.final_project.domain.users.FluereAppUser;
 import com.example.final_project.domain.users.UserRegistrationService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
@@ -14,7 +17,7 @@ import static com.example.final_project.api.controllers.UserController.USERS_BAS
 @RestController
 @RequestMapping(USERS_BASE_PATH)
 public class UserController {
-
+    static final String USERS_BASE_PATH = "/users";
     private final UserRegistrationService registrationService;
 
     public UserController(UserRegistrationService registrationService) {
@@ -26,8 +29,4 @@ public class UserController {
         FluereAppUser user = registrationService.registerNewUser(request.name(), request.password(), request.email(), UserRegistrationService.defaultRoles);
         return ResponseEntity.ok().body(UserDetailsResponse.fromDomain(user));
     }
-
-
-
-    static final String USERS_BASE_PATH = "/users";
 }

@@ -20,13 +20,8 @@ public class DefaultRegistrationService implements UserRegistrationService{
         this.userIdSupplier = userIdSupplier;
         this.encoder = encoder;
     }
-
-
-
-
     @Override
     public FluereAppUser registerNewUser(String username, String rawPassword, String email, List<String> roles) {
-
         if (userRepository.existsByEmailOrUserName(email, username)){
             throw new UnableToRegisterException();
         }

@@ -7,10 +7,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-class MongoUserDetailsService implements UserDetailsService {
+class DefaultUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
-    public MongoUserDetailsService(UserRepository userRepository) {
+    public DefaultUserDetailsService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 

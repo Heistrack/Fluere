@@ -14,13 +14,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.net.URI;
-import java.util.*;
+import java.util.Optional;
+import java.util.UUID;
 
 import static com.example.final_project.api.controllers.BudgetController.BUDGETS_BASE_PATH;
 

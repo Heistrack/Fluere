@@ -8,6 +8,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -23,7 +24,7 @@ class AppSecurityConfig {
     }
 
     @Bean
-    AuthenticationManager customAuthenticationManager(HttpSecurity httpSecurity, MongoUserDetailsService service, PasswordEncoder encoder) throws Exception {
+    AuthenticationManager customAuthenticationManager(HttpSecurity httpSecurity, UserDetailsService service, PasswordEncoder encoder) throws Exception {
         return httpSecurity.getSharedObject(AuthenticationManagerBuilder.class).userDetailsService(service).passwordEncoder(encoder).and().build();
     }
 

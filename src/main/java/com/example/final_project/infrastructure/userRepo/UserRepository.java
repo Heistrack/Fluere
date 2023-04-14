@@ -6,9 +6,9 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;
 
-public interface UserRepository extends MongoRepository<FluereAppUser, UserId> {
+public interface UserRepository {
 
     Optional<FluereAppUser> findByUserName(String userName);
-
+    FluereAppUser save(FluereAppUser fluereAppUser);
     boolean existsByEmailOrUserName(String email, String userName);
 }

@@ -18,7 +18,6 @@ public class DefaultBudgetService implements BudgetService {
 
     private final BudgetRepository budgetRepository;
     private final ExpenseRepository expenseRepository;
-
     private final Supplier<BudgetId> budgetIdSupplier;
 
     public DefaultBudgetService(BudgetRepository budgetRepository, ExpenseRepository expenseRepository, Supplier<BudgetId> budgetIdSupplier) {
@@ -107,11 +106,25 @@ public class DefaultBudgetService implements BudgetService {
 
     @Override
     public BudgetStatusDTO getBudgetStatus(BudgetId budgetId, String userId) {
+
         Optional<Budget> budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId);
         BigDecimal amountLeft = budget.get().limit().subtract(totalExpensesValue(budgetId, userId));
         BigDecimal budgetFullFillPerc = budgetFullFillPerc(budget.get().limit(), totalExpensesValue(budgetId, userId));
-        return BudgetStatusDTO.newOf(totalExpensesValue(budgetId, userId), amountLeft, budgetFullFillPerc, budget.get().typeOfBudget().getTitle());
+        Integer totalExpNumb = expenseRepository.findExpenseByBudgetIdAndUserId(budgetId, userId).size();
+        String limitValue = getLimitFromBudget(budget.get());
+        return BudgetStatusDTO.newOf(budgetId.toString(), totalExpNumb,
+                totalExpensesValue(budgetId, userId), amountLeft,
+                budgetFullFillPerc, budget.get().typeOfBudget().getTitle(), limitValue);
     }
 
+    public String getLimitFromBudget(Budget budget) {
+        BigDecimal limit = budget.limit().multiply(budget.typeOfBudget().getValue());
+
+        if (!budget.typeOfBudget().getValue().equals(BigDecimal.valueOf(-1))) {
+            return limit.toString();
+        } else {
+            return "no limit";
+        }
+    }
 
 }

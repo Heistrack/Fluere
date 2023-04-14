@@ -114,8 +114,8 @@ class ExpensesIntegrationTests {
 //        //given
 //        ExpenseId expenseId = new ExpenseId("1");
 //        String title = "first";
-//        BigDecimal amount = BigDecimal.valueOf(1);
-//        Expense expense = new Expense(expenseId, title, amount);
+//        BigDecimal amountNow = BigDecimal.valueOf(1);
+//        Expense expense = new Expense(expenseId, title, amountNow);
 //
 //        ResponseEntity<ExpenseResponseDto> response = testRestTemplate.exchange("/expenses{1}", HttpMethod.DELETE, null, )
 

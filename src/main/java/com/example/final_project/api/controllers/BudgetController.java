@@ -8,6 +8,7 @@ import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetId;
 import com.example.final_project.domain.budgets.BudgetService;
 import com.example.final_project.domain.budgets.TypeOfBudget;
+import com.example.final_project.domain.users.FluereAppUser;
 import com.example.final_project.domain.users.UserContextProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -113,5 +114,13 @@ public class BudgetController {
                         maxSingleExpense,
                         userId)
                 .map(BudgetResponseDto::fromDomain));
+    }
+
+    @GetMapping("/{budgetId}/status")
+    ResponseEntity<BudgetStatusDTO> getSingleBudgetStatus(
+            @PathVariable String budgetId
+    ){
+        FluereAppUser user = UserContextProvider.getUserContext();
+        return ResponseEntity.of(Optional.ofNullable(budgetService.getBudgetStatus(BudgetId.newOf(budgetId), user.userId().toString())));
     }
 }

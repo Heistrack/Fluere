@@ -10,7 +10,7 @@
 			"item": [
 				{
 					"name": "expenses by page",
-					"_postman_id": "9c6122a1-f11b-40c8-8510-c5aa5b2a9c3b",
+					"id": "9c6122a1-f11b-40c8-8510-c5aa5b2a9c3b",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -54,7 +54,7 @@
 				},
 				{
 					"name": "new expense",
-					"_postman_id": "8d40f0f1-ed9c-4b29-b9ad-e2422ef41150",
+					"id": "8d40f0f1-ed9c-4b29-b9ad-e2422ef41150",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -67,20 +67,19 @@
 				},
 				{
 					"name": "expense by id",
-					"_postman_id": "3a9609bc-9242-4338-a61e-4a7d709cb525",
+					"id": "3a9609bc-9242-4338-a61e-4a7d709cb525",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
 					"request": {
 						"method": "GET",
-						"header": [],
-						"url": null
+						"header": []
 					},
 					"response": []
 				},
 				{
 					"name": "expense by id",
-					"_postman_id": "08a4aab9-7b1d-4744-b184-fc379481e5f4",
+					"id": "08a4aab9-7b1d-4744-b184-fc379481e5f4",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -93,7 +92,7 @@
 				},
 				{
 					"name": "expense by id",
-					"_postman_id": "5592ba6c-d07b-424d-a946-8be247a389f9",
+					"id": "5592ba6c-d07b-424d-a946-8be247a389f9",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -106,7 +105,7 @@
 				},
 				{
 					"name": "expense by id",
-					"_postman_id": "61c62ca4-fefa-4eee-aa5d-8eb668938c3d",
+					"id": "61c62ca4-fefa-4eee-aa5d-8eb668938c3d",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -118,14 +117,14 @@
 					"response": []
 				}
 			],
-			"_postman_id": "1b85e7ed-37ca-481d-be27-2adb7e781150"
+			"id": "1b85e7ed-37ca-481d-be27-2adb7e781150"
 		},
 		{
 			"name": "budgets",
 			"item": [
 				{
 					"name": "budgets by page",
-					"_postman_id": "86c5fc53-c90d-4e63-a6d4-8dd14219c453",
+					"id": "86c5fc53-c90d-4e63-a6d4-8dd14219c453",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -138,7 +137,7 @@
 				},
 				{
 					"name": "budget by id",
-					"_postman_id": "f6451302-8c48-45a2-a6f0-ac7359dd3e46",
+					"id": "f6451302-8c48-45a2-a6f0-ac7359dd3e46",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -151,7 +150,7 @@
 				},
 				{
 					"name": "new budget",
-					"_postman_id": "539bd5bc-474f-401e-98c0-272a514ddd72",
+					"id": "539bd5bc-474f-401e-98c0-272a514ddd72",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -164,7 +163,7 @@
 				},
 				{
 					"name": "budget by id",
-					"_postman_id": "fb532d09-dbc5-46eb-bde9-77809310bd2b",
+					"id": "fb532d09-dbc5-46eb-bde9-77809310bd2b",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -186,7 +185,7 @@
 				},
 				{
 					"name": "budget by id",
-					"_postman_id": "11210b4a-f23d-4857-8009-cd5456c4b630",
+					"id": "11210b4a-f23d-4857-8009-cd5456c4b630",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -198,30 +197,26 @@
 					"response": []
 				}
 			],
-			"_postman_id": "c4db1e6a-9c7f-41f6-9a1b-71f05185fa1b"
+			"id": "c4db1e6a-9c7f-41f6-9a1b-71f05185fa1b"
 		},
 		{
 			"name": "users",
 			"item": [
 				{
-					"name": "New Request",
-					"_postman_id": "7c3abeb0-da6e-44aa-872f-f522d93ac0c5",
+					"name": "new user",
+					"id": "7c3abeb0-da6e-44aa-872f-f522d93ac0c5",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
 					"request": {
 						"auth": {
-							"type": "basic",
-							"basic": {
-								"password": "admin",
-								"username": "admin"
-							}
+							"type": "noauth"
 						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"test_c23da35ae848\",\r\n  \"password\": \"test_413a99c9e3d5\",\r\n  \"email\": \"testce@xd.com\"\r\n}",
+							"raw": "{\r\n  \"name\": \"test_c2e3dfa35ae848\",\r\n  \"password\": \"test_413a9e9c9e3d5\",\r\n  \"email\": \"testce@xd.com\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -233,7 +228,7 @@
 					"response": []
 				}
 			],
-			"_postman_id": "96772992-2222-450a-ba46-6360ea69da2d"
+			"id": "96772992-2222-450a-ba46-6360ea69da2d"
 		}
 	]
 }

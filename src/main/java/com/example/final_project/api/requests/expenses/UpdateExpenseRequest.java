@@ -15,7 +15,7 @@ public record UpdateExpenseRequest(
                 message = "Title cannot be shorter than 3 and longer than 200"
         )
         String title,
-        @Positive(message = "Expense amount cannot be negative or zero")
+        @Positive(message = "Expense amountNow cannot be negative or zero")
         BigDecimal amount,
 
         String budgetId

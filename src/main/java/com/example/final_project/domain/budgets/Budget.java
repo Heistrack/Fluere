@@ -14,6 +14,5 @@ public record Budget(
         TypeOfBudget typeOfBudget,
         BigDecimal maxSingleExpense,
         String userId
-
 ) {
 }

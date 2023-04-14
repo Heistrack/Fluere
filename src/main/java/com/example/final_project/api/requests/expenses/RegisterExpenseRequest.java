@@ -16,8 +16,8 @@ public record RegisterExpenseRequest(
                 message = "Title cannot be shorter than 3 and longer than 200"
         )
         String title,
-        @NotNull(message = "Expense amount cannot be null")
-        @Positive(message = "Expense amount cannot be negative or zero")
+        @NotNull(message = "Expense amountNow cannot be null")
+        @Positive(message = "Expense amountNow cannot be negative or zero")
         BigDecimal amount,
 
         @NotNull

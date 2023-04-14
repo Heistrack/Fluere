@@ -99,7 +99,7 @@ public class BudgetController {
     }
 
     @PatchMapping("/{rawBudgetId}")
-    public ResponseEntity<BudgetResponseDto> updateBudgetField(@PathVariable UUID rawBudgetId,
+    public ResponseEntity<BudgetResponseDto> updateBudgetField(@PathVariable String rawBudgetId,
                                                                @RequestBody UpdateBudgetRequest request) {
         String userId = UserContextProvider.getUserContext().userId().value();
 
@@ -108,7 +108,7 @@ public class BudgetController {
         Optional<TypeOfBudget> typeOfBudget = Optional.ofNullable(request.typeOfBudget());
         Optional<BigDecimal> maxSingleExpense = Optional.ofNullable(request.maxSingleExpense());
 
-        return ResponseEntity.of(budgetService.updateBudgetContent(new BudgetId(rawBudgetId.toString()), title,
+        return ResponseEntity.of(budgetService.updateBudgetContent(new BudgetId(rawBudgetId), title,
                         limit,
                         typeOfBudget,
                         maxSingleExpense,

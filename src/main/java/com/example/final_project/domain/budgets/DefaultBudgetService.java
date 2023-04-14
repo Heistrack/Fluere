@@ -54,10 +54,10 @@ public class DefaultBudgetService implements BudgetService {
     ) {
         budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).map(
                 budgetFromRepository -> new Budget(budgetId,
-                        title.orElse(budgetFromRepository.title()),
-                        limit.orElse(budgetFromRepository.limit()),
-                        typeOfBudget.orElse(budgetFromRepository.typeOfBudget()),
-                        maxSingleExpense.orElse(budgetFromRepository.maxSingleExpense()),
+                        title.orElseGet(budgetFromRepository::title),
+                        limit.orElseGet(budgetFromRepository::limit),
+                        typeOfBudget.orElseGet(budgetFromRepository::typeOfBudget),
+                        maxSingleExpense.orElseGet(budgetFromRepository::maxSingleExpense),
                         userId
                 )).ifPresent(budgetRepository::save);
         return budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId);

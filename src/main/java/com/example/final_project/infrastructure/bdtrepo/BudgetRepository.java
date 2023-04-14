@@ -18,4 +18,5 @@ public interface BudgetRepository extends MongoRepository<Budget, BudgetId> {
     Page<Budget> findAllByUserId(String userId, Pageable pageable);
 
     List<Budget> findAllByUserId(String userId);
+
 }

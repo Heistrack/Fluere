@@ -8,12 +8,14 @@ import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetId;
 import com.example.final_project.domain.budgets.BudgetService;
 import com.example.final_project.domain.budgets.TypeOfBudget;
+import com.example.final_project.domain.users.UserContextProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.math.BigDecimal;
@@ -29,6 +31,7 @@ public class BudgetController {
     static final String BUDGETS_BASE_PATH = "/budgets";
     private final BudgetService budgetService;
 
+
     public BudgetController(BudgetService budgetService) {
         this.budgetService = budgetService;
     }
@@ -37,7 +40,7 @@ public class BudgetController {
     ResponseEntity<BudgetResponseDto> getSingleBudget(
             @PathVariable String rawBudgetId
     ) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = UserContextProvider.getUserContext().userId().value();
         Optional<Budget> budgetById = budgetService.getBudgetById(new BudgetId(rawBudgetId), userId);
         return ResponseEntity.of(budgetById.map(BudgetResponseDto::fromDomain));
     }
@@ -49,14 +52,14 @@ public class BudgetController {
             @RequestParam(required = false, defaultValue = "budgetId") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
     ) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = UserContextProvider.getUserContext().userId().value();
         return ResponseEntity.ok(budgetService.findAllByPage(userId, PageRequest.of(page, size, Sort.by(sortDirection, sortBy)))
                 .map(BudgetResponseDto::fromDomain));
     }
 
     @GetMapping("/status/{rawBudgetId}")
     ResponseEntity<BudgetStatusDTO> getBudgetStatus(@PathVariable String rawBudgetId) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = UserContextProvider.getUserContext().userId().value();
 
         return ResponseEntity.status(HttpStatus.OK).body(
                 budgetService.getBudgetStatus(new BudgetId(rawBudgetId), userId)
@@ -67,7 +70,7 @@ public class BudgetController {
     ResponseEntity<BudgetResponseDto> registerNewBudget(
             @RequestBody @Valid RegisterBudgetRequest request
     ) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = UserContextProvider.getUserContext().userId().value();
         Budget newBudget = budgetService.registerNewBudget(request.title(), request.limit(),
                 request.typeOfBudget(), request.maxSingleExpense(), userId);
         BudgetResponseDto budgetResponseDto = BudgetResponseDto.fromDomain(newBudget);
@@ -76,7 +79,7 @@ public class BudgetController {
 
     @DeleteMapping("/{rawBudgetId}")
     public ResponseEntity<BudgetResponseDto> deleteBudget(@PathVariable String rawBudgetId) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = UserContextProvider.getUserContext().userId().value();
         budgetService.getBudgetById(new BudgetId(rawBudgetId), userId)
                 .ifPresent(budget -> budgetService.deleteBudgetById(budget.budgetId(), userId));
         return ResponseEntity.noContent().build();
@@ -84,7 +87,7 @@ public class BudgetController {
 
     @PutMapping("/{rawBudgetId}")
     public ResponseEntity<BudgetResponseDto> updateBudget(@PathVariable UUID rawBudgetId, @RequestBody RegisterBudgetRequest request) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = UserContextProvider.getUserContext().userId().value();
         Budget updatedBudget = budgetService.updateBudgetById(new BudgetId(
                         rawBudgetId.toString()),
                 request.title(),
@@ -98,7 +101,7 @@ public class BudgetController {
     @PatchMapping("/{rawBudgetId}")
     public ResponseEntity<BudgetResponseDto> updateBudgetField(@PathVariable UUID rawBudgetId,
                                                                @RequestBody UpdateBudgetRequest request) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = UserContextProvider.getUserContext().userId().value();
 
         Optional<String> title = Optional.ofNullable(request.title());
         Optional<BigDecimal> limit = Optional.ofNullable(request.limit());

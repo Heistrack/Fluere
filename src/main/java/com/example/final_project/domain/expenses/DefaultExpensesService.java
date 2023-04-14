@@ -56,7 +56,7 @@ public class DefaultExpensesService implements ExpensesService {
     @Override
     public Optional<Expense> updateExpenseContent(ExpenseId expenseId, Optional<String> title, Optional<BigDecimal> amount, String userId) {
         var budget = expenseRepository.findBudgetByExpenseId(expenseId);
-
+        System.out.println(budget.toString());
         singleMaxExpValidation(amount.get(), budget);
         checkBudgetLimit(amount.get(), budget);
 

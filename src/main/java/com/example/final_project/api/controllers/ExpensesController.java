@@ -9,6 +9,7 @@ import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.expenses.ExpenseId;
 import com.example.final_project.domain.expenses.ExpenseTooBigException;
 import com.example.final_project.domain.expenses.ExpensesService;
+import com.example.final_project.domain.users.UserContextProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -42,7 +43,7 @@ public class ExpensesController {
     ResponseEntity<ExpenseResponseDto> getSingleExpense(
             @PathVariable String rawExpenseId
     ) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = UserContextProvider.getUserContext().userId().value();
         Optional<Expense> expenseById = expensesService.getExpenseById(new ExpenseId(rawExpenseId), userId);
         return ResponseEntity.of(expenseById.map(ExpenseResponseDto::fromDomain));
     }
@@ -54,7 +55,7 @@ public class ExpensesController {
             @RequestParam(required = false, defaultValue = "expenseId") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
     ) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = UserContextProvider.getUserContext().userId().value();
         return ResponseEntity.ok(expensesService.findAllByPage(PageRequest.of(page, size, Sort.by(sortDirection, sortBy)), userId)
                 .map(ExpenseResponseDto::fromDomain));
     }
@@ -64,7 +65,7 @@ public class ExpensesController {
     ResponseEntity<ExpenseResponseDto> registerNewExpense(
             @RequestBody @Valid RegisterExpenseRequest request
     ) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = UserContextProvider.getUserContext().userId().value();
         System.out.println(SecurityContextHolder.getContext().getAuthentication().getName());
         Expense newExpense = expensesService.registerNewExpense(request.title(), request.amount(), BudgetId.newOf(request.budgetId()), userId);
         ExpenseResponseDto expenseResponseDto = ExpenseResponseDto.fromDomain(newExpense);
@@ -73,7 +74,7 @@ public class ExpensesController {
 
     @DeleteMapping("/{rawExpenseId}")
     public ResponseEntity<ExpenseResponseDto> deleteExpense(@PathVariable String rawExpenseId) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = UserContextProvider.getUserContext().userId().value();
         expensesService.getExpenseById(new ExpenseId(rawExpenseId), userId)
                 .ifPresent(expense -> expensesService.deleteExpenseById(expense.expenseId(), userId));
         return ResponseEntity.noContent().build();
@@ -106,7 +107,7 @@ public class ExpensesController {
 
     @PutMapping("/{rawExpenseId}")
     public ResponseEntity<ExpenseResponseDto> updateExpense(@PathVariable UUID rawExpenseId, @RequestBody RegisterExpenseRequest request) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = UserContextProvider.getUserContext().userId().value();
         Expense updatedExpense = expensesService.updateExpenseById(new ExpenseId(rawExpenseId.toString()), request.title(), request.amount(), userId);
 
         return ResponseEntity.ok(ExpenseResponseDto.fromDomain(updatedExpense));
@@ -115,9 +116,10 @@ public class ExpensesController {
     @PatchMapping("/{rawExpenseId}")
     public ResponseEntity<ExpenseResponseDto> updateExpenseField(@PathVariable UUID rawExpenseId,
                                                                  @RequestBody UpdateExpenseRequest request) {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = UserContextProvider.getUserContext().userId().value();
         Optional<BigDecimal> amount = (Optional.ofNullable(request.amount()));
         Optional<String> title = Optional.ofNullable(request.title());
+        System.out.println(rawExpenseId.toString());
         return ResponseEntity.of(expensesService.updateExpenseContent(new ExpenseId(rawExpenseId.toString()), title, amount, userId)
                 .map(ExpenseResponseDto::fromDomain));
     }

@@ -195,6 +195,18 @@
 						"url": "localhost:8080/budgets/"
 					},
 					"response": []
+				},
+				{
+					"name": "New Request",
+					"id": "63b405b5-6a8b-4868-a736-4441cf0f55ee",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
 				}
 			],
 			"id": "c4db1e6a-9c7f-41f6-9a1b-71f05185fa1b"

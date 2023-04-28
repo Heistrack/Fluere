@@ -217,7 +217,8 @@
 					},
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": "localhost:8080/budgets/"
 					},
 					"response": []
 				}

@@ -218,7 +218,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "localhost:8080/budgets/"
+						"url": "localhost:8080/budgets"
 					},
 					"response": []
 				}

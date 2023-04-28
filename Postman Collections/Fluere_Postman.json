@@ -59,8 +59,20 @@
 						"disableBodyPruning": true
 					},
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"test_b56114a234e1\",\r\n  \"amount\": 1,\r\n  \"budgetId\": \"1b9824a8-5bd7-4525-a293-6fbb95c31b24\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": "localhost:8080/expenses"
 					},
 					"response": []

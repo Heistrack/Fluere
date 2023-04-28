@@ -111,6 +111,15 @@
 					"request": {
 						"method": "PUT",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"test_b56114a234e1\",\r\n  \"amount\": 3.65,\r\n  \"budgetId\": \"3d02c05a-15a6-4c15-8115-4d449baf4f26\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": "localhost:8080/expenses/"
 					},
 					"response": []

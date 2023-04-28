@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -93,15 +94,14 @@ public class DefaultBudgetService implements BudgetService {
     }
 
     private BigDecimal totalExpensesValue(BudgetId budgetId, String userId) {
-        var totalExpensesAmount = expenseRepository.findExpensesByBudgetIdAndUserId(budgetId, userId)
+        return expenseRepository.findExpensesByBudgetIdAndUserId(budgetId, userId)
                 .stream()
                 .map(Expense::amount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        return totalExpensesAmount;
     }
 
     private BigDecimal budgetFullFillPerc(BigDecimal base, BigDecimal actual) {
-        return actual.multiply(BigDecimal.valueOf(100)).divide(base);
+        return actual.multiply(BigDecimal.valueOf(100)).divide(base,1,RoundingMode.DOWN);
     }
 
     @Override

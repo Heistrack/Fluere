@@ -120,7 +120,7 @@ public class BudgetController {
     ResponseEntity<BudgetStatusDTO> getSingleBudgetStatus(
             @PathVariable String budgetId
     ){
-        FluereAppUser user = UserContextProvider.getUserContext();
-        return ResponseEntity.of(Optional.ofNullable(budgetService.getBudgetStatus(BudgetId.newOf(budgetId), user.userId().toString())));
+        String userId = UserContextProvider.getUserContext().userId().value();
+        return ResponseEntity.of(Optional.ofNullable(budgetService.getBudgetStatus(BudgetId.newOf(budgetId), userId)));
     }
 }

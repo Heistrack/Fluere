@@ -300,7 +300,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "localhost:8080/budgets/"
+						"url": "localhost:8080/budgets/1b9824a8-5bd7-4525-a293-6fbb95c31b24/status"
 					},
 					"response": []
 				}

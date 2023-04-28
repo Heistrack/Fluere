@@ -155,8 +155,24 @@
 						"disableBodyPruning": true
 					},
 					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": {
+								"password": "test_413a9e9c9e3d5",
+								"username": "test_c2e3dfa35ae848"
+							}
+						},
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"test_8b8693077781\",\r\n  \"limit\": 596,\r\n  \"typeOfBudget\": \"STRICT\",\r\n  \"maxSingleExpense\": 56\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": "localhost:8080/budgets"
 					},
 					"response": []
@@ -218,7 +234,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "localhost:8080/budgets"
+						"url": "localhost:8080/budgets/"
 					},
 					"response": []
 				}

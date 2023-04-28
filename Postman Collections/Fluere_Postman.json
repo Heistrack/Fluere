@@ -210,7 +210,7 @@
 					"response": []
 				},
 				{
-					"name": "New Request",
+					"name": "get budget status by id",
 					"id": "15f65341-e57e-4193-b315-4329e3955043",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true

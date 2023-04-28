@@ -203,8 +203,9 @@
 						"disableBodyPruning": true
 					},
 					"request": {
-						"method": "GET",
-						"header": []
+						"method": "DELETE",
+						"header": [],
+						"url": "localhost:8080/budgets/00bcbe11-eacf-47ae-992d-e97b65a46d7f"
 					},
 					"response": []
 				},

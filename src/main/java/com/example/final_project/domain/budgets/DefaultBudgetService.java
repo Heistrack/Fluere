@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -30,7 +31,7 @@ public class DefaultBudgetService implements BudgetService {
 
     @Override
     public Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget, BigDecimal maxSingleExpense, String userId) {
-        Budget budget = new Budget(budgetIdSupplier.get(), title, limit, typeOfBudget, maxSingleExpense, userId);
+        Budget budget = new Budget(budgetIdSupplier.get(), title, limit, typeOfBudget, maxSingleExpense, userId, LocalDateTime.now());
         budgetRepository.save(budget);
         return budget;
     }
@@ -51,7 +52,8 @@ public class DefaultBudgetService implements BudgetService {
                                                 Optional<BigDecimal> limit,
                                                 Optional<TypeOfBudget> typeOfBudget,
                                                 Optional<BigDecimal> maxSingleExpense,
-                                                String userId
+                                                String userId,
+                                                Optional<LocalDateTime> timestamp
     ) {
         budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).map(
                 budgetFromRepository -> new Budget(budgetId,
@@ -59,7 +61,8 @@ public class DefaultBudgetService implements BudgetService {
                         limit.orElseGet(budgetFromRepository::limit),
                         typeOfBudget.orElseGet(budgetFromRepository::typeOfBudget),
                         maxSingleExpense.orElseGet(budgetFromRepository::maxSingleExpense),
-                        userId
+                        userId,
+                        timestamp.orElseGet(budgetFromRepository::timestamp)
                 )).ifPresent(budgetRepository::save);
         return budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId);
     }
@@ -76,7 +79,8 @@ public class DefaultBudgetService implements BudgetService {
                                    BigDecimal limit,
                                    TypeOfBudget typeOfBudget,
                                    BigDecimal maxSingleExpense,
-                                   String userId) {
+                                   String userId,
+                                   LocalDateTime timestamp) {
 
         return budgetRepository.save(new Budget(
                 budgetId,
@@ -84,7 +88,8 @@ public class DefaultBudgetService implements BudgetService {
                 limit,
                 typeOfBudget,
                 maxSingleExpense,
-                userId
+                userId,
+                timestamp
         ));
     }
 
@@ -114,7 +119,7 @@ public class DefaultBudgetService implements BudgetService {
         String limitValue = getLimitFromBudget(budget.get());
         return BudgetStatusDTO.newOf(budgetId.toString(), totalExpNumb,
                 totalExpensesValue(budgetId, userId), amountLeft,
-                budgetFullFillPerc, budget.get().typeOfBudget().getTitle(), limitValue);
+                budgetFullFillPerc, budget.get().typeOfBudget().getTitle(), limitValue,LocalDateTime.now());
     }
 
     public String getLimitFromBudget(Budget budget) {

@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Document
 public record Expense(
@@ -12,6 +13,7 @@ public record Expense(
         String title,
         BigDecimal amount,
         BudgetId budgetId,
-        String userId
+        String userId,
+        LocalDateTime timestamp
 ) {
 }

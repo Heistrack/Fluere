@@ -3,7 +3,6 @@ package com.example.final_project.api.requests.expenses;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
 
@@ -17,8 +16,6 @@ public record UpdateExpenseRequest(
         String title,
         @Positive(message = "Expense amountNow cannot be negative or zero")
         BigDecimal amount,
-
         String budgetId
-
 ) {
 }

@@ -15,13 +15,10 @@ public record UpdateBudgetRequest(
                 message = "Title cannot be shorter than 3 and longer than 200"
         )
         String title,
-
         @Positive(message = "Budget limit cannot be negative or zero")
         BigDecimal limit,
-
         TypeOfBudget typeOfBudget,
         @Positive(message = "single expense limit cannot be negative or zero")
         BigDecimal maxSingleExpense
-
 ) {
 }

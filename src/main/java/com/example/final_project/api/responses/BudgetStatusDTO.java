@@ -1,6 +1,8 @@
 package com.example.final_project.api.responses;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record BudgetStatusDTO(
         String budgetId,
@@ -9,7 +11,8 @@ public record BudgetStatusDTO(
         BigDecimal amountLeft,
         BigDecimal budgetFullfillPerc,
         String typeOfBudget,
-        String maxValue
+        String maxValue,
+        LocalDateTime timestamp
 ) {
     public static BudgetStatusDTO newOf(String budgetId,
                                         Integer totalExpensesNumber,
@@ -17,7 +20,8 @@ public record BudgetStatusDTO(
                                         BigDecimal amountLeft,
                                         BigDecimal budgetFullfillPerc,
                                         String typeOfBudget,
-                                        String maxValue) {
+                                        String maxValue,
+                                        LocalDateTime timestamp) {
         return new BudgetStatusDTO(
                 budgetId,
                 totalExpensesNumber,
@@ -25,6 +29,7 @@ public record BudgetStatusDTO(
                 amountLeft,
                 budgetFullfillPerc,
                 typeOfBudget,
-                maxValue);
+                maxValue,
+                timestamp);
     }
 }

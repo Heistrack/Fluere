@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -38,7 +39,7 @@ public class DefaultExpensesService implements ExpensesService {
                 .map(Expense::amount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        Expense expense = new Expense(expenseIdSupplier.get(), title, amount, budgetId, userId);
+        Expense expense = new Expense(expenseIdSupplier.get(), title, amount, budgetId, userId, LocalDateTime.now());
         expenseRepository.save(expense);
         return expense;
     }
@@ -56,16 +57,17 @@ public class DefaultExpensesService implements ExpensesService {
     @Override
     public Optional<Expense> updateExpenseContent(ExpenseId expenseId, Optional<String> title, Optional<BigDecimal> amount, String userId) {
         var budget = expenseRepository.findBudgetByExpenseId(expenseId);
-        System.out.println(budget.toString());
         singleMaxExpValidation(amount.get(), budget);
         checkBudgetLimit(amount.get(), budget);
+        Optional<LocalDateTime> timestamp = Optional.empty();
 
         expenseRepository.findExpenseByExpenseIdAndUserId(expenseId, userId).map(
                 expenseFromRepository -> new Expense(expenseId,
                         title.orElse(expenseFromRepository.title()),
                         amount.orElse(expenseFromRepository.amount()),
                         null,
-                        userId
+                        userId,
+                        timestamp.orElse(expenseFromRepository.timestamp())
                 )).ifPresent(expenseRepository::save);
         return expenseRepository.findExpenseByExpenseIdAndUserId(expenseId, userId);
     }
@@ -78,7 +80,7 @@ public class DefaultExpensesService implements ExpensesService {
 
     @Override
     public Expense updateExpenseById(ExpenseId expenseId, String title, BigDecimal amount, String userId) {
-        return expenseRepository.save(new Expense(expenseId, title, amount, null, userId));
+        return expenseRepository.save(new Expense(expenseId, title, amount, null, userId, LocalDateTime.now()));
     }
 
     @Override

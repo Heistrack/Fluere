@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Document
 public record Budget(
@@ -14,6 +15,7 @@ public record Budget(
         BigDecimal limit,
         TypeOfBudget typeOfBudget,
         BigDecimal maxSingleExpense,
-        String userId
+        String userId,
+        LocalDateTime timestamp
 ) {
 }

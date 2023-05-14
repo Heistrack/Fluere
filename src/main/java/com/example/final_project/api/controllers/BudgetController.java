@@ -4,6 +4,7 @@ import com.example.final_project.api.requests.budgets.RegisterBudgetRequest;
 import com.example.final_project.api.requests.budgets.UpdateBudgetRequest;
 import com.example.final_project.api.responses.BudgetResponseDto;
 import com.example.final_project.api.responses.BudgetStatusDTO;
+import com.example.final_project.api.responses.ExpenseResponseDto;
 import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetId;
 import com.example.final_project.domain.budgets.BudgetService;
@@ -54,7 +55,8 @@ public class BudgetController {
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
     ) {
         String userId = UserContextProvider.getUserContext().userId().value();
-        return ResponseEntity.ok(budgetService.findAllByPage(userId, PageRequest.of(page, size, Sort.by(sortDirection, sortBy)))
+        return ResponseEntity.ok(budgetService.findAllByPage(userId,
+                        PageRequest.of(page, size, Sort.by(sortDirection, sortBy)))
                 .map(BudgetResponseDto::fromDomain));
     }
 
@@ -97,7 +99,7 @@ public class BudgetController {
                 request.maxSingleExpense(),
                 userId,
                 LocalDateTime.now()
-                );
+        );
         return ResponseEntity.ok(BudgetResponseDto.fromDomain(updatedBudget));
     }
 

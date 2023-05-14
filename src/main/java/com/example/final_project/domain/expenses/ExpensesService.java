@@ -20,6 +20,7 @@ public interface ExpensesService {
     List<Expense> getExpenses(String userId);
 
     Expense updateExpenseById(ExpenseId expenseId, String title, BigDecimal amount, String userId);
+    Page<Expense> findAllExpensesByBudgetId(String userId, BudgetId budgetId, Pageable pageable);
 
     Page<Expense> findAllByPage(Pageable pageable, String userId);
 }

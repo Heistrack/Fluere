@@ -2,6 +2,7 @@ package com.example.final_project.infrastructure.bdtrepo;
 
 import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetId;
+import com.example.final_project.domain.expenses.Expense;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;

@@ -8,7 +8,6 @@ import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetId;
 import com.example.final_project.domain.budgets.BudgetService;
 import com.example.final_project.domain.budgets.TypeOfBudget;
-import com.example.final_project.domain.users.FluereAppUser;
 import com.example.final_project.domain.users.UserContextProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,9 +15,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -94,7 +95,9 @@ public class BudgetController {
                 request.limit(),
                 request.typeOfBudget(),
                 request.maxSingleExpense(),
-                userId);
+                userId,
+                LocalDateTime.now()
+                );
         return ResponseEntity.ok(BudgetResponseDto.fromDomain(updatedBudget));
     }
 
@@ -107,19 +110,22 @@ public class BudgetController {
         Optional<BigDecimal> limit = Optional.ofNullable(request.limit());
         Optional<TypeOfBudget> typeOfBudget = Optional.ofNullable(request.typeOfBudget());
         Optional<BigDecimal> maxSingleExpense = Optional.ofNullable(request.maxSingleExpense());
+        Optional<LocalDateTime> timestamp = Optional.empty();
 
         return ResponseEntity.of(budgetService.updateBudgetContent(new BudgetId(rawBudgetId), title,
                         limit,
                         typeOfBudget,
                         maxSingleExpense,
-                        userId)
+                        userId,
+                        timestamp
+                )
                 .map(BudgetResponseDto::fromDomain));
     }
 
     @GetMapping("/{budgetId}/status")
     ResponseEntity<BudgetStatusDTO> getSingleBudgetStatus(
             @PathVariable String budgetId
-    ){
+    ) {
         String userId = UserContextProvider.getUserContext().userId().value();
         return ResponseEntity.of(Optional.ofNullable(budgetService.getBudgetStatus(BudgetId.newOf(budgetId), userId)));
     }

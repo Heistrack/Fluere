@@ -5,13 +5,15 @@ import com.example.final_project.domain.budgets.BudgetId;
 import com.example.final_project.domain.budgets.TypeOfBudget;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public record BudgetResponseDto(
         String budgetId,
         String title,
         BigDecimal limit,
         TypeOfBudget typeOfBudget,
-        BigDecimal maxSingleExpense
+        BigDecimal maxSingleExpense,
+        LocalDateTime timestamp
 ) {
 
     public static BudgetResponseDto fromDomain(Budget budget) {
@@ -20,7 +22,8 @@ public record BudgetResponseDto(
                 budget.title(),
                 budget.limit(),
                 budget.typeOfBudget(),
-                budget.maxSingleExpense()
+                budget.maxSingleExpense(),
+                budget.timestamp()
         );
 
     }

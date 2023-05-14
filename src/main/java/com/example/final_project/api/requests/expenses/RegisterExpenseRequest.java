@@ -19,10 +19,8 @@ public record RegisterExpenseRequest(
         @NotNull(message = "Expense amountNow cannot be null")
         @Positive(message = "Expense amountNow cannot be negative or zero")
         BigDecimal amount,
-
         @NotNull
         @NotEmpty
         String budgetId
-
 ) {
 }

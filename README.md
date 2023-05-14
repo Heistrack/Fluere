@@ -108,7 +108,8 @@ which include maximum one-off expense and total maximum value to spend. The app 
 
 <!-- USAGE EXAMPLES -->
 ## Usage
-[![postman][postman-shield]][postman-url]
+  
+* [![postman][postman-shield]][postman-url]  -  Ready-made requests for Postman to try out the API itself
 
 <!-- LICENSE -->
 ## License

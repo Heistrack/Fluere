@@ -33,7 +33,9 @@ import static com.example.final_project.api.controllers.ExpensesController.EXPEN
 @RestController
 @RequestMapping(EXPENSES_BASE_PATH)
 public class ExpensesController {
+    public static final String EXPENSES_BASE_PATH = "/expenses";
     private final ExpensesService expensesService;
+
 
     ExpensesController(ExpensesService expensesService) {
         this.expensesService = expensesService;
@@ -57,6 +59,21 @@ public class ExpensesController {
     ) {
         String userId = UserContextProvider.getUserContext().userId().value();
         return ResponseEntity.ok(expensesService.findAllByPage(PageRequest.of(page, size, Sort.by(sortDirection, sortBy)), userId)
+                .map(ExpenseResponseDto::fromDomain));
+    }
+
+    @GetMapping("/budget/{rawBudgetId}")
+    ResponseEntity<Page<ExpenseResponseDto>> getExpensesByBudgetId(
+            @PathVariable String rawBudgetId,
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "25") Integer size,
+            @RequestParam(required = false, defaultValue = "budgetId") String sortBy,
+            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
+    ) {
+        String userId = UserContextProvider.getUserContext().userId().value();
+        return ResponseEntity.ok(expensesService.findAllExpensesByBudgetId(userId,
+                        BudgetId.newOf(rawBudgetId),
+                        PageRequest.of(page, size, Sort.by(sortDirection, sortBy)))
                 .map(ExpenseResponseDto::fromDomain));
     }
 
@@ -123,6 +140,4 @@ public class ExpensesController {
         return ResponseEntity.of(expensesService.updateExpenseContent(new ExpenseId(rawExpenseId.toString()), title, amount, userId)
                 .map(ExpenseResponseDto::fromDomain));
     }
-
-    public static final String EXPENSES_BASE_PATH = "/expenses";
 }

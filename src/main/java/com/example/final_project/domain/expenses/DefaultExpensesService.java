@@ -84,6 +84,11 @@ public class DefaultExpensesService implements ExpensesService {
     }
 
     @Override
+    public Page<Expense> findAllExpensesByBudgetId(String userId, BudgetId budgetId, Pageable pageable) {
+       return expenseRepository.findAllByBudgetIdAndUserId(budgetId, userId, pageable);
+    }
+
+    @Override
     public Page<Expense> findAllByPage(Pageable pageable, String userId) {
         return expenseRepository.findExpensesByUserId(userId, pageable);
     }

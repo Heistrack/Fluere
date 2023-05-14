@@ -1,6 +1,7 @@
 package com.example.final_project.domain.budgets;
 
 import com.example.final_project.api.responses.BudgetStatusDTO;
+import com.example.final_project.domain.expenses.Expense;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -29,6 +30,5 @@ public interface BudgetService {
     Page<Budget> findAllByPage(String userId, Pageable pageable);
 
     BudgetStatusDTO getBudgetStatus(BudgetId budgetId, String userId);
-
 
 }

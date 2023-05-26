@@ -26,6 +26,7 @@ public interface ExpenseRepository extends MongoRepository<Expense, ExpenseId> {
     List<Expense> findAllByUserId(String userId);
 
     List<Expense> findExpensesByBudgetIdAndUserId(BudgetId budgetId, String userId);
+
     Page<Expense> findAllByBudgetIdAndUserId(BudgetId budgetId, String userId, Pageable pageable);
 
     Budget findBudgetByExpenseId(ExpenseId expenseId);

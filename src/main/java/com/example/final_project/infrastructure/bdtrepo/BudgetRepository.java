@@ -2,7 +2,7 @@ package com.example.final_project.infrastructure.bdtrepo;
 
 import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetId;
-import com.example.final_project.domain.expenses.Expense;
+import com.example.final_project.domain.expenses.ExpenseId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -19,5 +19,4 @@ public interface BudgetRepository extends MongoRepository<Budget, BudgetId> {
     Page<Budget> findAllByUserId(String userId, Pageable pageable);
 
     List<Budget> findAllByUserId(String userId);
-
 }

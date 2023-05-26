@@ -5,10 +5,7 @@ import com.example.final_project.api.requests.expenses.UpdateExpenseRequest;
 import com.example.final_project.api.responses.ErrorDTO;
 import com.example.final_project.api.responses.ExpenseResponseDto;
 import com.example.final_project.domain.budgets.BudgetId;
-import com.example.final_project.domain.expenses.Expense;
-import com.example.final_project.domain.expenses.ExpenseId;
-import com.example.final_project.domain.expenses.ExpenseTooBigException;
-import com.example.final_project.domain.expenses.ExpensesService;
+import com.example.final_project.domain.expenses.*;
 import com.example.final_project.domain.users.UserContextProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.net.URI;
@@ -58,7 +56,8 @@ public class ExpensesController {
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
     ) {
         String userId = UserContextProvider.getUserContext().userId().value();
-        return ResponseEntity.ok(expensesService.findAllByPage(PageRequest.of(page, size, Sort.by(sortDirection, sortBy)), userId)
+        return ResponseEntity.ok(expensesService.findAllByPage(
+                        PageRequest.of(page, size, Sort.by(sortDirection, sortBy)), userId)
                 .map(ExpenseResponseDto::fromDomain));
     }
 
@@ -77,14 +76,14 @@ public class ExpensesController {
                 .map(ExpenseResponseDto::fromDomain));
     }
 
-
     @PostMapping
     ResponseEntity<ExpenseResponseDto> registerNewExpense(
             @RequestBody @Valid RegisterExpenseRequest request
     ) {
         String userId = UserContextProvider.getUserContext().userId().value();
-        System.out.println(SecurityContextHolder.getContext().getAuthentication().getName());
-        Expense newExpense = expensesService.registerNewExpense(request.title(), request.amount(), BudgetId.newOf(request.budgetId()), userId);
+
+        Expense newExpense = expensesService.registerNewExpense(request.title(), request.amount(),
+                BudgetId.newOf(request.budgetId()), userId, request.typeOfExpense());
         ExpenseResponseDto expenseResponseDto = ExpenseResponseDto.fromDomain(newExpense);
         return ResponseEntity.created(URI.create("/expenses/" + expenseResponseDto.expenseId())).body(expenseResponseDto);
     }
@@ -125,7 +124,14 @@ public class ExpensesController {
     @PutMapping("/{rawExpenseId}")
     public ResponseEntity<ExpenseResponseDto> updateExpense(@PathVariable UUID rawExpenseId, @RequestBody RegisterExpenseRequest request) {
         String userId = UserContextProvider.getUserContext().userId().value();
-        Expense updatedExpense = expensesService.updateExpenseById(new ExpenseId(rawExpenseId.toString()), request.title(), request.amount(), userId);
+
+        Expense updatedExpense = expensesService.updateExpenseById(
+                ExpenseId.newId(rawExpenseId.toString()),
+                BudgetId.newOf(request.budgetId()),
+                request.title(),
+                request.amount(),
+                userId,
+                request.typeOfExpense().orElse(TypeOfExpense.NO_CATEGORY));
 
         return ResponseEntity.ok(ExpenseResponseDto.fromDomain(updatedExpense));
     }
@@ -134,10 +140,12 @@ public class ExpensesController {
     public ResponseEntity<ExpenseResponseDto> updateExpenseField(@PathVariable UUID rawExpenseId,
                                                                  @RequestBody UpdateExpenseRequest request) {
         String userId = UserContextProvider.getUserContext().userId().value();
+
         Optional<BigDecimal> amount = (Optional.ofNullable(request.amount()));
         Optional<String> title = Optional.ofNullable(request.title());
-        System.out.println(rawExpenseId.toString());
-        return ResponseEntity.of(expensesService.updateExpenseContent(new ExpenseId(rawExpenseId.toString()), title, amount, userId)
+
+        return ResponseEntity.of(expensesService.updateExpenseContent(
+                        new ExpenseId(rawExpenseId.toString()), title, amount, userId, request.typeOfExpense())
                 .map(ExpenseResponseDto::fromDomain));
     }
 }

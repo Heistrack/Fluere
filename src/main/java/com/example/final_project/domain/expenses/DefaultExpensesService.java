@@ -7,10 +7,12 @@ import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 @Service
@@ -28,18 +30,14 @@ public class DefaultExpensesService implements ExpensesService {
 
 
     @Override
-    public Expense registerNewExpense(String title, BigDecimal amount, BudgetId budgetId, String userId) {
+    public Expense registerNewExpense(String title, BigDecimal amount, BudgetId budgetId, String userId, Optional<TypeOfExpense> typeOfExpense) {
         Budget budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).orElseThrow();
 
-        singleMaxExpValidation(amount, budget);
         checkBudgetLimit(amount, budget);
+        singleMaxExpValidation(amount, budget);
 
-        BigDecimal totalAmount = expenseRepository.findExpenseByBudgetIdAndUserId(budget.budgetId(), userId)
-                .stream()
-                .map(Expense::amount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        Expense expense = new Expense(expenseIdSupplier.get(), title, amount, budgetId, userId, LocalDateTime.now());
+        Expense expense = new Expense(expenseIdSupplier.get(), title, amount, budgetId, userId, LocalDateTime.now(),
+                typeOfExpense.orElse(TypeOfExpense.NO_CATEGORY));
         expenseRepository.save(expense);
         return expense;
     }
@@ -55,23 +53,60 @@ public class DefaultExpensesService implements ExpensesService {
     }
 
     @Override
-    public Optional<Expense> updateExpenseContent(ExpenseId expenseId, Optional<String> title, Optional<BigDecimal> amount, String userId) {
-        var budget = expenseRepository.findBudgetByExpenseId(expenseId);
-        singleMaxExpValidation(amount.get(), budget);
-        checkBudgetLimit(amount.get(), budget);
+    public Optional<Expense> updateExpenseContent(
+            ExpenseId expenseId,
+            Optional<String> title,
+            Optional<BigDecimal> amount,
+            String userId,
+            Optional<TypeOfExpense> typeOfExpense
+    ) {
+//        TODO dziwna sytuacja - musimy znaleźć budgetId a dopiero później szukać w budget repo inaczej zwraca same nulle jeśli szukamy po
+//        TODO expenseRepository ?!?!
+        BudgetId budgetId = expenseRepository.findBudgetByExpenseId(expenseId).budgetId();
+
+        Budget budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).orElseThrow();
+
+        singleMaxExpValidation(amount.orElse(BigDecimal.ZERO), budget);
+        checkBudgetLimit(amount.orElse(BigDecimal.ZERO), budget);
+
         Optional<LocalDateTime> timestamp = Optional.empty();
 
         expenseRepository.findExpenseByExpenseIdAndUserId(expenseId, userId).map(
-                expenseFromRepository -> new Expense(expenseId,
+                expenseFromRepository -> new Expense(
+                        expenseId,
                         title.orElse(expenseFromRepository.title()),
                         amount.orElse(expenseFromRepository.amount()),
-                        null,
+                        budget.budgetId(),
                         userId,
-                        timestamp.orElse(expenseFromRepository.timestamp())
+                        timestamp.orElse(expenseFromRepository.timestamp()),
+                        typeOfExpense.orElse(expenseFromRepository.typeOfExpense())
                 )).ifPresent(expenseRepository::save);
         return expenseRepository.findExpenseByExpenseIdAndUserId(expenseId, userId);
     }
 
+    @Override
+    public Expense updateExpenseById(
+            ExpenseId expenseId,
+            BudgetId budgetId,
+            String title,
+            BigDecimal amount,
+            String userId,
+            TypeOfExpense typeOfExpense
+    ) {
+        Budget budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).orElseThrow();
+        checkBudgetLimit(amount, budget);
+        singleMaxExpValidation(amount, budget);
+
+//TODO zrobić jedną metodę na całą walidacje powtarza się tu i w registerNew
+
+        return expenseRepository.save(new Expense(expenseId,
+                title,
+                amount,
+                budgetId,
+                userId,
+                LocalDateTime.now(),
+                typeOfExpense));
+    }
 
     @Override
     public List<Expense> getExpenses(String userId) {
@@ -79,13 +114,8 @@ public class DefaultExpensesService implements ExpensesService {
     }
 
     @Override
-    public Expense updateExpenseById(ExpenseId expenseId, String title, BigDecimal amount, String userId) {
-        return expenseRepository.save(new Expense(expenseId, title, amount, null, userId, LocalDateTime.now()));
-    }
-
-    @Override
     public Page<Expense> findAllExpensesByBudgetId(String userId, BudgetId budgetId, Pageable pageable) {
-       return expenseRepository.findAllByBudgetIdAndUserId(budgetId, userId, pageable);
+        return expenseRepository.findAllByBudgetIdAndUserId(budgetId, userId, pageable);
     }
 
     @Override
@@ -106,7 +136,8 @@ public class DefaultExpensesService implements ExpensesService {
 
         var totalBudgetLimit = budget.limit().multiply(budget.typeOfBudget().getValue());
 
-        var totalExpensesAmount = expenseRepository.findExpensesByBudgetIdAndUserId(budget.budgetId(), budget.userId())
+        var totalExpensesAmount = expenseRepository.findExpensesByBudgetIdAndUserId(
+                        budget.budgetId(), budget.userId())
                 .stream()
                 .map(Expense::amount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);

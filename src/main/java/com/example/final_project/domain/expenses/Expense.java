@@ -14,6 +14,7 @@ public record Expense(
         BigDecimal amount,
         BudgetId budgetId,
         String userId,
-        LocalDateTime timestamp
+        LocalDateTime timestamp,
+        TypeOfExpense typeOfExpense
 ) {
 }

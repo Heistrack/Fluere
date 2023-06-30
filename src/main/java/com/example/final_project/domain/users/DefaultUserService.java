@@ -52,7 +52,7 @@ public class DefaultUserService {
                 registerUserRequest.email(),
                 encoder.encode(registerUserRequest.password()),
                 new SimpleGrantedAuthority("USER"),
-                true));  //TODO userBuilder (?)
+                true));
     }
 
     public UserDetails findByUserNameOrEmail(String usernameOrEmail) {
@@ -71,5 +71,4 @@ public class DefaultUserService {
     public Optional<UserDetailsResponse> findAppUserByUserId(String userId) {
         return userRepository.findAppUserByUserId(UserId.newId(userId)).map(UserDetailsResponse::fromDomain);
     }
-
 }

@@ -8,9 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.Valid;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -30,7 +28,6 @@ public class UserController {
 
     @PostMapping
     ResponseEntity<UserDetailsResponse> registerNewUser(@Valid @RequestBody RegisterUserRequest userRequestDto) {
-        //todo System.out.println("halo");
         FluereAppUser user = userService.registerNewUser(userRequestDto);
 
         return ResponseEntity.ok(UserDetailsResponse.fromDomain(user));
@@ -45,28 +42,19 @@ public class UserController {
                 LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)));
     }
 
-
-
     @GetMapping
-    ResponseEntity<List<UserDetailsResponse>> getAllUsers(){
+    ResponseEntity<List<UserDetailsResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @GetMapping("/fromToken")
-    ResponseEntity<UserDetailsResponse> getSingleUser(Authentication authentication){
+    ResponseEntity<UserDetailsResponse> getSingleUser(Authentication authentication) {
         return ResponseEntity.of(userService.findAppUserByName(authentication.getName()));
     }
 
     @GetMapping("/{userId}")
-    ResponseEntity<UserDetailsResponse> getUserById(@PathVariable String userId){
+    ResponseEntity<UserDetailsResponse> getUserById(@PathVariable String userId) {
         return ResponseEntity.of(userService.findAppUserByUserId(userId));
     }
 }
-
-//    @PostMapping("/login")
-//    @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
-//    ResponseEntity<UserDetailsResponse> loginUser(Authentication authentication) {
-//        FluereAppUser fluereAppUser = (FluereAppUser) authentication.getPrincipal();
-//        return ResponseEntity.ok().body(UserDetailsResponse.fromDomain(fluereAppUser));
-//    }
 

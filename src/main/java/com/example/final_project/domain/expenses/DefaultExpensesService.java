@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Supplier;
 
 @Service
@@ -27,7 +26,6 @@ public class DefaultExpensesService implements ExpensesService {
         this.expenseIdSupplier = expenseIdSupplier;
         this.budgetRepository = budgetRepository;
     }
-
 
     @Override
     public Expense registerNewExpense(String title, BigDecimal amount, BudgetId budgetId, String userId, Optional<TypeOfExpense> typeOfExpense) {
@@ -60,8 +58,7 @@ public class DefaultExpensesService implements ExpensesService {
             String userId,
             Optional<TypeOfExpense> typeOfExpense
     ) {
-//        TODO dziwna sytuacja - musimy znaleźć budgetId a dopiero później szukać w budget repo inaczej zwraca same nulle jeśli szukamy po
-//        TODO expenseRepository ?!?!
+
         BudgetId budgetId = expenseRepository.findBudgetByExpenseId(expenseId).budgetId();
 
         Budget budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).orElseThrow();

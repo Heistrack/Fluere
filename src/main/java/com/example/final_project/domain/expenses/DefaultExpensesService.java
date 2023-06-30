@@ -29,10 +29,7 @@ public class DefaultExpensesService implements ExpensesService {
 
     @Override
     public Expense registerNewExpense(String title, BigDecimal amount, BudgetId budgetId, String userId, Optional<TypeOfExpense> typeOfExpense) {
-        Budget budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).orElseThrow();
-
-        checkBudgetLimit(amount, budget);
-        singleMaxExpValidation(amount, budget);
+        validationForNewExpense(amount, budgetId, userId);
 
         Expense expense = new Expense(expenseIdSupplier.get(), title, amount, budgetId, userId, LocalDateTime.now(),
                 typeOfExpense.orElse(TypeOfExpense.NO_CATEGORY));
@@ -90,11 +87,7 @@ public class DefaultExpensesService implements ExpensesService {
             String userId,
             TypeOfExpense typeOfExpense
     ) {
-        Budget budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).orElseThrow();
-        checkBudgetLimit(amount, budget);
-        singleMaxExpValidation(amount, budget);
-
-//TODO zrobić jedną metodę na całą walidacje powtarza się tu i w registerNew
+        validationForNewExpense(amount, budgetId, userId);
 
         return expenseRepository.save(new Expense(expenseId,
                 title,
@@ -103,6 +96,11 @@ public class DefaultExpensesService implements ExpensesService {
                 userId,
                 LocalDateTime.now(),
                 typeOfExpense));
+    }
+    void validationForNewExpense(BigDecimal amount, BudgetId budgetId, String userId){
+        Budget budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).orElseThrow();
+        checkBudgetLimit(amount, budget);
+        singleMaxExpValidation(amount, budget);
     }
 
     @Override

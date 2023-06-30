@@ -7,3 +7,7 @@ spring:
       uri: mongodb://localhost:27017/Budget
 
 
+jwt:
+  private.key: classpath:app.key
+  public.key: classpath:app.pub
+

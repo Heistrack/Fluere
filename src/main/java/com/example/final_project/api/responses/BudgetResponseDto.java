@@ -1,7 +1,6 @@
 package com.example.final_project.api.responses;
 
 import com.example.final_project.domain.budgets.Budget;
-import com.example.final_project.domain.budgets.BudgetId;
 import com.example.final_project.domain.budgets.TypeOfBudget;
 
 import java.math.BigDecimal;
@@ -25,7 +24,6 @@ public record BudgetResponseDto(
                 budget.maxSingleExpense(),
                 budget.timestamp()
         );
-
     }
 
 }

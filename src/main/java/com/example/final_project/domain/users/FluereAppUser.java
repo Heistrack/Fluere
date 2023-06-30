@@ -1,19 +1,18 @@
 package com.example.final_project.domain.users;
 
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.MongoId;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Document
-public record FluereAppUser(UserId userId, String userName, String email, String password, List<String> roles, Boolean enabled) implements UserDetails {
+@Document(collection = "users")
+public record FluereAppUser(@MongoId UserId userId, String userName, String email, String password, GrantedAuthority grantedAuthority, Boolean enabled) implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream().map(SimpleGrantedAuthority::new).toList();
+        return List.of(grantedAuthority);
     }
 
     @Override
@@ -45,4 +44,6 @@ public record FluereAppUser(UserId userId, String userName, String email, String
     public boolean isEnabled() {
         return enabled;
     }
+
+
 }

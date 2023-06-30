@@ -28,7 +28,6 @@ public class DefaultBudgetService implements BudgetService {
         this.budgetIdSupplier = budgetIdSupplier;
     }
 
-
     @Override
     public Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget, BigDecimal maxSingleExpense, String userId) {
         Budget budget = new Budget(budgetIdSupplier.get(), title, limit, typeOfBudget, maxSingleExpense, userId, LocalDateTime.now());
@@ -106,7 +105,7 @@ public class DefaultBudgetService implements BudgetService {
     }
 
     private BigDecimal budgetFullFillPerc(BigDecimal base, BigDecimal actual) {
-        return actual.multiply(BigDecimal.valueOf(100)).divide(base,1,RoundingMode.DOWN);
+        return actual.multiply(BigDecimal.valueOf(100)).divide(base, 1, RoundingMode.DOWN);
     }
 
     @Override
@@ -119,7 +118,7 @@ public class DefaultBudgetService implements BudgetService {
         String limitValue = getLimitFromBudget(budget.get());
         return BudgetStatusDTO.newOf(budgetId.toString(), totalExpNumb,
                 totalExpensesValue(budgetId, userId), amountLeft,
-                budgetFullFillPerc, budget.get().typeOfBudget().getTitle(), limitValue,LocalDateTime.now());
+                budgetFullFillPerc, budget.get().typeOfBudget().getTitle(), limitValue, LocalDateTime.now());
     }
 
     public String getLimitFromBudget(Budget budget) {

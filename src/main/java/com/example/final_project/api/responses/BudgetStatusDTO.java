@@ -1,7 +1,6 @@
 package com.example.final_project.api.responses;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record BudgetStatusDTO(

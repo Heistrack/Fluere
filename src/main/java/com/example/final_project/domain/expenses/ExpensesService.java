@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ExpensesService {
-    Expense registerNewExpense(String title, BigDecimal amount, BudgetId budgetId, String userId,Optional<TypeOfExpense> typeOfExpense);
+    Expense registerNewExpense(String title, BigDecimal amount, BudgetId budgetId, String userId, Optional<TypeOfExpense> typeOfExpense);
 
     Optional<Expense> getExpenseById(ExpenseId expenseId, String userId);
 
@@ -25,6 +25,7 @@ public interface ExpensesService {
 
     Expense updateExpenseById(ExpenseId expenseId, BudgetId budgetId, String title, BigDecimal amount, String userId,
                               TypeOfExpense typeOfExpense);
+
     Page<Expense> findAllExpensesByBudgetId(String userId, BudgetId budgetId, Pageable pageable);
 
     Page<Expense> findAllByPage(Pageable pageable, String userId);

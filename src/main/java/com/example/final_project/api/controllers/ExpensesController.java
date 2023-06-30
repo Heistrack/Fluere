@@ -12,7 +12,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +32,6 @@ import static com.example.final_project.api.controllers.ExpensesController.EXPEN
 public class ExpensesController {
     public static final String EXPENSES_BASE_PATH = "/expenses";
     private final ExpensesService expensesService;
-
 
     ExpensesController(ExpensesService expensesService) {
         this.expensesService = expensesService;
@@ -95,7 +93,6 @@ public class ExpensesController {
                 .ifPresent(expense -> expensesService.deleteExpenseById(expense.expenseId(), userId));
         return ResponseEntity.noContent().build();
     }
-
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)

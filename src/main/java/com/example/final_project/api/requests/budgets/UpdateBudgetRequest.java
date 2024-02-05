@@ -1,10 +1,10 @@
 package com.example.final_project.api.requests.budgets;
 
 import com.example.final_project.domain.budgets.TypeOfBudget;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Positive;
 import org.hibernate.validator.constraints.Length;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
 
 public record UpdateBudgetRequest(

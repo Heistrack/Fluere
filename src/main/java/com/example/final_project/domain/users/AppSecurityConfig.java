@@ -15,8 +15,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -25,24 +30,25 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
 @Configuration
+@EnableWebSecurity
 class AppSecurityConfig {
+    private static final String ADMIN_PASSWORD = "admin";
 
     private final DefaultUserService userService;
 
     public AppSecurityConfig(DefaultUserService userService) {
         this.userService = userService;
-    }
-
-    @Bean
-    BCryptPasswordEncoder bCryptPasswordEncoder() {
-        return userService.getEncoder();
     }
 
     @Value("${jwt.public.key}")
@@ -53,23 +59,35 @@ class AppSecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .cors()
-                .and()
-                .csrf((csrf) -> csrf.ignoringRequestMatchers(new AntPathRequestMatcher("/token", HttpMethod.POST.name()),
+       return http.authorizeHttpRequests(request -> request
+                        .requestMatchers("/**").hasRole("ADMIN")
+                        .anyRequest().permitAll()
+                )
+                .cors(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable/*.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                              .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()*/)
+                        /*csrf -> csrf.ignoringRequestMatchers(new AntPathRequestMatcher("/token", HttpMethod.POST.name()),
                         new AntPathRequestMatcher("/users", HttpMethod.POST.name()),
                         new AntPathRequestMatcher("/budgets", HttpMethod.GET.name()),
-                        new AntPathRequestMatcher("/expenses", HttpMethod.GET.name())
-                ))
-
+                        new AntPathRequestMatcher("/expenses", HttpMethod.GET.name())*/
 
                 .httpBasic(Customizer.withDefaults())
-                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
-                .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling((exceptions) -> exceptions
+                .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)).build();
+//                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
+//                .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                /*.exceptionHandling((exceptions) -> exceptions
                         .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
-                        .accessDeniedHandler(new BearerTokenAccessDeniedHandler()));
-        return http.build();
+                        .accessDeniedHandler(new BearerTokenAccessDeniedHandler())*/
+    }
+
+    @Bean
+    InMemoryUserDetailsManager inMemoryUserDetailsManager() {
+        UserDetails admin = User.builder()
+                .username("admin")
+                .password(passwordEncoder().encode(ADMIN_PASSWORD))
+                .roles("ADMIN")
+                .build();
+        return new InMemoryUserDetailsManager(admin);
     }
 
     @Bean
@@ -77,15 +95,15 @@ class AppSecurityConfig {
         return userService::findByUserNameOrEmail;
     }
 
-    @Bean
-    AuthenticationManager authenticationManager(HttpSecurity http, BCryptPasswordEncoder bCryptPasswordEncoder, UserDetailsService userDetailsService)
-            throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class)
-                .userDetailsService(users())
-                .passwordEncoder(bCryptPasswordEncoder)
-                .and()
-                .build();
-    }
+//    @Bean
+//    AuthenticationManager authenticationManager(HttpSecurity http, BCryptPasswordEncoder passwordEncoder, UserDetailsService userDetailsService) throws Exception {
+//        http.getSharedObject(AuthenticationManagerBuilder.class).userDetailsService(users()).passwordEncoder(passwordEncoder).
+//
+//        return http.getSharedObject(AuthenticationManagerBuilder.class)
+//                .userDetailsService(users())
+//                .passwordEncoder(passwordEncoder);
+//
+//    }
 
     @Bean
     JwtDecoder jwtDecoder() {
@@ -97,6 +115,11 @@ class AppSecurityConfig {
         JWK jwk = new RSAKey.Builder(this.key).privateKey(this.priv).build();
         JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
         return new NimbusJwtEncoder(jwks);
+    }
+
+    @Bean
+    BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }
 

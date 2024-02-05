@@ -4,10 +4,12 @@ spring:
       matching-strategy: ant-path-matcher
   data:
     mongodb:
-      uri: mongodb://localhost:27017/Budget
-
-
+      database: mydatabase
+      port: 27017
+      host: localhost
+#      uri: mongodb://root:root@localhost:27017/mongofluere
+#      username: root
+#      password: root
 jwt:
   private.key: classpath:app.key
   public.key: classpath:app.pub
-

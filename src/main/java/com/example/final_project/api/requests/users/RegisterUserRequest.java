@@ -1,10 +1,10 @@
 package com.example.final_project.api.requests.users;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 public record RegisterUserRequest(
         @NotNull(message = "name cannot be null")

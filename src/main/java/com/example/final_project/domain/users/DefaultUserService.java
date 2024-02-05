@@ -31,10 +31,6 @@ public class DefaultUserService {
         return userRepository.findByUserName(username).orElseThrow();
     }
 
-    public BCryptPasswordEncoder getEncoder() {
-        return encoder;
-    }
-
     public List<UserDetailsResponse> findAll() {
         return userRepository.findAll().stream().map(UserDetailsResponse::fromDomain).collect(Collectors.toList());
     }

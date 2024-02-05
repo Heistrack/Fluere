@@ -25,5 +25,4 @@ public record BudgetResponseDto(
                 budget.timestamp()
         );
     }
-
 }

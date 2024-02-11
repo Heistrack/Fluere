@@ -2,6 +2,7 @@ package com.example.final_project.domain.expenses;
 
 import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetId;
+import com.example.final_project.domain.users.UserId;
 import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import org.springframework.data.domain.Page;
@@ -21,6 +22,7 @@ public class DefaultExpensesService implements ExpensesService {
     private final Supplier<ExpenseId> expenseIdSupplier;
     private final BudgetRepository budgetRepository;
 
+
     public DefaultExpensesService(ExpenseRepository expenseRepository, Supplier<ExpenseId> expenseIdSupplier, BudgetRepository budgetRepository) {
         this.expenseRepository = expenseRepository;
         this.expenseIdSupplier = expenseIdSupplier;
@@ -28,22 +30,22 @@ public class DefaultExpensesService implements ExpensesService {
     }
 
     @Override
-    public Expense registerNewExpense(String title, BigDecimal amount, BudgetId budgetId, String userId, Optional<TypeOfExpense> typeOfExpense) {
+    public Expense registerNewExpense(String title, BigDecimal amount, BudgetId budgetId, UserId userId, Optional<TypeOfExpense> typeOfExpense) {
         validationForNewExpense(amount, budgetId, userId);
 
         Expense expense = new Expense(expenseIdSupplier.get(), title, amount, budgetId, userId, LocalDateTime.now(),
-                typeOfExpense.orElse(TypeOfExpense.NO_CATEGORY));
+                                      typeOfExpense.orElse(TypeOfExpense.NO_CATEGORY));
         expenseRepository.save(expense);
         return expense;
     }
 
     @Override
-    public Optional<Expense> getExpenseById(ExpenseId expenseId, String userId) {
+    public Optional<Expense> getExpenseById(ExpenseId expenseId, UserId userId) {
         return expenseRepository.findExpenseByExpenseIdAndUserId(expenseId, userId);
     }
 
     @Override
-    public void deleteExpenseById(ExpenseId expenseId, String userId) {
+    public void deleteExpenseById(ExpenseId expenseId, UserId userId) {
         expenseRepository.deleteExpenseByExpenseIdAndUserId(expenseId, userId);
     }
 
@@ -52,7 +54,7 @@ public class DefaultExpensesService implements ExpensesService {
             ExpenseId expenseId,
             Optional<String> title,
             Optional<BigDecimal> amount,
-            String userId,
+            UserId userId,
             Optional<TypeOfExpense> typeOfExpense
     ) {
 
@@ -84,7 +86,7 @@ public class DefaultExpensesService implements ExpensesService {
             BudgetId budgetId,
             String title,
             BigDecimal amount,
-            String userId,
+            UserId userId,
             TypeOfExpense typeOfExpense
     ) {
         validationForNewExpense(amount, budgetId, userId);
@@ -97,24 +99,24 @@ public class DefaultExpensesService implements ExpensesService {
                 LocalDateTime.now(),
                 typeOfExpense));
     }
-    void validationForNewExpense(BigDecimal amount, BudgetId budgetId, String userId){
+    private void validationForNewExpense(BigDecimal amount, BudgetId budgetId, UserId userId){
         Budget budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).orElseThrow();
         checkBudgetLimit(amount, budget);
         singleMaxExpValidation(amount, budget);
     }
 
     @Override
-    public List<Expense> getExpenses(String userId) {
+    public List<Expense> getExpenses(UserId userId) {
         return expenseRepository.findAllByUserId(userId);
     }
 
     @Override
-    public Page<Expense> findAllExpensesByBudgetId(String userId, BudgetId budgetId, Pageable pageable) {
+    public Page<Expense> findAllExpensesByBudgetId(UserId userId, BudgetId budgetId, Pageable pageable) {
         return expenseRepository.findAllByBudgetIdAndUserId(budgetId, userId, pageable);
     }
 
     @Override
-    public Page<Expense> findAllByPage(Pageable pageable, String userId) {
+    public Page<Expense> findAllByPage(Pageable pageable, UserId userId) {
         return expenseRepository.findExpensesByUserId(userId, pageable);
     }
 
@@ -124,7 +126,7 @@ public class DefaultExpensesService implements ExpensesService {
         }
     }
 
-    void checkBudgetLimit(BigDecimal amount, Budget budget) {
+    private void checkBudgetLimit(BigDecimal amount, Budget budget) {
         if (budget.typeOfBudget().getValue().compareTo(BigDecimal.valueOf(0)) < 0) {
             return;
         }

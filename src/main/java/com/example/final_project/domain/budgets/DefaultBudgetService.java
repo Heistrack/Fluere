@@ -2,6 +2,7 @@ package com.example.final_project.domain.budgets;
 
 import com.example.final_project.api.responses.BudgetStatusDTO;
 import com.example.final_project.domain.expenses.Expense;
+import com.example.final_project.domain.users.UserId;
 import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import org.springframework.data.domain.Page;
@@ -29,19 +30,19 @@ public class DefaultBudgetService implements BudgetService {
     }
 
     @Override
-    public Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget, BigDecimal maxSingleExpense, String userId) {
+    public Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget, BigDecimal maxSingleExpense, UserId userId) {
         Budget budget = new Budget(budgetIdSupplier.get(), title, limit, typeOfBudget, maxSingleExpense, userId, LocalDateTime.now());
         budgetRepository.save(budget);
         return budget;
     }
 
     @Override
-    public Optional<Budget> getBudgetById(BudgetId budgetId, String userId) {
+    public Optional<Budget> getBudgetById(BudgetId budgetId, UserId userId) {
         return budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId);
     }
 
     @Override
-    public void deleteBudgetById(BudgetId budgetId, String userId) {
+    public void deleteBudgetById(BudgetId budgetId, UserId userId) {
         budgetRepository.deleteBudgetByBudgetIdAndUserId(budgetId, userId);
     }
 
@@ -51,7 +52,7 @@ public class DefaultBudgetService implements BudgetService {
                                                 Optional<BigDecimal> limit,
                                                 Optional<TypeOfBudget> typeOfBudget,
                                                 Optional<BigDecimal> maxSingleExpense,
-                                                String userId,
+                                                UserId userId,
                                                 Optional<LocalDateTime> timestamp
     ) {
         budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).map(
@@ -68,7 +69,7 @@ public class DefaultBudgetService implements BudgetService {
 
 
     @Override
-    public List<Budget> getBudgets(String userId) {
+    public List<Budget> getBudgets(UserId userId) {
         return budgetRepository.findAllByUserId(userId);
     }
 
@@ -78,7 +79,7 @@ public class DefaultBudgetService implements BudgetService {
                                    BigDecimal limit,
                                    TypeOfBudget typeOfBudget,
                                    BigDecimal maxSingleExpense,
-                                   String userId,
+                                   UserId userId,
                                    LocalDateTime timestamp) {
 
         return budgetRepository.save(new Budget(
@@ -93,11 +94,11 @@ public class DefaultBudgetService implements BudgetService {
     }
 
     @Override
-    public Page<Budget> findAllByPage(String userId, Pageable pageable) {
+    public Page<Budget> findAllByPage(UserId userId, Pageable pageable) {
         return budgetRepository.findAllByUserId(userId, pageable);
     }
 
-    private BigDecimal totalExpensesValue(BudgetId budgetId, String userId) {
+    private BigDecimal totalExpensesValue(BudgetId budgetId, UserId userId) {
         return expenseRepository.findExpensesByBudgetIdAndUserId(budgetId, userId)
                 .stream()
                 .map(Expense::amount)
@@ -109,7 +110,7 @@ public class DefaultBudgetService implements BudgetService {
     }
 
     @Override
-    public BudgetStatusDTO getBudgetStatus(BudgetId budgetId, String userId) {
+    public BudgetStatusDTO getBudgetStatus(BudgetId budgetId, UserId userId) {
 
         Optional<Budget> budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId);
         BigDecimal amountLeft = budget.get().limit().subtract(totalExpensesValue(budgetId, userId));

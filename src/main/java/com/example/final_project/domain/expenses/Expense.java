@@ -1,6 +1,7 @@
 package com.example.final_project.domain.expenses;
 
 import com.example.final_project.domain.budgets.BudgetId;
+import com.example.final_project.domain.users.UserId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -13,7 +14,7 @@ public record Expense(
         String title,
         BigDecimal amount,
         BudgetId budgetId,
-        String userId,
+        UserId userId,
         LocalDateTime timestamp,
         TypeOfExpense typeOfExpense
 ) {

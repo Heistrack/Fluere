@@ -13,6 +13,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
+import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -29,7 +31,7 @@ class MainSecurityConfiguration {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.authorizeHttpRequests(request -> request
-                                                  .requestMatchers("/api/v1/auth/**").permitAll()
+                                                  .requestMatchers("/**").permitAll()
 //                           .requestMatchers("/api/**").hasRole("USER")
                    )
                    .csrf(AbstractHttpConfigurer::disable)
@@ -43,6 +45,10 @@ class MainSecurityConfiguration {
                    .authenticationProvider(authenticationProvider)
                    .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                    .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+                   //TODO add exception handling for security filter chain
+               /* .exceptionHandling((exceptions) -> exceptions
+                .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
+                .accessDeniedHandler(new BearerTokenAccessDeniedHandler()));*/
                    //FIXME add redirection in form login to start page after successful login
                    // add exception handling for /*.exceptionHandling((exceptions) -> exceptions
                    //                           .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())

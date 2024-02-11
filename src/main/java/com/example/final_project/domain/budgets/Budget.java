@@ -1,6 +1,7 @@
 package com.example.final_project.domain.budgets;
 
 
+import com.example.final_project.domain.users.UserId;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
@@ -15,7 +16,7 @@ public record Budget(
         BigDecimal limit,
         TypeOfBudget typeOfBudget,
         BigDecimal maxSingleExpense,
-        String userId,
+        UserId userId,
         LocalDateTime timestamp
 ) {
 }

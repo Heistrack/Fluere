@@ -6,14 +6,15 @@ import com.example.final_project.api.responses.ErrorDTO;
 import com.example.final_project.api.responses.ExpenseResponseDto;
 import com.example.final_project.domain.budgets.BudgetId;
 import com.example.final_project.domain.expenses.*;
-import com.example.final_project.domain.tokens.TokenService;
+import com.example.final_project.domain.securities.jwt.JwtService;
+import com.example.final_project.domain.securities.jwtauth.AuthenticationResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -29,23 +30,19 @@ import java.util.stream.Collectors;
 import static com.example.final_project.api.controllers.ExpensesController.EXPENSES_BASE_PATH;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping(EXPENSES_BASE_PATH)
 public class ExpensesController {
     public static final String EXPENSES_BASE_PATH = "/expenses";
     private final ExpensesService expensesService;
-    private final TokenService tokenService;
-
-    ExpensesController(ExpensesService expensesService, TokenService tokenService) {
-        this.expensesService = expensesService;
-        this.tokenService = tokenService;
-    }
+    private final JwtService jwtService;
 
     @GetMapping("/{rawExpenseId}")
     ResponseEntity<ExpenseResponseDto> getSingleExpense(
             @PathVariable String rawExpenseId,
-            Authentication authentication
+            AuthenticationResponse authentication
     ) {
-        String userId = tokenService.extractUserIdFromToken(authentication);
+        String userId = jwtService.extractUserId(authentication.token());
         Optional<Expense> expenseById = expensesService.getExpenseById(new ExpenseId(rawExpenseId), userId);
         return ResponseEntity.of(expenseById.map(ExpenseResponseDto::fromDomain));
     }
@@ -56,12 +53,12 @@ public class ExpensesController {
             @RequestParam(required = false, defaultValue = "25") Integer size,
             @RequestParam(required = false, defaultValue = "expenseId") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
-            Authentication authentication
+            AuthenticationResponse authentication
     ) {
-        String userId = tokenService.extractUserIdFromToken(authentication);
+        String userId = jwtService.extractUserId(authentication.token());
         return ResponseEntity.ok(expensesService.findAllByPage(
-                        PageRequest.of(page, size, Sort.by(sortDirection, sortBy)), userId)
-                                         .map(ExpenseResponseDto::fromDomain));
+                                                        PageRequest.of(page, size, Sort.by(sortDirection, sortBy)), userId)
+                                                .map(ExpenseResponseDto::fromDomain));
     }
 
     @GetMapping("/budget/{rawBudgetId}")
@@ -71,67 +68,71 @@ public class ExpensesController {
             @RequestParam(required = false, defaultValue = "25") Integer size,
             @RequestParam(required = false, defaultValue = "budgetId") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
-            Authentication authentication
+            AuthenticationResponse authentication
     ) {
-        String userId = tokenService.extractUserIdFromToken(authentication);
-        return ResponseEntity.ok(expensesService.findAllExpensesByBudgetId(userId,
-                                                                           BudgetId.newOf(rawBudgetId),
-                                                                           PageRequest.of(page, size,
-                                                                                          Sort.by(sortDirection, sortBy)
-                                                                           )
-                )
-                                         .map(ExpenseResponseDto::fromDomain));
+        String userId = jwtService.extractUserId(authentication.token());
+        return ResponseEntity.ok(expensesService.findAllExpensesByBudgetId(
+                                                        userId,
+                                                        BudgetId.newOf(rawBudgetId),
+                                                        PageRequest.of(page, size,
+                                                                       Sort.by(sortDirection, sortBy)
+                                                        )
+                                                )
+                                                .map(ExpenseResponseDto::fromDomain));
     }
 
     @PostMapping
     ResponseEntity<ExpenseResponseDto> registerNewExpense(
             @RequestBody @Valid RegisterExpenseRequest request,
-            Authentication authentication
+            AuthenticationResponse authentication
     ) {
-        String userId = tokenService.extractUserIdFromToken(authentication);
+        String userId = jwtService.extractUserId(authentication.token());
         Expense newExpense = expensesService.registerNewExpense(request.title(), request.amount(),
                                                                 BudgetId.newOf(request.budgetId()), userId,
                                                                 request.typeOfExpense()
         );
         ExpenseResponseDto expenseResponseDto = ExpenseResponseDto.fromDomain(newExpense);
         return ResponseEntity.created(URI.create("/expenses/" + expenseResponseDto.expenseId()))
-                .body(expenseResponseDto);
+                             .body(expenseResponseDto);
     }
 
     @DeleteMapping("/{rawExpenseId}")
     public ResponseEntity<ExpenseResponseDto> deleteExpense(
             @PathVariable String rawExpenseId,
-            Authentication authentication) {
-        String userId = tokenService.extractUserIdFromToken(authentication);
+            AuthenticationResponse authentication
+    ) {
+        String userId = jwtService.extractUserId(authentication.token());
         expensesService.getExpenseById(new ExpenseId(rawExpenseId), userId)
-                .ifPresent(expense -> expensesService.deleteExpenseById(expense.expenseId(), userId));
+                       .ifPresent(expense -> expensesService.deleteExpenseById(expense.expenseId(), userId));
         return ResponseEntity.noContent().build();
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorDTO> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorDTO.newOf(ex
-                                                                                         .getBindingResult()
-                                                                                         .getAllErrors()
-                                                                                         .stream()
-                                                                                         .map(ObjectError::getDefaultMessage)
-                                                                                         .collect(Collectors.joining(
-                                                                                                 " , ")),
-                                                                                 HttpStatus.BAD_REQUEST,
-                                                                                 LocalDateTime.now()
-                                                                                         .format(DateTimeFormatter.ISO_DATE_TIME)
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorDTO.newOf(
+                ex
+                        .getBindingResult()
+                        .getAllErrors()
+                        .stream()
+                        .map(ObjectError::getDefaultMessage)
+                        .collect(Collectors.joining(
+                                " , ")),
+                HttpStatus.BAD_REQUEST,
+                LocalDateTime.now()
+                             .format(DateTimeFormatter.ISO_DATE_TIME)
         ));
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(ExpenseTooBigException.class)
     public ResponseEntity<ErrorDTO> handleValidationExceptions(ExpenseTooBigException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorDTO.newOf(ex
-                                                                                      .getMessage(),
-                                                                              HttpStatus.CONFLICT,
-                                                                              LocalDateTime.now()
-                                                                                      .format(DateTimeFormatter.ISO_DATE_TIME)
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorDTO.newOf(
+                ex
+                        .getMessage(),
+                HttpStatus.CONFLICT,
+                LocalDateTime.now()
+                             .format(DateTimeFormatter.ISO_DATE_TIME)
         ));
     }
 
@@ -139,8 +140,9 @@ public class ExpensesController {
     public ResponseEntity<ExpenseResponseDto> updateExpense(
             @PathVariable UUID rawExpenseId,
             @RequestBody RegisterExpenseRequest request,
-            Authentication authentication) {
-        String userId = tokenService.extractUserIdFromToken(authentication);
+            AuthenticationResponse authentication
+    ) {
+        String userId = jwtService.extractUserId(authentication.token());
 
         Expense updatedExpense = expensesService.updateExpenseById(
                 ExpenseId.newId(rawExpenseId.toString()),
@@ -158,14 +160,15 @@ public class ExpensesController {
     public ResponseEntity<ExpenseResponseDto> updateExpenseField(
             @PathVariable UUID rawExpenseId,
             @RequestBody UpdateExpenseRequest request,
-            Authentication authentication) {
-        String userId = tokenService.extractUserIdFromToken(authentication);
+            AuthenticationResponse authentication
+    ) {
+        String userId = jwtService.extractUserId(authentication.token());
 
         Optional<BigDecimal> amount = (Optional.ofNullable(request.amount()));
         Optional<String> title = Optional.ofNullable(request.title());
 
         return ResponseEntity.of(expensesService.updateExpenseContent(
-                        new ExpenseId(rawExpenseId.toString()), title, amount, userId, request.typeOfExpense())
-                                         .map(ExpenseResponseDto::fromDomain));
+                                                        new ExpenseId(rawExpenseId.toString()), title, amount, userId, request.typeOfExpense())
+                                                .map(ExpenseResponseDto::fromDomain));
     }
 }

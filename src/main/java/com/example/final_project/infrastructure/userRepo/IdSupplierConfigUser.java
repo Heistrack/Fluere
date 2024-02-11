@@ -13,6 +13,6 @@ import java.util.function.Supplier;
 class IdSupplierConfigUser {
     @Bean
     public Supplier<UserId> userIdSupplier() {
-        return () -> new UserId(UUID.randomUUID().toString());
+        return () -> new UserId(UUID.randomUUID());
     }
 }

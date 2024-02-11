@@ -8,20 +8,19 @@ import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetId;
 import com.example.final_project.domain.budgets.BudgetService;
 import com.example.final_project.domain.budgets.TypeOfBudget;
-import com.example.final_project.domain.tokens.TokenService;
+import com.example.final_project.domain.securities.jwt.JwtService;
+import com.example.final_project.domain.securities.jwtauth.AuthenticationResponse;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.net.URI;
-import java.security.interfaces.RSAPrivateKey;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,25 +28,19 @@ import java.util.UUID;
 import static com.example.final_project.api.controllers.BudgetController.BUDGETS_CONTROLLER_BASE_PATH;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping(BUDGETS_CONTROLLER_BASE_PATH)
 public class BudgetController {
 
     static final String BUDGETS_CONTROLLER_BASE_PATH = "/budgets";
     private final BudgetService budgetService;
-    private final TokenService tokenService;
-    @Value("${jwt.private.key}")
-    private RSAPrivateKey priv;
-
-    public BudgetController(BudgetService budgetService, TokenService tokenService) {
-        this.budgetService = budgetService;
-        this.tokenService = tokenService;
-    }
+    private final JwtService jwtService;
 
     @GetMapping("/{rawBudgetId}")
     ResponseEntity<BudgetResponseDto> getSingleBudget(
-            @PathVariable String rawBudgetId, Authentication authentication
+            @PathVariable String rawBudgetId, AuthenticationResponse authentication
     ) {
-        String userId = tokenService.extractUserIdFromToken(authentication);
+        String userId = jwtService.extractUserId(authentication.token());
         Optional<Budget> budgetById = budgetService.getBudgetById(new BudgetId(rawBudgetId), userId);
         return ResponseEntity.of(budgetById.map(BudgetResponseDto::fromDomain));
     }
@@ -58,20 +51,23 @@ public class BudgetController {
             @RequestParam(required = false, defaultValue = "25") Integer size,
             @RequestParam(required = false, defaultValue = "budgetId") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
-            Authentication authentication
+            AuthenticationResponse authentication
     ) {
 
-        String userId = tokenService.extractUserIdFromToken(authentication);
+        String userId = jwtService.extractUserId(authentication.token());
 
-        return ResponseEntity.ok(budgetService.findAllByPage(userId,
-                                                             PageRequest.of(page, size, Sort.by(sortDirection, sortBy))
-                )
-                                         .map(BudgetResponseDto::fromDomain));
+        return ResponseEntity.ok(budgetService.findAllByPage(
+                                                      userId,
+                                                      PageRequest.of(page, size, Sort.by(sortDirection, sortBy))
+                                              )
+                                              .map(BudgetResponseDto::fromDomain));
     }
 
     @GetMapping("/{rawBudgetId}/status")
-    ResponseEntity<BudgetStatusDTO> getBudgetStatus(@PathVariable String rawBudgetId, Authentication authentication) {
-        String userId = tokenService.extractUserIdFromToken(authentication);
+    ResponseEntity<BudgetStatusDTO> getBudgetStatus(@PathVariable String rawBudgetId,
+                                                    AuthenticationResponse authentication
+    ) {
+        String userId = jwtService.extractUserId(authentication.token());
 
         return ResponseEntity.status(HttpStatus.OK).body(
                 budgetService.getBudgetStatus(new BudgetId(rawBudgetId), userId)
@@ -80,10 +76,11 @@ public class BudgetController {
 
     @PostMapping
     ResponseEntity<BudgetResponseDto> registerNewBudget(
-            @RequestBody @Valid RegisterBudgetRequest request, Authentication authentication
+            @RequestBody @Valid RegisterBudgetRequest request, AuthenticationResponse authentication
     ) {
 
-        String userId = tokenService.extractUserIdFromToken(authentication);
+        String userId = jwtService.extractUserId(authentication.token());
+
 
         Budget newBudget = budgetService.registerNewBudget(request.title(), request.limit(),
                                                            request.typeOfBudget(), request.maxSingleExpense(), userId
@@ -93,24 +90,32 @@ public class BudgetController {
     }
 
     @DeleteMapping("/{rawBudgetId}")
-    public ResponseEntity<BudgetResponseDto> deleteBudget(@PathVariable String rawBudgetId, Authentication authentication) {
-        String userId = tokenService.extractUserIdFromToken(authentication);
+    public ResponseEntity<BudgetResponseDto> deleteBudget(@PathVariable String rawBudgetId,
+                                                          AuthenticationResponse authentication
+    ) {
+        String userId = jwtService.extractUserId(authentication.token());
+
         budgetService.getBudgetById(new BudgetId(rawBudgetId), userId)
-                .ifPresent(budget -> budgetService.deleteBudgetById(budget.budgetId(), userId));
+                     .ifPresent(budget -> budgetService.deleteBudgetById(budget.budgetId(), userId));
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{rawBudgetId}")
-    public ResponseEntity<BudgetResponseDto> updateBudget(@PathVariable UUID rawBudgetId, @RequestBody RegisterBudgetRequest request, Authentication authentication) {
-        String userId = tokenService.extractUserIdFromToken(authentication);
-        Budget updatedBudget = budgetService.updateBudgetById(new BudgetId(
-                                                                      rawBudgetId.toString()),
-                                                              request.title(),
-                                                              request.limit(),
-                                                              request.typeOfBudget(),
-                                                              request.maxSingleExpense(),
-                                                              userId,
-                                                              LocalDateTime.now()
+    public ResponseEntity<BudgetResponseDto> updateBudget(@PathVariable UUID rawBudgetId,
+                                                          @RequestBody RegisterBudgetRequest request,
+                                                          AuthenticationResponse authentication
+    ) {
+        String userId = jwtService.extractUserId(authentication.token());
+
+        Budget updatedBudget = budgetService.updateBudgetById(
+                new BudgetId(
+                        rawBudgetId.toString()),
+                request.title(),
+                request.limit(),
+                request.typeOfBudget(),
+                request.maxSingleExpense(),
+                userId,
+                LocalDateTime.now()
         );
         return ResponseEntity.ok(BudgetResponseDto.fromDomain(updatedBudget));
     }
@@ -118,9 +123,10 @@ public class BudgetController {
     @PatchMapping("/{rawBudgetId}")
     public ResponseEntity<BudgetResponseDto> updateBudgetField(@PathVariable String rawBudgetId,
                                                                @RequestBody UpdateBudgetRequest request,
-                                                               Authentication authentication) {
+                                                               AuthenticationResponse authentication
+    ) {
 
-        String userId = tokenService.extractUserIdFromToken(authentication);
+        String userId = jwtService.extractUserId(authentication.token());
 
         Optional<String> title = Optional.ofNullable(request.title());
         Optional<BigDecimal> limit = Optional.ofNullable(request.limit());
@@ -134,16 +140,16 @@ public class BudgetController {
                                                                    maxSingleExpense,
                                                                    userId,
                                                                    timestamp
-                )
-                                         .map(BudgetResponseDto::fromDomain));
+                                              )
+                                              .map(BudgetResponseDto::fromDomain));
     }
 
     @GetMapping("/{budgetId}/status")
     ResponseEntity<BudgetStatusDTO> getSingleBudgetStatus(
             @PathVariable String budgetId,
-            Authentication authentication
+            AuthenticationResponse authentication
     ) {
-        String userId = tokenService.extractUserIdFromToken(authentication);
+        String userId = jwtService.extractUserId(authentication.token());
         return ResponseEntity.of(Optional.ofNullable(budgetService.getBudgetStatus(BudgetId.newOf(budgetId), userId)));
     }
 }

@@ -1,0 +1,15 @@
+dev:
+  username: "dev"
+  password: "dev"
+---
+jwt:
+  key: "${JWT_KEY}"
+---
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              MongoTemplate: DEBUG

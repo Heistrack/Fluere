@@ -1,7 +1,9 @@
 package com.example.final_project.domain.users;
 
-public record UserId(String value) {
-    public static UserId newId(String value) {
-        return new UserId(value);
+import java.util.UUID;
+
+public record UserId(UUID userId) {
+    public static UserId newId(UUID id) {
+        return new UserId(id);
     }
 }

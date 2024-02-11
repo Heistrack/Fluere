@@ -2,10 +2,10 @@ package com.example.final_project.domain.users;
 
 import com.example.final_project.api.requests.users.RegisterUserRequest;
 import com.example.final_project.api.responses.UserDetailsResponse;
-import com.example.final_project.infrastructure.userRepo.MongoUserRepository;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import com.example.final_project.infrastructure.userRepo.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,57 +14,62 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class DefaultUserService {
 
-    private final MongoUserRepository userRepository;
+    private final UserRepository userRepository;
     private final Supplier<UserId> userIdSupplier;
-    BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
 
-
-    public DefaultUserService(MongoUserRepository userRepository, Supplier<UserId> userIdSupplier) {
-        this.userRepository = userRepository;
-        this.userIdSupplier = userIdSupplier;
-    }
-
-
-    public FluereAppUser findUserByUsername(String username) {
-        return userRepository.findByUserName(username).orElseThrow();
+    public AppUser findUserByUsername(String username) {
+        return userRepository.findAppUserByUsername(username)
+                             .orElseThrow();
     }
 
     public List<UserDetailsResponse> findAll() {
-        return userRepository.findAll().stream().map(UserDetailsResponse::fromDomain).collect(Collectors.toList());
+        return userRepository.findAll()
+                             .stream()
+                             .map(UserDetailsResponse::fromDomain)
+                             .collect(Collectors.toList());
     }
 
-    public FluereAppUser registerNewUser(RegisterUserRequest registerUserRequest) {
-        if (userRepository.existsAccountByEmail(registerUserRequest.email())) {
+    public AppUser registerNewUser(RegisterUserRequest registerUserRequest) {
+        if (userRepository.existsAppUserByEmail(registerUserRequest.email())) {
             throw new UnableToRegisterException("Użytkownik z podanym e-mailem już istnieje");
         }
-        if (userRepository.existsAccountByUserName(registerUserRequest.name())) {
+        if (userRepository.existsAccountByUsername(registerUserRequest.name())) {
             throw new UnableToRegisterException("Użytkownik z podaną nazwą już istnieje");
         }
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        return userRepository.save(new FluereAppUser(userIdSupplier.get(),
+        return userRepository.save(new AppUser(
+                userIdSupplier.get(),
                 registerUserRequest.name(),
                 registerUserRequest.email(),
-                encoder.encode(registerUserRequest.password()),
-                new SimpleGrantedAuthority("USER"),
-                true));
+                passwordEncoder.encode(registerUserRequest.password()),
+                Role.USER,
+                true
+        ));
     }
 
     public UserDetails findByUserNameOrEmail(String usernameOrEmail) {
-        return userRepository.findUserDetailsByUserNameOrEmail(usernameOrEmail, usernameOrEmail)
-                .orElseThrow(() -> new WrongCredentialsException("Niepoprawne dane logowania"));
+        return userRepository.findUserDetailsByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
+                             .orElseThrow(() -> new WrongCredentialsException("Niepoprawne dane logowania"));
     }
 
     public List<UserDetailsResponse> getAllUsers() {
-        return userRepository.findAll().stream().map(UserDetailsResponse::fromDomain).toList();
+        return userRepository.findAll()
+                             .stream()
+                             .map(UserDetailsResponse::fromDomain)
+                             .toList();
     }
 
     public Optional<UserDetailsResponse> findAppUserByName(String name) {
-        return Optional.of(userRepository.findAppUserByUserName(name).map(UserDetailsResponse::fromDomain)).get();
+        return Optional.of(userRepository.findAppUserByUsername(name)
+                                         .map(UserDetailsResponse::fromDomain))
+                       .get();
     }
 
     public Optional<UserDetailsResponse> findAppUserByUserId(String userId) {
-        return userRepository.findAppUserByUserId(UserId.newId(userId)).map(UserDetailsResponse::fromDomain);
+        return userRepository.findById(UserId.newId(userIdSupplier.get().userId()))
+                             .map(UserDetailsResponse::fromDomain);
     }
 }

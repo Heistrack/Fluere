@@ -3,12 +3,16 @@ package com.example.final_project.api.controllers;
 import com.example.final_project.api.requests.users.RegisterUserRequest;
 import com.example.final_project.api.responses.ErrorDTO;
 import com.example.final_project.api.responses.UserDetailsResponse;
-import com.example.final_project.domain.users.*;
+import com.example.final_project.domain.users.AppUser;
+import com.example.final_project.domain.users.DefaultUserService;
+import com.example.final_project.domain.users.UnableToRegisterException;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -17,18 +21,15 @@ import static com.example.final_project.api.controllers.UserController.USERS_BAS
 
 @RestController
 @RequestMapping(USERS_BASE_PATH)
+@RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class UserController {
     static final String USERS_BASE_PATH = "/users";
     private final DefaultUserService userService;
 
-    public UserController(DefaultUserService userService) {
-        this.userService = userService;
-    }
-
     @PostMapping
     ResponseEntity<UserDetailsResponse> registerNewUser(@Valid @RequestBody RegisterUserRequest userRequestDto) {
-        FluereAppUser user = userService.registerNewUser(userRequestDto);
+        AppUser user = userService.registerNewUser(userRequestDto);
 
         return ResponseEntity.ok(UserDetailsResponse.fromDomain(user));
     }
@@ -37,9 +38,11 @@ public class UserController {
     @ExceptionHandler(UnableToRegisterException.class)
     public ResponseEntity<ErrorDTO> exceptionHandler(UnableToRegisterException ex) {
 
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorDTO.newOf(ex.getMessage(),
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorDTO.newOf(
+                ex.getMessage(),
                 HttpStatus.CONFLICT,
-                LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)));
+                LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
+        ));
     }
 
     @GetMapping

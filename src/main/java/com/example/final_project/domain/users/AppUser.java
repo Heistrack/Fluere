@@ -1,18 +1,34 @@
 package com.example.final_project.domain.users;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import lombok.Builder;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
 
-@Document(collection = "users")
-public record FluereAppUser(@MongoId UserId userId, String userName, String email, String password, GrantedAuthority grantedAuthority, Boolean enabled) implements UserDetails {
+@Document
+public record AppUser(@MongoId
+                      UserId id,
+                      String name,
+                      String email,
+                      String password,
+                      @Enumerated(EnumType.STRING)
+                      Role role,
+                      Boolean enabled
+) implements UserDetails {
+    @Builder
+    public AppUser {
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(grantedAuthority);
+        return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
     @Override
@@ -22,7 +38,7 @@ public record FluereAppUser(@MongoId UserId userId, String userName, String emai
 
     @Override
     public String getUsername() {
-        return userName;
+        return this.id().userId().toString();
     }
 
     @Override
@@ -44,6 +60,4 @@ public record FluereAppUser(@MongoId UserId userId, String userName, String emai
     public boolean isEnabled() {
         return enabled;
     }
-
-
 }

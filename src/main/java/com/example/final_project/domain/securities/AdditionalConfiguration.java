@@ -1,5 +1,6 @@
 package com.example.final_project.domain.securities;
 
+import com.example.final_project.domain.users.AppUser;
 import com.example.final_project.domain.users.UserId;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -8,10 +9,12 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import javax.swing.text.DateFormatter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.UUID;
 
 @Configuration
@@ -31,9 +35,8 @@ public class AdditionalConfiguration {
 
     @Bean
     UserDetailsService userDetailsService() {
-        //TODO Check if and how this exception is handled
-        return id -> repository.findById(UserId.newId(UUID.fromString(id)))
-                               .orElseThrow(() -> new UsernameNotFoundException("User not found!"));
+       return id -> repository.findById(UserId.newId(UUID.fromString(id)))
+                               .orElseThrow(() -> new BadCredentialsException("Wrong user or password!"));
     }
 
     @Bean
@@ -56,9 +59,8 @@ public class AdditionalConfiguration {
 
     @Bean
     public ObjectMapper objectMapper() {
-        JsonMapper build = JsonMapper.builder().configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
-                                     .findAndAddModules()
-                                     .build();
-        return build;
+        return JsonMapper.builder().configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
+                         .findAndAddModules()
+                         .build();
     }
 }

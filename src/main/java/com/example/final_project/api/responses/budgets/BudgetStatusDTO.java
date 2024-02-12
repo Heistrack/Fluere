@@ -1,4 +1,4 @@
-package com.example.final_project.api.responses;
+package com.example.final_project.api.responses.budgets;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

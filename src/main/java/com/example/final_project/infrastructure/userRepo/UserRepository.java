@@ -8,17 +8,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Optional;
 
 public interface UserRepository extends MongoRepository<AppUser, UserId> {
-    boolean existsAppUserByEmail(String email);
+    boolean existsByEmail(String email);
+//TODO HOW methods in this repo should work?!
+    Optional<AppUser> findFirstByLogin(String login);
 
-    Optional<AppUser> findAppUserByUsername(String username);
+    boolean existsByEmailOrLogin(String email, String login); //TODO IT'S FINE METHOD
 
-    boolean existsByEmailOrUsername(String email, String username);
-
-    Optional<UserDetails> findUserDetailsByUsername(String username);
+    Optional<UserDetails> findUserDetailsByLogin(String login);
 
     Optional<AppUser> findFirstByEmail(String email);
 
-    Optional<UserDetails> findUserDetailsByUsernameOrEmail(String username, String email);
+    Optional<UserDetails> findUserDetailsByLoginOrEmail(String login, String email);
 
-    boolean existsAccountByUsername(String username);
+    boolean existsAccountByLogin(String login);
 }

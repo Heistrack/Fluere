@@ -1,5 +1,9 @@
 package com.example.final_project.domain.securities.jwtauth;
 
+import com.example.final_project.api.requests.users.AuthenticationRequest;
+import com.example.final_project.api.requests.users.RegisterUserRequest;
+import com.example.final_project.api.responses.authentications.AuthResponseDTO;
+import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
 import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.users.AppUser;
 import com.example.final_project.domain.users.Role;
@@ -24,14 +28,14 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final Supplier<UserId> userIdSupplier;
 
-    public AuthenticationResponse register(RegisterRequest request) {
+    public RegisterResponseDTO register(RegisterUserRequest request) {
         //TODO Check this condition
 //        if (repository.existsAppUserByEmail(request.email())) {
 //            throw new UnableToRegisterException("Such email address is occupied!");
 //        }
         AppUser user = AppUser.builder()
                               .id(userIdSupplier.get())
-                              .name(request.name())
+                              .login(request.login())
                               .email(request.email())
                               .password(passwordEncoder.encode(request.password()))
                               .role(Role.USER)
@@ -42,12 +46,12 @@ public class AuthenticationService {
 
         String jwtToken = jwtService.generateToken(user);
 
-        return AuthenticationResponse.builder().token(jwtToken).build();
+        return RegisterResponseDTO.builder().user(user).token(jwtToken).build();
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    public AuthResponseDTO authenticate(AuthenticationRequest request) {
         //TODO check this statment
-        AppUser byEmail = repository.findFirstByEmail(request.email()).get();
+        AppUser byEmail = repository.findFirstByLogin(request.login()).get();
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -56,10 +60,10 @@ public class AuthenticationService {
                 )
         );
 
-        AppUser user = repository.findFirstByEmail(request.email())
+        AppUser user = repository.findFirstByLogin(request.login())
                                  .orElseThrow(() -> new WrongCredentialsException("Wrong email or password"));
         String jwtToken = jwtService.generateToken(user);
 
-        return AuthenticationResponse.builder().token(jwtToken).build();
+        return AuthResponseDTO.builder().token(jwtToken).build();
     }
 }

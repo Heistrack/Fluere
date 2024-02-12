@@ -2,8 +2,8 @@ package com.example.final_project.api.controllers;
 
 import com.example.final_project.api.requests.budgets.RegisterBudgetRequest;
 import com.example.final_project.api.requests.budgets.UpdateBudgetRequest;
-import com.example.final_project.api.responses.BudgetResponseDto;
-import com.example.final_project.api.responses.BudgetStatusDTO;
+import com.example.final_project.api.responses.budgets.BudgetResponseDto;
+import com.example.final_project.api.responses.budgets.BudgetStatusDTO;
 import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetId;
 import com.example.final_project.domain.budgets.BudgetService;
@@ -12,7 +12,6 @@ import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.users.UserId;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;

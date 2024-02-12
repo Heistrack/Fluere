@@ -2,6 +2,9 @@ package com.example.final_project.domain.users;
 
 import com.example.final_project.api.requests.users.RegisterUserRequest;
 import com.example.final_project.api.responses.UserDetailsResponse;
+import com.example.final_project.api.responses.authentications.AuthResponseDTO;
+import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
+import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -20,9 +24,10 @@ public class DefaultUserService {
     private final UserRepository userRepository;
     private final Supplier<UserId> userIdSupplier;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationService authenticationService;
 
-    public AppUser findUserByUsername(String username) {
-        return userRepository.findAppUserByUsername(username)
+    public AppUser findUserByUsername(String login) {
+        return userRepository.findFirstByLogin(login)
                              .orElseThrow();
     }
 
@@ -33,25 +38,19 @@ public class DefaultUserService {
                              .collect(Collectors.toList());
     }
 
-    public AppUser registerNewUser(RegisterUserRequest registerUserRequest) {
-        if (userRepository.existsAppUserByEmail(registerUserRequest.email())) {
-            throw new UnableToRegisterException("Użytkownik z podanym e-mailem już istnieje");
+    public RegisterResponseDTO registerNewUser(RegisterUserRequest request) {
+        if (userRepository.existsByEmail(request.email())) {
+            throw new UnableToRegisterException("User's email is already occupied!");
         }
-        if (userRepository.existsAccountByUsername(registerUserRequest.name())) {
-            throw new UnableToRegisterException("Użytkownik z podaną nazwą już istnieje");
+        if (userRepository.existsAccountByLogin(request.login())) {
+            throw new UnableToRegisterException("User's login is already occupied!");
         }
-        return userRepository.save(new AppUser(
-                userIdSupplier.get(),
-                registerUserRequest.name(),
-                registerUserRequest.email(),
-                passwordEncoder.encode(registerUserRequest.password()),
-                Role.USER,
-                true
-        ));
-    }
 
+        return authenticationService.register(request);
+    }
+//TODO STH NOT RIGHT BELOW
     public UserDetails findByUserNameOrEmail(String usernameOrEmail) {
-        return userRepository.findUserDetailsByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
+        return userRepository.findUserDetailsByLoginOrEmail(usernameOrEmail, usernameOrEmail)
                              .orElseThrow(() -> new WrongCredentialsException("Niepoprawne dane logowania"));
     }
 
@@ -61,15 +60,15 @@ public class DefaultUserService {
                              .map(UserDetailsResponse::fromDomain)
                              .toList();
     }
-
-    public Optional<UserDetailsResponse> findAppUserByName(String name) {
-        return Optional.of(userRepository.findAppUserByUsername(name)
+//TODO Fix it below
+    public Optional<UserDetailsResponse> findAppUserByLogin(String login) {
+        return Optional.of(userRepository.findFirstByLogin(login)
                                          .map(UserDetailsResponse::fromDomain))
                        .get();
     }
 
     public Optional<UserDetailsResponse> findAppUserByUserId(String userId) {
-        return userRepository.findById(UserId.newId(userIdSupplier.get().userId()))
+        return userRepository.findById(UserId.newId(UUID.fromString(userId)))
                              .map(UserDetailsResponse::fromDomain);
     }
 }

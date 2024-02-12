@@ -15,7 +15,7 @@ import java.util.List;
 @Document
 public record AppUser(@MongoId
                       UserId id,
-                      String name,
+                      String login,
                       String email,
                       String password,
                       @Enumerated(EnumType.STRING)

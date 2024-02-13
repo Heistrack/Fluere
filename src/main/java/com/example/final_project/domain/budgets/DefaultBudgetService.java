@@ -23,15 +23,20 @@ public class DefaultBudgetService implements BudgetService {
     private final ExpenseRepository expenseRepository;
     private final Supplier<BudgetId> budgetIdSupplier;
 
-    public DefaultBudgetService(BudgetRepository budgetRepository, ExpenseRepository expenseRepository, Supplier<BudgetId> budgetIdSupplier) {
+    public DefaultBudgetService(BudgetRepository budgetRepository, ExpenseRepository expenseRepository,
+                                Supplier<BudgetId> budgetIdSupplier
+    ) {
         this.budgetRepository = budgetRepository;
         this.expenseRepository = expenseRepository;
         this.budgetIdSupplier = budgetIdSupplier;
     }
 
     @Override
-    public Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget, BigDecimal maxSingleExpense, UserId userId) {
-        Budget budget = new Budget(budgetIdSupplier.get(), title, limit, typeOfBudget, maxSingleExpense, userId, LocalDateTime.now());
+    public Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget,
+                                    BigDecimal maxSingleExpense, UserId userId
+    ) {
+        Budget budget = new Budget(
+                budgetIdSupplier.get(), title, limit, typeOfBudget, maxSingleExpense, userId, LocalDateTime.now());
         budgetRepository.save(budget);
         return budget;
     }
@@ -56,13 +61,14 @@ public class DefaultBudgetService implements BudgetService {
                                                 Optional<LocalDateTime> timestamp
     ) {
         budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).map(
-                budgetFromRepository -> new Budget(budgetId,
+                budgetFromRepository -> new Budget(
+                        budgetId,
                         title.orElseGet(budgetFromRepository::title),
                         limit.orElseGet(budgetFromRepository::limit),
                         typeOfBudget.orElseGet(budgetFromRepository::typeOfBudget),
                         maxSingleExpense.orElseGet(budgetFromRepository::maxSingleExpense),
                         userId,
-                        timestamp.orElseGet(budgetFromRepository::timestamp)
+                        timestamp.orElseGet(budgetFromRepository::registerTime)
                 )).ifPresent(budgetRepository::save);
         return budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId);
     }
@@ -80,7 +86,8 @@ public class DefaultBudgetService implements BudgetService {
                                    TypeOfBudget typeOfBudget,
                                    BigDecimal maxSingleExpense,
                                    UserId userId,
-                                   LocalDateTime timestamp) {
+                                   LocalDateTime timestamp
+    ) {
 
         return budgetRepository.save(new Budget(
                 budgetId,
@@ -100,9 +107,9 @@ public class DefaultBudgetService implements BudgetService {
 
     private BigDecimal totalExpensesValue(BudgetId budgetId, UserId userId) {
         return expenseRepository.findExpensesByBudgetIdAndUserId(budgetId, userId)
-                .stream()
-                .map(Expense::amount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                                .stream()
+                                .map(Expense::amount)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private BigDecimal budgetFullFillPerc(BigDecimal base, BigDecimal actual) {
@@ -118,8 +125,10 @@ public class DefaultBudgetService implements BudgetService {
         Integer totalExpNumb = expenseRepository.findExpenseByBudgetIdAndUserId(budgetId, userId).size();
         String limitValue = getLimitFromBudget(budget.get());
         return BudgetStatusDTO.newOf(budgetId.toString(), totalExpNumb,
-                totalExpensesValue(budgetId, userId), amountLeft,
-                budgetFullFillPerc, budget.get().typeOfBudget().getTitle(), limitValue, LocalDateTime.now());
+                                     totalExpensesValue(budgetId, userId), amountLeft,
+                                     budgetFullFillPerc, budget.get().typeOfBudget().getTitle(), limitValue,
+                                     LocalDateTime.now()
+        );
     }
 
     public String getLimitFromBudget(Budget budget) {

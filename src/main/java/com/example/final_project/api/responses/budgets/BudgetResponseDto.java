@@ -22,7 +22,7 @@ public record BudgetResponseDto(
                 budget.limit(),
                 budget.typeOfBudget(),
                 budget.maxSingleExpense(),
-                budget.timestamp()
+                budget.registerTime()
         );
     }
 }

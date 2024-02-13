@@ -21,8 +21,7 @@ import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
-//TODO REMOVE LOGS
+
 public class AuthenticationService {
 
     private final UserRepository repository;

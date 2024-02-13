@@ -20,8 +20,6 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
-//TODO remove Slf4j
 public class DefaultUserService implements UserService {
     private final UserRepository userRepository;
     private final AuthenticationService authenticationService;

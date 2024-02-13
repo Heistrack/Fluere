@@ -1,4 +1,4 @@
-package com.example.final_project.api.responses;
+package com.example.final_project.api.responses.expenses;
 
 import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.expenses.TypeOfExpense;

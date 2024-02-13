@@ -17,6 +17,6 @@ public record Budget(
         TypeOfBudget typeOfBudget,
         BigDecimal maxSingleExpense,
         UserId userId,
-        LocalDateTime timestamp
+        LocalDateTime registerTime
 ) {
 }

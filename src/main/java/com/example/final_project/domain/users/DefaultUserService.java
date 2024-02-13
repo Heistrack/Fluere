@@ -8,7 +8,6 @@ import com.example.final_project.infrastructure.userRepo.UserRepository;
 import io.jsonwebtoken.JwtException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -39,7 +38,7 @@ public class DefaultUserService implements UserService {
     }
 
     public AppUser findFromToken(String userId) {
-        return userRepository.findById(UserId.newId(UUID.fromString(userId)))
+        return userRepository.findById(UserId.newFromString(userId))
                              .orElseThrow(() -> new JwtException("Invalid token"));
     }
 
@@ -50,7 +49,7 @@ public class DefaultUserService implements UserService {
     }
 
     public UserDetailsResponse findByUserId(String userId) {
-        return userRepository.findById(UserId.newId(UUID.fromString(userId)))
+        return userRepository.findById(UserId.newFromString(userId))
                              .map(UserDetailsResponse::fromDomain)
                              .orElseThrow(() -> new NoSuchElementException("There is no such user id!"));
     }
@@ -73,7 +72,7 @@ public class DefaultUserService implements UserService {
     }
 
     public void removeUserByUserId(String userId) {
-        Optional<UserId> userToRemove = userRepository.findById(UserId.newId(UUID.fromString(userId)))
+        Optional<UserId> userToRemove = userRepository.findById(UserId.newFromString(userId))
                                                       .map(AppUser::id);
         userToRemove.ifPresent(userRepository::deleteById);
 

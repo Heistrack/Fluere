@@ -1,8 +1,14 @@
 package com.example.final_project.domain.budgets;
 
-public record BudgetId(String value) {
+import java.util.UUID;
 
-    public static BudgetId newOf(String value) {
-        return new BudgetId(value);
+public record BudgetId(UUID budgetId) {
+
+    public static BudgetId newOf(UUID id) {
+        return new BudgetId(id);
+    }
+
+    public static BudgetId newFromString(String id) {
+        return new BudgetId(UUID.fromString(id));
     }
 }

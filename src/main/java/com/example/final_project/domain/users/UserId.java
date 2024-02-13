@@ -6,4 +6,8 @@ public record UserId(UUID userId) {
     public static UserId newId(UUID id) {
         return new UserId(id);
     }
+
+    public static UserId newFromString(String id) {
+        return new UserId(UUID.fromString(id));
+    }
 }

@@ -41,7 +41,7 @@ public class BudgetController {
             @PathVariable String rawBudgetId, Authentication authentication
     ) {
         UserId userId = jwtService.extractUserIdFromRequestAuth(authentication);
-        Optional<Budget> budgetById = budgetService.getBudgetById(new BudgetId(rawBudgetId), userId);
+        Optional<Budget> budgetById = budgetService.getBudgetById(BudgetId.newFromString(rawBudgetId), userId);
         return ResponseEntity.of(budgetById.map(BudgetResponseDto::fromDomain));
     }
 
@@ -70,7 +70,7 @@ public class BudgetController {
         UserId userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
         return ResponseEntity.status(HttpStatus.OK).body(
-                budgetService.getBudgetStatus(new BudgetId(rawBudgetId), userId)
+                budgetService.getBudgetStatus(BudgetId.newFromString(rawBudgetId), userId)
         );
     }
 
@@ -94,7 +94,7 @@ public class BudgetController {
     ) {
         UserId userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
-        budgetService.getBudgetById(new BudgetId(rawBudgetId), userId)
+        budgetService.getBudgetById(BudgetId.newFromString(rawBudgetId), userId)
                      .ifPresent(budget -> budgetService.deleteBudgetById(budget.budgetId(), userId));
         return ResponseEntity.noContent().build();
     }
@@ -107,8 +107,7 @@ public class BudgetController {
         UserId userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
         Budget updatedBudget = budgetService.updateBudgetById(
-                new BudgetId(
-                        rawBudgetId.toString()),
+                BudgetId.newOf(rawBudgetId),
                 request.title(),
                 request.limit(),
                 request.typeOfBudget(),
@@ -133,7 +132,7 @@ public class BudgetController {
         Optional<BigDecimal> maxSingleExpense = Optional.ofNullable(request.maxSingleExpense());
         Optional<LocalDateTime> timestamp = Optional.empty();
 
-        return ResponseEntity.of(budgetService.updateBudgetContent(new BudgetId(rawBudgetId), title,
+        return ResponseEntity.of(budgetService.updateBudgetContent(BudgetId.newFromString(rawBudgetId), title,
                                                                    limit,
                                                                    typeOfBudget,
                                                                    maxSingleExpense,
@@ -149,6 +148,6 @@ public class BudgetController {
             Authentication authentication
     ) {
         UserId userId = jwtService.extractUserIdFromRequestAuth(authentication);
-        return ResponseEntity.of(Optional.ofNullable(budgetService.getBudgetStatus(BudgetId.newOf(budgetId), userId)));
+        return ResponseEntity.of(Optional.ofNullable(budgetService.getBudgetStatus(BudgetId.newFromString(budgetId), userId)));
     }
 }

@@ -5,6 +5,7 @@ import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.users.UserId;
 import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,19 +18,12 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 @Service
+@RequiredArgsConstructor
 public class DefaultBudgetService implements BudgetService {
 
     private final BudgetRepository budgetRepository;
     private final ExpenseRepository expenseRepository;
     private final Supplier<BudgetId> budgetIdSupplier;
-
-    public DefaultBudgetService(BudgetRepository budgetRepository, ExpenseRepository expenseRepository,
-                                Supplier<BudgetId> budgetIdSupplier
-    ) {
-        this.budgetRepository = budgetRepository;
-        this.expenseRepository = expenseRepository;
-        this.budgetIdSupplier = budgetIdSupplier;
-    }
 
     @Override
     public Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget,

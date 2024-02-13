@@ -17,8 +17,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.UUID;
-
 @Configuration
 @RequiredArgsConstructor
 public class AdditionalConfiguration {
@@ -28,7 +26,7 @@ public class AdditionalConfiguration {
     // and for sending response message to postman not only for IDE console?
     @Bean
     UserDetailsService userDetailsService() {
-        return id -> repository.findById(UserId.newId(UUID.fromString(id)))
+        return id -> repository.findById(UserId.newFromString(id))
                                .orElseThrow(() -> new BadCredentialsException("Wrong user or password!"));
     }
 

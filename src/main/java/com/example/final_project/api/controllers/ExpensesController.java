@@ -69,7 +69,7 @@ public class ExpensesController {
 
         return ResponseEntity.ok(expensesService.findAllExpensesByBudgetId(
                                                         userId,
-                                                        BudgetId.newOf(rawBudgetId),
+                                                        BudgetId.newFromString(rawBudgetId),
                                                         PageRequest.of(page, size,
                                                                        Sort.by(sortDirection, sortBy)
                                                         )
@@ -86,7 +86,7 @@ public class ExpensesController {
         UserId userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
         Expense newExpense = expensesService.registerNewExpense(request.title(), request.amount(),
-                                                                BudgetId.newOf(request.budgetId()), userId,
+                                                                BudgetId.newFromString(request.budgetId()), userId,
                                                                 request.typeOfExpense()
         );
         ExpenseResponseDto expenseResponseDto = ExpenseResponseDto.fromDomain(newExpense);
@@ -135,7 +135,7 @@ public class ExpensesController {
 
         Expense updatedExpense = expensesService.updateExpenseById(
                 ExpenseId.newId(rawExpenseId.toString()),
-                BudgetId.newOf(request.budgetId()),
+                BudgetId.newFromString(request.budgetId()),
                 request.title(),
                 request.amount(),
                 userId,

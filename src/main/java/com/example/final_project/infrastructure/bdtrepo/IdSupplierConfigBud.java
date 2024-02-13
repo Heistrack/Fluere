@@ -11,6 +11,6 @@ import java.util.function.Supplier;
 class IdSupplierConfigBud {
     @Bean
     public Supplier<BudgetId> budgetIdSupplier() {
-        return () -> BudgetId.newOf(UUID.randomUUID().toString());
+        return () -> BudgetId.newOf(UUID.randomUUID());
     }
 }

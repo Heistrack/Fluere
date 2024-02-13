@@ -6,7 +6,11 @@ import com.example.final_project.api.responses.authentications.RegisterResponseD
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
 import io.jsonwebtoken.JwtException;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,16 +20,20 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
+//TODO remove Slf4j
 public class DefaultUserService implements UserService {
-
     private final UserRepository userRepository;
     private final AuthenticationService authenticationService;
+    private final PasswordEncoder passwordEncoder;
+    @Value("${admin.key.value}")
+    private String ADMIN_PASSWORD;
 
     public RegisterResponseDTO registerNewUser(RegisterUserRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new UnableToRegisterException("User's email is already occupied!");
         }
-        if (userRepository.existsAccountByLogin(request.login())) {
+        if (userRepository.existsByLogin(request.login())) {
             throw new UnableToRegisterException("User's login is already occupied!");
         }
 
@@ -62,15 +70,35 @@ public class DefaultUserService implements UserService {
     public void removeUserByLogin(String login) {
         Optional<UserId> userId = userRepository.findByLogin(login).map(AppUser::id);
         userId.ifPresent(userRepository::deleteById);
+
+        registerAdminUser();
     }
 
     public void removeUserByUserId(String userId) {
         Optional<UserId> userToRemove = userRepository.findById(UserId.newId(UUID.fromString(userId)))
                                                       .map(AppUser::id);
         userToRemove.ifPresent(userRepository::deleteById);
+
+        registerAdminUser();
     }
 
     public void removeThemAll() {
         userRepository.deleteAll();
+        registerAdminUser();
+    }
+
+    @PostConstruct
+    private void registerAdminUser() {
+        if (!userRepository.existsByLogin("admin")) {
+            AppUser admin = AppUser.builder()
+                                   .id(UserId.newId(UUID.randomUUID()))
+                                   .login("admin")
+                                   .email("X")
+                                   .password(passwordEncoder.encode(ADMIN_PASSWORD))
+                                   .role(Role.ADMIN)
+                                   .enabled(true)
+                                   .build();
+            userRepository.save(admin);
+        }
     }
 }

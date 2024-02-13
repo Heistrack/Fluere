@@ -13,6 +13,6 @@ public interface UserRepository extends MongoRepository<AppUser, UserId> {
 
     Optional<AppUser> findByEmail(String email);
 
-    boolean existsAccountByLogin(String login);
+    boolean existsByLogin(String login);
 
 }

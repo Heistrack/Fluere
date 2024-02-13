@@ -13,3 +13,7 @@ logging:
           mongodb:
             core:
               MongoTemplate: DEBUG
+---
+admin:
+  key:
+    value: "${ADMIN_KEY_VALUE}"

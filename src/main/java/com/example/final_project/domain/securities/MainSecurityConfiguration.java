@@ -2,7 +2,6 @@ package com.example.final_project.domain.securities;
 
 
 import com.example.final_project.domain.securities.jwt.JwtAuthFilter;
-import com.example.final_project.infrastructure.userRepo.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,23 +12,19 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
-import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
-import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 class MainSecurityConfiguration {
 
+    private static final String ADMIN_PASSWORD = "12345";
     private final JwtAuthFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
-    //TODO how userService is used here and is it necessary to use direct repository bean here?
-    private final UserRepository repository;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -53,24 +48,15 @@ class MainSecurityConfiguration {
                    .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                    .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                    //TODO add exception handling for security filter chain
-               /* .exceptionHandling((exceptions) -> exceptions
-                .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
-                .accessDeniedHandler(new BearerTokenAccessDeniedHandler()));*/
+                   /* .exceptionHandling((exceptions) -> exceptions
+                    .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
+                    .accessDeniedHandler(new BearerTokenAccessDeniedHandler()));*/
                    //FIXME add redirection in form login to start page after successful login
                    // add exception handling for /*.exceptionHandling((exceptions) -> exceptions
                    //                           .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
                    //                           .accessDeniedHandler(new BearerTokenAccessDeniedHandler())*/
                    .build();
     }
-//    @Bean
-//    InMemoryUserDetailsManager inMemoryUserDetailsManager() {
-//        UserDetails admin = User.builder()
-//                                .login("admin")
-//                                .password(passwordEncoder().encode(ADMIN_PASSWORD))
-//                                .roles("ADMIN")
-//                                .build();
-//        return new InMemoryUserDetailsManager(admin);
-//    }
 }
 
 

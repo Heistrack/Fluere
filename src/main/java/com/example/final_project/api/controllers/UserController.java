@@ -7,6 +7,7 @@ import com.example.final_project.api.responses.UserDetailsResponse;
 import com.example.final_project.api.responses.authentications.AuthResponseDTO;
 import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
+import com.example.final_project.domain.users.AppUser;
 import com.example.final_project.domain.users.DefaultUserService;
 import com.example.final_project.domain.users.UnableToRegisterException;
 import jakarta.validation.Valid;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 import static com.example.final_project.api.controllers.UserController.USERS_BASE_CONTROLLER_PATH;
 
@@ -50,18 +52,45 @@ public class UserController {
     }
 
     @GetMapping("/fromToken")
-    ResponseEntity<UserDetailsResponse> getSingleUser(Authentication authentication) {
-        return ResponseEntity.of(userService.findAppUserByUserId(authentication.getName()));
+    ResponseEntity<AppUser> getUserFromToken(Authentication authentication) {
+        return ResponseEntity.ok(userService.findFromToken(authentication.getName()));
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("/ids/{userId}")
     ResponseEntity<UserDetailsResponse> getUserById(@PathVariable String userId) {
-        return ResponseEntity.of(userService.findAppUserByUserId(userId));
+        return ResponseEntity.ok(userService.findByUserId(userId));
+    }
+
+    @PostMapping("/logins")
+    ResponseEntity<AppUser> getUserByLogin(@RequestBody Map<String, String> loginMap) {
+        return ResponseEntity.ok(userService.findByLogin(loginMap.get("login")));
+    }
+
+    @PostMapping("/emails")
+    ResponseEntity<AppUser> getUserByEmail(@RequestBody Map<String, String> emailMap) {
+        return ResponseEntity.ok(userService.findByEmail(emailMap.get("email")));
+    }
+
+    @DeleteMapping()
+    ResponseEntity<AppUser> removeUserByLogin(@RequestBody Map<String, String> loginMap) {
+        userService.removeUserByLogin(loginMap.get("login"));
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{userId}")
+    ResponseEntity<UserDetailsResponse> removeUserByUserId(@PathVariable String userId) {
+        userService.removeUserByUserId(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/purge-them-all")
+    ResponseEntity<UserDetailsResponse> removeAll() {
+        userService.removeThemAll();
+        return ResponseEntity.noContent().build();
     }
 
     @ExceptionHandler(UnableToRegisterException.class)
     public ResponseEntity<ErrorDTO> exceptionHandler(UnableToRegisterException ex) {
-
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorDTO.newOf(
                 ex.getMessage(),
                 HttpStatus.CONFLICT,

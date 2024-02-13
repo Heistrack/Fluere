@@ -1,12 +1,27 @@
 package com.example.final_project.domain.users;
 
+import com.example.final_project.api.requests.users.RegisterUserRequest;
+import com.example.final_project.api.responses.UserDetailsResponse;
+import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
+
 import java.util.List;
 
 public interface UserService {
-    //TODO CREATE INTERFACE FOR USER SERVICE INTERFACE
-    List<String> defaultRoles = List.of("USER");
+    RegisterResponseDTO registerNewUser(RegisterUserRequest request);
 
-    AppUser registerNewUser(String login, String rawPassword, String email, List<String> roles);
+    UserDetailsResponse findByUserId(String userId);
 
-    AppUser findUserByUsername(String username);
+    AppUser findFromToken(String userId);
+
+    AppUser findByLogin(String login);
+
+    List<UserDetailsResponse> getAllUsers();
+
+    AppUser findByEmail(String email);
+
+    void removeUserByLogin(String login);
+
+    void removeUserByUserId(String userId);
+
+    void removeThemAll();
 }

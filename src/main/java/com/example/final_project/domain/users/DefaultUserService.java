@@ -2,41 +2,24 @@ package com.example.final_project.domain.users;
 
 import com.example.final_project.api.requests.users.RegisterUserRequest;
 import com.example.final_project.api.responses.UserDetailsResponse;
-import com.example.final_project.api.responses.authentications.AuthResponseDTO;
 import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class DefaultUserService {
+public class DefaultUserService implements UserService {
 
     private final UserRepository userRepository;
-    private final Supplier<UserId> userIdSupplier;
-    private final PasswordEncoder passwordEncoder;
     private final AuthenticationService authenticationService;
-
-    public AppUser findUserByUsername(String login) {
-        return userRepository.findFirstByLogin(login)
-                             .orElseThrow();
-    }
-
-    public List<UserDetailsResponse> findAll() {
-        return userRepository.findAll()
-                             .stream()
-                             .map(UserDetailsResponse::fromDomain)
-                             .collect(Collectors.toList());
-    }
 
     public RegisterResponseDTO registerNewUser(RegisterUserRequest request) {
         if (userRepository.existsByEmail(request.email())) {
@@ -48,27 +31,46 @@ public class DefaultUserService {
 
         return authenticationService.register(request);
     }
-//TODO STH NOT RIGHT BELOW
-    public UserDetails findByUserNameOrEmail(String usernameOrEmail) {
-        return userRepository.findUserDetailsByLoginOrEmail(usernameOrEmail, usernameOrEmail)
-                             .orElseThrow(() -> new WrongCredentialsException("Niepoprawne dane logowania"));
+
+    public AppUser findFromToken(String userId) {
+        return userRepository.findById(UserId.newId(UUID.fromString(userId)))
+                             .orElseThrow(() -> new JwtException("Invalid token"));
     }
 
     public List<UserDetailsResponse> getAllUsers() {
         return userRepository.findAll()
                              .stream()
-                             .map(UserDetailsResponse::fromDomain)
-                             .toList();
-    }
-//TODO Fix it below
-    public Optional<UserDetailsResponse> findAppUserByLogin(String login) {
-        return Optional.of(userRepository.findFirstByLogin(login)
-                                         .map(UserDetailsResponse::fromDomain))
-                       .get();
+                             .map(UserDetailsResponse::fromDomain).toList();
     }
 
-    public Optional<UserDetailsResponse> findAppUserByUserId(String userId) {
+    public UserDetailsResponse findByUserId(String userId) {
         return userRepository.findById(UserId.newId(UUID.fromString(userId)))
-                             .map(UserDetailsResponse::fromDomain);
+                             .map(UserDetailsResponse::fromDomain)
+                             .orElseThrow(() -> new NoSuchElementException("There is no such user id!"));
+    }
+
+    public AppUser findByLogin(String login) {
+        return userRepository.findByLogin(login)
+                             .orElseThrow(() -> new NoSuchElementException("There is no user with such login"));
+    }
+
+    public AppUser findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                             .orElseThrow(() -> new NoSuchElementException("There is no user with such email"));
+    }
+
+    public void removeUserByLogin(String login) {
+        Optional<UserId> userId = userRepository.findByLogin(login).map(AppUser::id);
+        userId.ifPresent(userRepository::deleteById);
+    }
+
+    public void removeUserByUserId(String userId) {
+        Optional<UserId> userToRemove = userRepository.findById(UserId.newId(UUID.fromString(userId)))
+                                                      .map(AppUser::id);
+        userToRemove.ifPresent(userRepository::deleteById);
+    }
+
+    public void removeThemAll() {
+        userRepository.deleteAll();
     }
 }

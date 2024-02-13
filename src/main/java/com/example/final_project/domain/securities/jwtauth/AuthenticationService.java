@@ -29,10 +29,6 @@ public class AuthenticationService {
     private final Supplier<UserId> userIdSupplier;
 
     public RegisterResponseDTO register(RegisterUserRequest request) {
-        //TODO Check this condition
-//        if (repository.existsAppUserByEmail(request.email())) {
-//            throw new UnableToRegisterException("Such email address is occupied!");
-//        }
         AppUser user = AppUser.builder()
                               .id(userIdSupplier.get())
                               .login(request.login())
@@ -50,18 +46,16 @@ public class AuthenticationService {
     }
 
     public AuthResponseDTO authenticate(AuthenticationRequest request) {
-        //TODO check this statment
-        AppUser byEmail = repository.findFirstByLogin(request.login()).get();
+        AppUser user = repository.findByLogin(request.login())
+                                 .orElseThrow(() -> new WrongCredentialsException("Wrong login or password"));
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        byEmail.id().userId().toString(),
+                        user.id().userId().toString(),
                         request.password()
                 )
         );
 
-        AppUser user = repository.findFirstByLogin(request.login())
-                                 .orElseThrow(() -> new WrongCredentialsException("Wrong email or password"));
         String jwtToken = jwtService.generateToken(user);
 
         return AuthResponseDTO.builder().token(jwtToken).build();

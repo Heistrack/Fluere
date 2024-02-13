@@ -1,15 +1,11 @@
 package com.example.final_project.domain.securities;
 
-import com.example.final_project.domain.users.AppUser;
 import com.example.final_project.domain.users.UserId;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,14 +14,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import javax.swing.text.DateFormatter;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 import java.util.UUID;
 
 @Configuration
@@ -33,9 +24,11 @@ import java.util.UUID;
 public class AdditionalConfiguration {
     private final UserRepository repository;
 
+    //FIXME how to make separate ex handler for userDetailsService for bad token and bad credentials and for
+    // and for sending response message to postman not only for IDE console?
     @Bean
     UserDetailsService userDetailsService() {
-       return id -> repository.findById(UserId.newId(UUID.fromString(id)))
+        return id -> repository.findById(UserId.newId(UUID.fromString(id)))
                                .orElseThrow(() -> new BadCredentialsException("Wrong user or password!"));
     }
 
@@ -47,6 +40,8 @@ public class AdditionalConfiguration {
         return authProvider;
     }
 
+    //    TODO how to add default admin user in memory which can't be removed from endpoint?
+    //TODO inMemoryUserMaybe?
     @Bean
     AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

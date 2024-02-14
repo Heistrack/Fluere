@@ -14,7 +14,7 @@ import java.util.List;
 
 @Document
 public record AppUser(@MongoId
-                      UserId id,
+                      UserIdWrapper userId,
                       String login,
                       String email,
                       String password,
@@ -38,7 +38,7 @@ public record AppUser(@MongoId
 
     @Override
     public String getUsername() {
-        return this.id().userId().toString();
+        return this.userId().userId().toString();
     }
 
     @Override

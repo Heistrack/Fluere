@@ -2,7 +2,7 @@ package com.example.final_project.domain.budgets;
 
 import com.example.final_project.api.responses.budgets.BudgetStatusDTO;
 import com.example.final_project.domain.expenses.Expense;
-import com.example.final_project.domain.users.UserId;
+import com.example.final_project.domain.users.UserIdWrapper;
 import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -23,38 +23,49 @@ public class DefaultBudgetService implements BudgetService {
 
     private final BudgetRepository budgetRepository;
     private final ExpenseRepository expenseRepository;
-    private final Supplier<BudgetId> budgetIdSupplier;
+    private final Supplier<BudgetIdWrapper> budgetIdSupplier;
 
     @Override
-    public Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget,
-                                    BigDecimal maxSingleExpense, UserId userId
-    ) {
-        Budget budget = new Budget(
-                budgetIdSupplier.get(), title, limit, typeOfBudget, maxSingleExpense, userId, LocalDateTime.now());
-        budgetRepository.save(budget);
-        return budget;
+    public Budget getBudgetById(BudgetIdWrapper budgetId, UserIdWrapper userId) {
+        return budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId)
+                               .orElseThrow(() -> new NoSuchElementException("There's no such budget."));
     }
 
     @Override
-    public Optional<Budget> getBudgetById(BudgetId budgetId, UserId userId) {
-        return budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId);
-    }
-
-    @Override
-    public void deleteBudgetById(BudgetId budgetId, UserId userId) {
+    public void deleteBudgetById(BudgetIdWrapper budgetId, UserIdWrapper userId) {
         budgetRepository.deleteBudgetByBudgetIdAndUserId(budgetId, userId);
     }
 
     @Override
-    public Optional<Budget> updateBudgetContent(BudgetId budgetId,
-                                                Optional<String> title,
-                                                Optional<BigDecimal> limit,
-                                                Optional<TypeOfBudget> typeOfBudget,
-                                                Optional<BigDecimal> maxSingleExpense,
-                                                UserId userId,
-                                                Optional<LocalDateTime> timestamp
+    public BudgetStatusDTO getBudgetStatus(BudgetIdWrapper budgetId, UserIdWrapper userId) {
+        Budget budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId)
+                                        .orElseThrow(() -> new NoSuchElementException("Budget doesn't exist"));
+        BigDecimal moneySpend = totalExpensesValueSum(budget);
+        BigDecimal amountLeft = budget.limit().subtract(moneySpend);
+        BigDecimal budgetFullFillPercent = budgetFullFillPercentage(budget.limit(), moneySpend);
+        Integer expensesNumber = expenseRepository.findAllByBudgetId(budgetId).size();
+        String limitValue = getLimitFromBudget(budget);
+
+        return BudgetStatusDTO.newOf(budgetId.toString(), expensesNumber,
+                                     moneySpend, amountLeft,
+                                     budgetFullFillPercent, budget.typeOfBudget().getTitle(), budget.limit(),
+                                     budget.maxSingleExpense(),
+                                     LocalDateTime.now()
+        );
+    }
+
+    @Override
+    public Budget patchBudgetContent(BudgetIdWrapper budgetId,
+                                     Optional<String> title,
+                                     Optional<BigDecimal> limit,
+                                     Optional<TypeOfBudget> typeOfBudget,
+                                     Optional<BigDecimal> maxSingleExpense,
+                                     UserIdWrapper userId
     ) {
-        budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).map(
+        Budget oldBudget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId)
+                                           .orElseThrow(() -> new NoSuchElementException(
+                                                   "There is no such budget for this user"));
+        Optional.of(oldBudget).map(
                 budgetFromRepository -> new Budget(
                         budgetId,
                         title.orElseGet(budgetFromRepository::title),
@@ -62,28 +73,35 @@ public class DefaultBudgetService implements BudgetService {
                         typeOfBudget.orElseGet(budgetFromRepository::typeOfBudget),
                         maxSingleExpense.orElseGet(budgetFromRepository::maxSingleExpense),
                         userId,
-                        timestamp.orElseGet(budgetFromRepository::registerTime)
+                        budgetFromRepository.registerTime()
                 )).ifPresent(budgetRepository::save);
-        return budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId);
+        return budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).get();
+    }
+
+    @Override
+    public Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget,
+                                    BigDecimal maxSingleExpense, UserIdWrapper userId
+    ) {
+        Budget budget = new Budget(
+                budgetIdSupplier.get(), title, limit, typeOfBudget, maxSingleExpense, userId, LocalDateTime.now());
+        budgetRepository.save(budget);
+        return budget;
     }
 
 
     @Override
-    public List<Budget> getBudgets(UserId userId) {
-        return budgetRepository.findAllByUserId(userId);
-    }
-
-    @Override
-    public Budget updateBudgetById(BudgetId budgetId,
+    public Budget updateBudgetById(BudgetIdWrapper budgetId,
                                    String title,
                                    BigDecimal limit,
                                    TypeOfBudget typeOfBudget,
                                    BigDecimal maxSingleExpense,
-                                   UserId userId,
+                                   UserIdWrapper userId,
                                    LocalDateTime timestamp
     ) {
-
-        return budgetRepository.save(new Budget(
+        if (!budgetRepository.existsByBudgetIdAndUserId(budgetId, userId)) {
+            throw new NoSuchElementException("Can't update budget");
+        }
+        return budgetRepository.save(Budget.newOf(
                 budgetId,
                 title,
                 limit,
@@ -95,44 +113,30 @@ public class DefaultBudgetService implements BudgetService {
     }
 
     @Override
-    public Page<Budget> findAllByPage(UserId userId, Pageable pageable) {
-        return budgetRepository.findAllByUserId(userId, pageable);
+    public Page<Budget> findAllByPage(UserIdWrapper userId, Pageable pageable) {
+
+        Page<Budget> allByUserId = budgetRepository.findAllByUserId(userId, pageable);
+        if (allByUserId.isEmpty()) throw new NoSuchElementException("No results match");
+        return allByUserId;
     }
 
-    private BigDecimal totalExpensesValue(BudgetId budgetId, UserId userId) {
-        return expenseRepository.findExpensesByBudgetIdAndUserId(budgetId, userId)
+    private BigDecimal totalExpensesValueSum(Budget budget) {
+        return expenseRepository.findExpenseByBudgetId(budget.budgetId())
                                 .stream()
                                 .map(Expense::amount)
                                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private BigDecimal budgetFullFillPerc(BigDecimal base, BigDecimal actual) {
+    private BigDecimal budgetFullFillPercentage(BigDecimal base, BigDecimal actual) {
         return actual.multiply(BigDecimal.valueOf(100)).divide(base, 1, RoundingMode.DOWN);
     }
 
-    @Override
-    public BudgetStatusDTO getBudgetStatus(BudgetId budgetId, UserId userId) {
-
-        Optional<Budget> budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId);
-        BigDecimal amountLeft = budget.get().limit().subtract(totalExpensesValue(budgetId, userId));
-        BigDecimal budgetFullFillPerc = budgetFullFillPerc(budget.get().limit(), totalExpensesValue(budgetId, userId));
-        Integer totalExpNumb = expenseRepository.findExpenseByBudgetIdAndUserId(budgetId, userId).size();
-        String limitValue = getLimitFromBudget(budget.get());
-        return BudgetStatusDTO.newOf(budgetId.toString(), totalExpNumb,
-                                     totalExpensesValue(budgetId, userId), amountLeft,
-                                     budgetFullFillPerc, budget.get().typeOfBudget().getTitle(), limitValue,
-                                     LocalDateTime.now()
-        );
-    }
-
-    public String getLimitFromBudget(Budget budget) {
+    private String getLimitFromBudget(Budget budget) {
         BigDecimal limit = budget.limit().multiply(budget.typeOfBudget().getValue());
-
         if (!budget.typeOfBudget().getValue().equals(BigDecimal.valueOf(-1))) {
             return limit.toString();
         } else {
             return "no limit";
         }
     }
-
 }

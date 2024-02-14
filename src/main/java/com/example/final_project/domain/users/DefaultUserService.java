@@ -26,6 +26,7 @@ public class DefaultUserService implements UserService {
     @Value("${admin.key.value}")
     private String ADMIN_PASSWORD;
 
+    @Override
     public RegisterResponseDTO registerNewUser(RegisterUserRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new UnableToRegisterException("User's email is already occupied!");
@@ -37,48 +38,56 @@ public class DefaultUserService implements UserService {
         return authenticationService.register(request);
     }
 
+    @Override
     public AppUser findFromToken(String userId) {
-        return userRepository.findById(UserId.newFromString(userId))
+        return userRepository.findById(UserIdWrapper.newFromString(userId))
                              .orElseThrow(() -> new JwtException("Invalid token"));
     }
 
+    @Override
     public List<UserDetailsResponse> getAllUsers() {
         return userRepository.findAll()
                              .stream()
                              .map(UserDetailsResponse::fromDomain).toList();
     }
 
+    @Override
     public UserDetailsResponse findByUserId(String userId) {
-        return userRepository.findById(UserId.newFromString(userId))
+        return userRepository.findById(UserIdWrapper.newFromString(userId))
                              .map(UserDetailsResponse::fromDomain)
-                             .orElseThrow(() -> new NoSuchElementException("There is no such user id!"));
+                             .orElseThrow(() -> new NoSuchElementException("There is no such user budgetId!"));
     }
 
+    @Override
     public AppUser findByLogin(String login) {
         return userRepository.findByLogin(login)
                              .orElseThrow(() -> new NoSuchElementException("There is no user with such login"));
     }
 
+    @Override
     public AppUser findByEmail(String email) {
         return userRepository.findByEmail(email)
                              .orElseThrow(() -> new NoSuchElementException("There is no user with such email"));
     }
 
+    @Override
     public void removeUserByLogin(String login) {
-        Optional<UserId> userId = userRepository.findByLogin(login).map(AppUser::id);
+        Optional<UserIdWrapper> userId = userRepository.findByLogin(login).map(AppUser::userId);
         userId.ifPresent(userRepository::deleteById);
 
         registerAdminUser();
     }
 
+    @Override
     public void removeUserByUserId(String userId) {
-        Optional<UserId> userToRemove = userRepository.findById(UserId.newFromString(userId))
-                                                      .map(AppUser::id);
+        Optional<UserIdWrapper> userToRemove = userRepository.findById(UserIdWrapper.newFromString(userId))
+                                                             .map(AppUser::userId);
         userToRemove.ifPresent(userRepository::deleteById);
 
         registerAdminUser();
     }
 
+    @Override
     public void removeThemAll() {
         userRepository.deleteAll();
         registerAdminUser();
@@ -88,7 +97,7 @@ public class DefaultUserService implements UserService {
     private void registerAdminUser() {
         if (!userRepository.existsByLogin("admin")) {
             AppUser admin = AppUser.builder()
-                                   .id(UserId.newId(UUID.randomUUID()))
+                                   .userId(UserIdWrapper.newId(UUID.randomUUID()))
                                    .login("admin")
                                    .email("X")
                                    .password(passwordEncoder.encode(ADMIN_PASSWORD))

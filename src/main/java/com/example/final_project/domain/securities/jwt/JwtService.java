@@ -1,7 +1,7 @@
 package com.example.final_project.domain.securities.jwt;
 
 import com.example.final_project.domain.users.AppUser;
-import com.example.final_project.domain.users.UserId;
+import com.example.final_project.domain.users.UserIdWrapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -9,7 +9,6 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -60,9 +59,9 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    public UserId extractUserIdFromRequestAuth(Authentication authentication) {
+    public UserIdWrapper extractUserIdFromRequestAuth(Authentication authentication) {
         AppUser checkedUser = (AppUser) authentication.getPrincipal();
-        return checkedUser.id();
+        return checkedUser.userId();
     }
 
     private Claims extractAllClaims(String token) {

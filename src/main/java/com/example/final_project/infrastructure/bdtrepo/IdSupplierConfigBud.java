@@ -1,6 +1,6 @@
 package com.example.final_project.infrastructure.bdtrepo;
 
-import com.example.final_project.domain.budgets.BudgetId;
+import com.example.final_project.domain.budgets.BudgetIdWrapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 @Configuration
 class IdSupplierConfigBud {
     @Bean
-    public Supplier<BudgetId> budgetIdSupplier() {
-        return () -> BudgetId.newOf(UUID.randomUUID());
+    public Supplier<BudgetIdWrapper> budgetIdSupplier() {
+        return () -> BudgetIdWrapper.newOf(UUID.randomUUID());
     }
 }

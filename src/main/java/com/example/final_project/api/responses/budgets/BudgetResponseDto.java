@@ -1,14 +1,14 @@
 package com.example.final_project.api.responses.budgets;
 
 import com.example.final_project.domain.budgets.Budget;
-import com.example.final_project.domain.budgets.BudgetId;
+import com.example.final_project.domain.budgets.BudgetIdWrapper;
 import com.example.final_project.domain.budgets.TypeOfBudget;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record BudgetResponseDto(
-        BudgetId budgetId,
+        BudgetIdWrapper budgetId,
         String title,
         BigDecimal limit,
         TypeOfBudget typeOfBudget,

@@ -6,9 +6,9 @@ import java.math.BigDecimal;
 
 @ToString
 public enum TypeOfBudget {
-    HALF("can be exceeded to half of total value", BigDecimal.valueOf(1.5)),
-    FULL("can be exceeded with no limit", BigDecimal.valueOf(-1)),
-    STRICT("can't be exceeded", BigDecimal.valueOf(1));
+    HALF("Budget can be exceeded to half of total value", BigDecimal.valueOf(1.5)),
+    FULL("Budget can be exceeded with no limit", BigDecimal.valueOf(-1)),
+    STRICT("Budget can't be exceeded", BigDecimal.valueOf(1));
 
     private final String title;
     private final BigDecimal value;

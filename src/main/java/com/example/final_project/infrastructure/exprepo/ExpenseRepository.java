@@ -1,10 +1,10 @@
 package com.example.final_project.infrastructure.exprepo;
 
 import com.example.final_project.domain.budgets.Budget;
-import com.example.final_project.domain.budgets.BudgetId;
+import com.example.final_project.domain.budgets.BudgetIdWrapper;
 import com.example.final_project.domain.expenses.Expense;
-import com.example.final_project.domain.expenses.ExpenseId;
-import com.example.final_project.domain.users.UserId;
+import com.example.final_project.domain.expenses.ExpenseIdWrapper;
+import com.example.final_project.domain.users.UserIdWrapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -13,21 +13,23 @@ import java.util.List;
 import java.util.Optional;
 
 
-public interface ExpenseRepository extends MongoRepository<Expense, ExpenseId> {
+public interface ExpenseRepository extends MongoRepository<Expense, ExpenseIdWrapper> {
 
-    Optional<Expense> findExpenseByExpenseIdAndUserId(ExpenseId expenseId, UserId userId);
+    List<Expense> findExpenseByBudgetId(BudgetIdWrapper budgetId);
 
-    List<Expense> findExpenseByBudgetIdAndUserId(BudgetId budgetId, UserId userId);
+    List<Expense> findAllByBudgetId(BudgetIdWrapper budgetId);
 
-    Page<Expense> findExpensesByUserId(UserId userId, Pageable pageable);
+    Optional<Expense> findExpenseByExpenseIdAndUserId(ExpenseIdWrapper expenseId, UserIdWrapper userId);
 
-    void deleteExpenseByExpenseIdAndUserId(ExpenseId expenseId, UserId userId);
+    Page<Expense> findExpensesByUserId(UserIdWrapper userId, Pageable pageable);
 
-    List<Expense> findAllByUserId(UserId userId);
+    void deleteExpenseByExpenseIdAndUserId(ExpenseIdWrapper expenseId, UserIdWrapper userId);
 
-    List<Expense> findExpensesByBudgetIdAndUserId(BudgetId budgetId, UserId userId);
+    List<Expense> findAllByUserId(UserIdWrapper userId);
 
-    Page<Expense> findAllByBudgetIdAndUserId(BudgetId budgetId, UserId userId, Pageable pageable);
+    List<Expense> findExpensesByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId);
 
-    Budget findBudgetByExpenseId(ExpenseId expenseId);
+    Page<Expense> findAllByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId, Pageable pageable);
+
+    Budget findBudgetByExpenseId(ExpenseIdWrapper expenseId);
 }

@@ -22,8 +22,8 @@ public record RegisterBudgetRequest(
         BigDecimal limit,
         @NotNull(message = "Type of budget cannot be null")
         TypeOfBudget typeOfBudget,
-        @NotNull(message = "single expense limit cannot be null")
-        @Positive(message = "single expense limit cannot be negative or zero")
+        @NotNull(message = "Single expense limit cannot be null")
+        @Positive(message = "Single expense limit cannot be negative or zero")
         BigDecimal maxSingleExpense
 ) {
 }

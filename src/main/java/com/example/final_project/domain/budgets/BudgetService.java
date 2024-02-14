@@ -1,34 +1,33 @@
 package com.example.final_project.domain.budgets;
 
 import com.example.final_project.api.responses.budgets.BudgetStatusDTO;
-import com.example.final_project.domain.users.UserId;
+import com.example.final_project.domain.users.UserIdWrapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 public interface BudgetService {
 
-    Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget, BigDecimal maxSingleExpense, UserId userId);
+    Budget getBudgetById(BudgetIdWrapper budgetId, UserIdWrapper userId);
 
-    Optional<Budget> getBudgetById(BudgetId budgetId, UserId userId);
+    void deleteBudgetById(BudgetIdWrapper budgetId, UserIdWrapper userId);
 
-    void deleteBudgetById(BudgetId budgetId, UserId userId);
+    Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget, BigDecimal maxSingleExpense,
+                             UserIdWrapper userId
+    );
 
-    Optional<Budget> updateBudgetContent(BudgetId budgetId, Optional<String> title, Optional<BigDecimal> limit,
-                                         Optional<TypeOfBudget> typeOfBudget, Optional<BigDecimal> maxSingleExpense, UserId userId,
-                                         Optional<LocalDateTime> timestamp);
+    Budget patchBudgetContent(BudgetIdWrapper budgetId, Optional<String> title, Optional<BigDecimal> limit,
+                              Optional<TypeOfBudget> typeOfBudget, Optional<BigDecimal> maxSingleExpense, UserIdWrapper userId
+    );
 
-    List<Budget> getBudgets(UserId userId);
+    Budget updateBudgetById(BudgetIdWrapper BudgetId, String title, BigDecimal limit, TypeOfBudget typeOfBudget,
+                            BigDecimal maxSingleExpense, UserIdWrapper userId, LocalDateTime timestamp
+    );
 
-    Budget updateBudgetById(BudgetId BudgetId, String title, BigDecimal limit, TypeOfBudget typeOfBudget,
-                            BigDecimal maxSingleExpense, UserId userId, LocalDateTime timestamp);
+    Page<Budget> findAllByPage(UserIdWrapper userId, Pageable pageable);
 
-    Page<Budget> findAllByPage(UserId userId, Pageable pageable);
-
-    BudgetStatusDTO getBudgetStatus(BudgetId budgetId, UserId userId);
-
+    BudgetStatusDTO getBudgetStatus(BudgetIdWrapper budgetId, UserIdWrapper userId);
 }

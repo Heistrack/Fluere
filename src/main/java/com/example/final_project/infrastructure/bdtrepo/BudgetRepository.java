@@ -1,22 +1,21 @@
 package com.example.final_project.infrastructure.bdtrepo;
 
 import com.example.final_project.domain.budgets.Budget;
-import com.example.final_project.domain.budgets.BudgetId;
-import com.example.final_project.domain.users.UserId;
+import com.example.final_project.domain.budgets.BudgetIdWrapper;
+import com.example.final_project.domain.users.UserIdWrapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import java.util.List;
 import java.util.Optional;
 
-public interface BudgetRepository extends MongoRepository<Budget, BudgetId> {
+public interface BudgetRepository extends MongoRepository<Budget, BudgetIdWrapper> {
 
-    Optional<Budget> findBudgetByBudgetIdAndUserId(BudgetId budgetId, UserId userId);
+    Optional<Budget> findBudgetByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId);
 
-    void deleteBudgetByBudgetIdAndUserId(BudgetId budgetId, UserId userId);
+    void deleteBudgetByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId);
 
-    Page<Budget> findAllByUserId(UserId userId, Pageable pageable);
+    Page<Budget> findAllByUserId(UserIdWrapper userId, Pageable pageable);
 
-    List<Budget> findAllByUserId(UserId userId);
+    boolean existsByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId);
 }

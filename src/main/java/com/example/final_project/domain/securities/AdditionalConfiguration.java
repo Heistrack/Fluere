@@ -1,6 +1,6 @@
 package com.example.final_project.domain.securities;
 
-import com.example.final_project.domain.users.UserId;
+import com.example.final_project.domain.users.UserIdWrapper;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,7 +26,7 @@ public class AdditionalConfiguration {
     // and for sending response message to postman not only for IDE console?
     @Bean
     UserDetailsService userDetailsService() {
-        return id -> repository.findById(UserId.newFromString(id))
+        return id -> repository.findById(UserIdWrapper.newFromString(id))
                                .orElseThrow(() -> new BadCredentialsException("Wrong user or password!"));
     }
 

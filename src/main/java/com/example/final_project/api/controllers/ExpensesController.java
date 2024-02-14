@@ -3,10 +3,10 @@ package com.example.final_project.api.controllers;
 import com.example.final_project.api.requests.expenses.RegisterExpenseRequest;
 import com.example.final_project.api.requests.expenses.UpdateExpenseRequest;
 import com.example.final_project.api.responses.expenses.ExpenseResponseDto;
-import com.example.final_project.domain.budgets.BudgetId;
+import com.example.final_project.domain.budgets.BudgetIdWrapper;
 import com.example.final_project.domain.expenses.*;
 import com.example.final_project.domain.securities.jwt.JwtService;
-import com.example.final_project.domain.users.UserId;
+import com.example.final_project.domain.users.UserIdWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,8 +36,8 @@ public class ExpensesController {
             @PathVariable String rawExpenseId,
             Authentication authentication
     ) {
-        UserId userId = jwtService.extractUserIdFromRequestAuth(authentication);
-        Optional<Expense> expenseById = expensesService.getExpenseById(new ExpenseId(rawExpenseId), userId);
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
+        Optional<Expense> expenseById = expensesService.getExpenseById(new ExpenseIdWrapper(rawExpenseId), userId);
         return ResponseEntity.of(expenseById.map(ExpenseResponseDto::fromDomain));
     }
 
@@ -49,7 +49,7 @@ public class ExpensesController {
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
             Authentication authentication
     ) {
-        UserId userId = jwtService.extractUserIdFromRequestAuth(authentication);
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
         return ResponseEntity.ok(expensesService.findAllByPage(
                                                         PageRequest.of(page, size, Sort.by(sortDirection, sortBy)), userId)
                                                 .map(ExpenseResponseDto::fromDomain));
@@ -60,16 +60,16 @@ public class ExpensesController {
             @PathVariable String rawBudgetId,
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "25") Integer size,
-            @RequestParam(required = false, defaultValue = "budgetId") String sortBy,
+            @RequestParam(required = false, defaultValue = "id") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
             Authentication authentication
     ) {
 
-        UserId userId = jwtService.extractUserIdFromRequestAuth(authentication);
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
         return ResponseEntity.ok(expensesService.findAllExpensesByBudgetId(
                                                         userId,
-                                                        BudgetId.newFromString(rawBudgetId),
+                                                        BudgetIdWrapper.newFromString(rawBudgetId),
                                                         PageRequest.of(page, size,
                                                                        Sort.by(sortDirection, sortBy)
                                                         )
@@ -83,10 +83,10 @@ public class ExpensesController {
             Authentication authentication
     ) {
 
-        UserId userId = jwtService.extractUserIdFromRequestAuth(authentication);
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
         Expense newExpense = expensesService.registerNewExpense(request.title(), request.amount(),
-                                                                BudgetId.newFromString(request.budgetId()), userId,
+                                                                BudgetIdWrapper.newFromString(request.budgetId()), userId,
                                                                 request.typeOfExpense()
         );
         ExpenseResponseDto expenseResponseDto = ExpenseResponseDto.fromDomain(newExpense);
@@ -100,9 +100,9 @@ public class ExpensesController {
             Authentication authentication
     ) {
 
-        UserId userId = jwtService.extractUserIdFromRequestAuth(authentication);
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
-        expensesService.getExpenseById(new ExpenseId(rawExpenseId), userId)
+        expensesService.getExpenseById(new ExpenseIdWrapper(rawExpenseId), userId)
                        .ifPresent(expense -> expensesService.deleteExpenseById(expense.expenseId(), userId));
         return ResponseEntity.noContent().build();
     }
@@ -114,13 +114,13 @@ public class ExpensesController {
             Authentication authentication
     ) {
 
-        UserId userId = jwtService.extractUserIdFromRequestAuth(authentication);
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
         Optional<BigDecimal> amount = (Optional.ofNullable(request.amount()));
         Optional<String> title = Optional.ofNullable(request.title());
 
         return ResponseEntity.of(expensesService.updateExpenseContent(
-                                                        new ExpenseId(rawExpenseId.toString()), title, amount, userId, request.typeOfExpense())
+                                                        new ExpenseIdWrapper(rawExpenseId.toString()), title, amount, userId, request.typeOfExpense())
                                                 .map(ExpenseResponseDto::fromDomain));
     }
 
@@ -131,11 +131,11 @@ public class ExpensesController {
             Authentication authentication
     ) {
 
-        UserId userId = jwtService.extractUserIdFromRequestAuth(authentication);
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
         Expense updatedExpense = expensesService.updateExpenseById(
-                ExpenseId.newId(rawExpenseId.toString()),
-                BudgetId.newFromString(request.budgetId()),
+                ExpenseIdWrapper.newId(rawExpenseId.toString()),
+                BudgetIdWrapper.newFromString(request.budgetId()),
                 request.title(),
                 request.amount(),
                 userId,

@@ -19,7 +19,7 @@ public record UpdateBudgetRequest(
         @Positive(message = "Budget limit cannot be negative or zero")
         BigDecimal limit,
         TypeOfBudget typeOfBudget,
-        @Positive(message = "single expense limit cannot be negative or zero")
+        @Positive(message = "Single expense limit cannot be negative or zero")
         BigDecimal maxSingleExpense
 ) {
 }

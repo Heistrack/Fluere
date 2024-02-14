@@ -1,8 +1,8 @@
 package com.example.final_project.domain.expenses;
 
 import com.example.final_project.domain.budgets.Budget;
-import com.example.final_project.domain.budgets.BudgetId;
-import com.example.final_project.domain.users.UserId;
+import com.example.final_project.domain.budgets.BudgetIdWrapper;
+import com.example.final_project.domain.users.UserIdWrapper;
 import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import org.springframework.data.domain.Page;
@@ -19,18 +19,18 @@ import java.util.function.Supplier;
 public class DefaultExpensesService implements ExpensesService {
 
     private final ExpenseRepository expenseRepository;
-    private final Supplier<ExpenseId> expenseIdSupplier;
+    private final Supplier<ExpenseIdWrapper> expenseIdSupplier;
     private final BudgetRepository budgetRepository;
 
 
-    public DefaultExpensesService(ExpenseRepository expenseRepository, Supplier<ExpenseId> expenseIdSupplier, BudgetRepository budgetRepository) {
+    public DefaultExpensesService(ExpenseRepository expenseRepository, Supplier<ExpenseIdWrapper> expenseIdSupplier, BudgetRepository budgetRepository) {
         this.expenseRepository = expenseRepository;
         this.expenseIdSupplier = expenseIdSupplier;
         this.budgetRepository = budgetRepository;
     }
 
     @Override
-    public Expense registerNewExpense(String title, BigDecimal amount, BudgetId budgetId, UserId userId, Optional<TypeOfExpense> typeOfExpense) {
+    public Expense registerNewExpense(String title, BigDecimal amount, BudgetIdWrapper budgetId, UserIdWrapper userId, Optional<TypeOfExpense> typeOfExpense) {
         validationForNewExpense(amount, budgetId, userId);
 
         Expense expense = new Expense(expenseIdSupplier.get(), title, amount, budgetId, userId, LocalDateTime.now(),
@@ -40,25 +40,25 @@ public class DefaultExpensesService implements ExpensesService {
     }
 
     @Override
-    public Optional<Expense> getExpenseById(ExpenseId expenseId, UserId userId) {
+    public Optional<Expense> getExpenseById(ExpenseIdWrapper expenseId, UserIdWrapper userId) {
         return expenseRepository.findExpenseByExpenseIdAndUserId(expenseId, userId);
     }
 
     @Override
-    public void deleteExpenseById(ExpenseId expenseId, UserId userId) {
+    public void deleteExpenseById(ExpenseIdWrapper expenseId, UserIdWrapper userId) {
         expenseRepository.deleteExpenseByExpenseIdAndUserId(expenseId, userId);
     }
 
     @Override
     public Optional<Expense> updateExpenseContent(
-            ExpenseId expenseId,
+            ExpenseIdWrapper expenseId,
             Optional<String> title,
             Optional<BigDecimal> amount,
-            UserId userId,
+            UserIdWrapper userId,
             Optional<TypeOfExpense> typeOfExpense
     ) {
 
-        BudgetId budgetId = expenseRepository.findBudgetByExpenseId(expenseId).budgetId();
+        BudgetIdWrapper budgetId = expenseRepository.findBudgetByExpenseId(expenseId).budgetId();
 
         Budget budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).orElseThrow();
 
@@ -82,11 +82,11 @@ public class DefaultExpensesService implements ExpensesService {
 
     @Override
     public Expense updateExpenseById(
-            ExpenseId expenseId,
-            BudgetId budgetId,
+            ExpenseIdWrapper expenseId,
+            BudgetIdWrapper budgetId,
             String title,
             BigDecimal amount,
-            UserId userId,
+            UserIdWrapper userId,
             TypeOfExpense typeOfExpense
     ) {
         validationForNewExpense(amount, budgetId, userId);
@@ -99,24 +99,24 @@ public class DefaultExpensesService implements ExpensesService {
                 LocalDateTime.now(),
                 typeOfExpense));
     }
-    private void validationForNewExpense(BigDecimal amount, BudgetId budgetId, UserId userId){
+    private void validationForNewExpense(BigDecimal amount, BudgetIdWrapper budgetId, UserIdWrapper userId){
         Budget budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).orElseThrow();
         checkBudgetLimit(amount, budget);
         singleMaxExpValidation(amount, budget);
     }
 
     @Override
-    public List<Expense> getExpenses(UserId userId) {
+    public List<Expense> getExpenses(UserIdWrapper userId) {
         return expenseRepository.findAllByUserId(userId);
     }
 
     @Override
-    public Page<Expense> findAllExpensesByBudgetId(UserId userId, BudgetId budgetId, Pageable pageable) {
+    public Page<Expense> findAllExpensesByBudgetId(UserIdWrapper userId, BudgetIdWrapper budgetId, Pageable pageable) {
         return expenseRepository.findAllByBudgetIdAndUserId(budgetId, userId, pageable);
     }
 
     @Override
-    public Page<Expense> findAllByPage(Pageable pageable, UserId userId) {
+    public Page<Expense> findAllByPage(Pageable pageable, UserIdWrapper userId) {
         return expenseRepository.findExpensesByUserId(userId, pageable);
     }
 
@@ -134,7 +134,7 @@ public class DefaultExpensesService implements ExpensesService {
         var totalBudgetLimit = budget.limit().multiply(budget.typeOfBudget().getValue());
 
         var totalExpensesAmount = expenseRepository.findExpensesByBudgetIdAndUserId(
-                        budget.budgetId(), budget.userId())
+                                                           budget.budgetId(), budget.userId())
                 .stream()
                 .map(Expense::amount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);

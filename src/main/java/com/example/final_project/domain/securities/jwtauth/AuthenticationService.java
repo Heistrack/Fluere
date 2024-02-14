@@ -7,11 +7,10 @@ import com.example.final_project.api.responses.authentications.RegisterResponseD
 import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.users.AppUser;
 import com.example.final_project.domain.users.Role;
-import com.example.final_project.domain.users.UserId;
+import com.example.final_project.domain.users.UserIdWrapper;
 import com.example.final_project.domain.users.WrongCredentialsException;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,11 +27,11 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final Supplier<UserId> userIdSupplier;
+    private final Supplier<UserIdWrapper> userIdSupplier;
 
     public RegisterResponseDTO register(RegisterUserRequest request) {
         AppUser user = AppUser.builder()
-                              .id(userIdSupplier.get())
+                              .userId(userIdSupplier.get())
                               .login(request.login())
                               .email(request.email())
                               .password(passwordEncoder.encode(request.password()))
@@ -54,7 +53,7 @@ public class AuthenticationService {
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        user.id().userId().toString(),
+                        user.userId().userId().toString(),
                         request.password()
                 )
         );

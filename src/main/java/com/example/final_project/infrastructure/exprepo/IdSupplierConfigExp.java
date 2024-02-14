@@ -1,6 +1,6 @@
 package com.example.final_project.infrastructure.exprepo;
 
-import com.example.final_project.domain.expenses.ExpenseId;
+import com.example.final_project.domain.expenses.ExpenseIdWrapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 class IdSupplierConfigExp {
 
     @Bean
-    public Supplier<ExpenseId> expenseIdSupplier() {
-        return () -> new ExpenseId(UUID.randomUUID().toString());
+    public Supplier<ExpenseIdWrapper> expenseIdSupplier() {
+        return () -> new ExpenseIdWrapper(UUID.randomUUID().toString());
     }
 }

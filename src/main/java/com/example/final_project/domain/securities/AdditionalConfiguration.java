@@ -4,6 +4,7 @@ import com.example.final_project.domain.users.UserIdWrapper;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -51,6 +52,7 @@ public class AdditionalConfiguration {
     @Bean
     public ObjectMapper objectMapper() {
         return JsonMapper.builder().configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
+                         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
                          .findAndAddModules()
                          .build();
     }

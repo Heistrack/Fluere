@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static com.example.final_project.api.controllers.UserController.USERS_BASE_CONTROLLER_PATH;
 
@@ -56,8 +57,8 @@ public class UserController {
         return ResponseEntity.ok(userService.findFromToken(authentication.getName()));
     }
 
-    @GetMapping("/ids/{userId}")
-    ResponseEntity<UserDetailsResponse> getUserById(@PathVariable String userId) {
+    @GetMapping("/id/{id}")
+    ResponseEntity<UserDetailsResponse> getUserById(@PathVariable(name = "id") UUID userId) {
         return ResponseEntity.ok(userService.findByUserId(userId));
     }
 
@@ -77,8 +78,8 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{userId}")
-    ResponseEntity<UserDetailsResponse> removeUserByUserId(@PathVariable String userId) {
+    @DeleteMapping("/{id}")
+    ResponseEntity<UserDetailsResponse> removeUserByUserId(@PathVariable UUID userId) {
         userService.removeUserByUserId(userId);
         return ResponseEntity.noContent().build();
     }

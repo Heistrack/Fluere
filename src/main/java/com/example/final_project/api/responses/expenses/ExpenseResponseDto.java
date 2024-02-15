@@ -17,7 +17,7 @@ public record ExpenseResponseDto(
     public static ExpenseResponseDto fromDomain(Expense expense) {
         return new ExpenseResponseDto(
                 expense.title(),
-                expense.expenseId().value(),
+                expense.expenseId().id().toString(),
                 expense.amount(),
                 expense.timestamp(),
                 expense.typeOfExpense()

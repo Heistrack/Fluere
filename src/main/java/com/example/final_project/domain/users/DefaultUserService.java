@@ -52,10 +52,10 @@ public class DefaultUserService implements UserService {
     }
 
     @Override
-    public UserDetailsResponse findByUserId(String userId) {
-        return userRepository.findById(UserIdWrapper.newFromString(userId))
+    public UserDetailsResponse findByUserId(UUID userId) {
+        return userRepository.findById(UserIdWrapper.newOf(userId))
                              .map(UserDetailsResponse::fromDomain)
-                             .orElseThrow(() -> new NoSuchElementException("There is no such user budgetId!"));
+                             .orElseThrow(() -> new NoSuchElementException("There is no such user id!"));
     }
 
     @Override
@@ -79,8 +79,8 @@ public class DefaultUserService implements UserService {
     }
 
     @Override
-    public void removeUserByUserId(String userId) {
-        Optional<UserIdWrapper> userToRemove = userRepository.findById(UserIdWrapper.newFromString(userId))
+    public void removeUserByUserId(UUID userId) {
+        Optional<UserIdWrapper> userToRemove = userRepository.findById(UserIdWrapper.newOf(userId))
                                                              .map(AppUser::userId);
         userToRemove.ifPresent(userRepository::deleteById);
 
@@ -97,7 +97,7 @@ public class DefaultUserService implements UserService {
     private void registerAdminUser() {
         if (!userRepository.existsByLogin("admin")) {
             AppUser admin = AppUser.builder()
-                                   .userId(UserIdWrapper.newId(UUID.randomUUID()))
+                                   .userId(UserIdWrapper.newOf(UUID.randomUUID()))
                                    .login("admin")
                                    .email("X")
                                    .password(passwordEncoder.encode(ADMIN_PASSWORD))

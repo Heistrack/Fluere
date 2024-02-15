@@ -121,26 +121,26 @@
 //
 //        // given
 //        ExpenseResponseDto response = registerNewExpenseWithReturn("My test expense", BigDecimal.valueOf(100));
-//        ExpenseId userId = new ExpenseId(response.expenseId());
-//        System.out.println(userId);
+//        ExpenseId id = new ExpenseId(response.expenseId());
+//        System.out.println(id);
 //
 //        // when
-//        testRestTemplate.delete("/expenses/" + userId.value());
+//        testRestTemplate.delete("/expenses/" + id.id());
 //
 //        // then
 ////        assertThat(deleteResponse.getStatusCode().is2xxSuccessful()).isTrue();
 //
-//        assertThat(expenseRepository.findById(userId)).isEmpty();
+//        assertThat(expenseRepository.findById(id)).isEmpty();
 //
 //    }
 //    @Test
 //    void shouldPutExpense() {
 //        //Given
 //        ExpenseResponseDto response = registerNewExpenseWithReturn("title", BigDecimal.valueOf(50));
-//        ExpenseId userId = new ExpenseId(response.expenseId());
+//        ExpenseId id = new ExpenseId(response.expenseId());
 //        RegisterExpenseRequest updateRequest = new RegisterExpenseRequest("update Title", BigDecimal.valueOf(100));
 //        //When
-//        ResponseEntity<ExpenseResponseDto> updateResponse = testRestTemplate.exchange("/expenses/" + userId.value(), HttpMethod.PUT, new HttpEntity<>(updateRequest), ExpenseResponseDto.class);
+//        ResponseEntity<ExpenseResponseDto> updateResponse = testRestTemplate.exchange("/expenses/" + id.id(), HttpMethod.PUT, new HttpEntity<>(updateRequest), ExpenseResponseDto.class);
 //        //Then
 //        assertThat(updateResponse.getStatusCode().is2xxSuccessful()).isTrue();
 //        assertThat(updateResponse.getBody().title()).isEqualTo(updateRequest.title());
@@ -151,11 +151,11 @@
 //    void shouldPathExpenses() {
 //        //Given
 //        ExpenseResponseDto response = registerNewExpenseWithReturn("title", BigDecimal.valueOf(20));
-//        ExpenseId userId = new ExpenseId(response.expenseId());
+//        ExpenseId id = new ExpenseId(response.expenseId());
 //        UpdateExpenseRequest updateRequest = new UpdateExpenseRequest("update Title", null);
 //        ExpenseResponseDto expectedResponseDto = new ExpenseResponseDto("update Title", response.expenseId(), BigDecimal.valueOf(20));
 //        //When
-//        var responseSpec = webClient.patch().uri("/expenses/" + userId.value()).bodyValue(updateRequest).exchange();
+//        var responseSpec = webClient.patch().uri("/expenses/" + id.id()).bodyValue(updateRequest).exchange();
 //        //Then
 //        responseSpec.expectStatus().is2xxSuccessful();
 //        responseSpec.expectBody(ExpenseResponseDto.class).isEqualTo(expectedResponseDto);

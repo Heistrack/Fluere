@@ -1,8 +1,10 @@
 package com.example.final_project.domain.expenses;
 
 
-public record ExpenseIdWrapper(String value) {
-    public static ExpenseIdWrapper newId(String value) {
-        return new ExpenseIdWrapper(value);
+import java.util.UUID;
+
+public record ExpenseIdWrapper(UUID id) {
+    public static ExpenseIdWrapper newOf(UUID id) {
+        return new ExpenseIdWrapper(id);
     }
 }

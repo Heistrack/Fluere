@@ -12,6 +12,6 @@ class IdSupplierConfigExp {
 
     @Bean
     public Supplier<ExpenseIdWrapper> expenseIdSupplier() {
-        return () -> new ExpenseIdWrapper(UUID.randomUUID().toString());
+        return () -> new ExpenseIdWrapper(UUID.randomUUID());
     }
 }

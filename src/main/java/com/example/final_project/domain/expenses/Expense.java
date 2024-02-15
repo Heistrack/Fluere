@@ -15,7 +15,7 @@ public record Expense(
         BigDecimal amount,
         BudgetIdWrapper budgetId,
         //FIXME Do I really need bind expenses with users if I have already got
-        // such a binding through expenseId -> budgetId -> UserId
+        // such a binding through expenseId -> id -> UserId
         UserIdWrapper userId,
         LocalDateTime timestamp,
         TypeOfExpense typeOfExpense

@@ -5,11 +5,12 @@ import com.example.final_project.api.responses.UserDetailsResponse;
 import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface UserService {
     RegisterResponseDTO registerNewUser(RegisterUserRequest request);
 
-    UserDetailsResponse findByUserId(String userId);
+    UserDetailsResponse findByUserId(UUID userId);
 
     AppUser findFromToken(String userId);
 
@@ -21,7 +22,7 @@ public interface UserService {
 
     void removeUserByLogin(String login);
 
-    void removeUserByUserId(String userId);
+    void removeUserByUserId(UUID userId);
 
     void removeThemAll();
 }

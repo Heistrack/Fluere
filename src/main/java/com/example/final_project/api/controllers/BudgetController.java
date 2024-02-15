@@ -35,31 +35,31 @@ public class BudgetController {
 
     @GetMapping("/{rawbudgetid}")
     ResponseEntity<BudgetResponseDto> getSingleBudget(
-            @PathVariable(name = "rawbudgetid") String rawBudgetId, Authentication authentication
+            @PathVariable(name = "rawbudgetid") UUID rawBudgetId, Authentication authentication
     ) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-        Budget budgetById = budgetService.getBudgetById(BudgetIdWrapper.newFromString(rawBudgetId), userId);
+        Budget budgetById = budgetService.getBudgetById(BudgetIdWrapper.newOf(rawBudgetId), userId);
         return ResponseEntity.ok(BudgetResponseDto.fromDomain(budgetById));
     }
 
     @DeleteMapping("/{rawbudgetid}")
-    public ResponseEntity<BudgetResponseDto> deleteBudget(@PathVariable(name = "rawbudgetid") String rawBudgetId,
+    public ResponseEntity<BudgetResponseDto> deleteBudget(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
                                                           Authentication authentication
     ) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
-        Budget currentBudget = budgetService.getBudgetById(BudgetIdWrapper.newFromString(rawBudgetId), userId);
+        Budget currentBudget = budgetService.getBudgetById(BudgetIdWrapper.newOf(rawBudgetId), userId);
         budgetService.deleteBudgetById(currentBudget.budgetId(), userId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/statuses/{rawbudgetid}")
-    ResponseEntity<BudgetStatusDTO> getBudgetStatus(@PathVariable(name = "rawbudgetid") String rawBudgetId,
+    @GetMapping("/status/{rawbudgetid}")
+    ResponseEntity<BudgetStatusDTO> getBudgetStatus(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
                                                     Authentication authentication
     ) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
-        return ResponseEntity.ok(budgetService.getBudgetStatus(BudgetIdWrapper.newFromString(rawBudgetId), userId));
+        return ResponseEntity.ok(budgetService.getBudgetStatus(BudgetIdWrapper.newOf(rawBudgetId), userId));
     }
 
     @PostMapping
@@ -74,7 +74,7 @@ public class BudgetController {
                                                            userId
         );
         BudgetResponseDto budgetResponseDto = BudgetResponseDto.fromDomain(newBudget);
-        return ResponseEntity.created(URI.create("/expenses/" + budgetResponseDto.budgetId().budgetId()))
+        return ResponseEntity.created(URI.create("/expenses/" + budgetResponseDto.budgetId().id()))
                              .body(budgetResponseDto);
     }
 
@@ -98,7 +98,7 @@ public class BudgetController {
     }
 
     @PatchMapping("/{rawbudgetid}")
-    public ResponseEntity<BudgetResponseDto> patchBudget(@PathVariable(name = "rawbudgetid") String rawBudgetId,
+    public ResponseEntity<BudgetResponseDto> patchBudget(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
                                                          @Valid @RequestBody UpdateBudgetRequest request,
                                                          Authentication authentication
     ) {
@@ -106,7 +106,7 @@ public class BudgetController {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
         Budget patchedBudget = budgetService.patchBudgetContent(
-                BudgetIdWrapper.newFromString(rawBudgetId),
+                BudgetIdWrapper.newOf(rawBudgetId),
                 Optional.ofNullable(request.title()),
                 Optional.ofNullable(request.limit()),
                 Optional.ofNullable(request.typeOfBudget()),

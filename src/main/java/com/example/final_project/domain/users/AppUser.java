@@ -38,7 +38,7 @@ public record AppUser(@MongoId
 
     @Override
     public String getUsername() {
-        return this.userId().userId().toString();
+        return this.userId().id().toString();
     }
 
     @Override

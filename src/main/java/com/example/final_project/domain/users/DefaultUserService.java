@@ -4,6 +4,7 @@ import com.example.final_project.api.requests.users.RegisterUserRequest;
 import com.example.final_project.api.responses.UserDetailsResponse;
 import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
+import com.example.final_project.domain.users.exceptions.UnableToRegisterException;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
 import io.jsonwebtoken.JwtException;
 import jakarta.annotation.PostConstruct;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor

@@ -1,4 +1,4 @@
-package com.example.final_project.domain.users;
+package com.example.final_project.domain.users.exceptions;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

@@ -8,7 +8,7 @@ import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.users.AppUser;
 import com.example.final_project.domain.users.Role;
 import com.example.final_project.domain.users.UserIdWrapper;
-import com.example.final_project.domain.users.WrongCredentialsException;
+import com.example.final_project.domain.users.exceptions.WrongCredentialsException;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;

@@ -8,18 +8,18 @@ import org.hibernate.validator.constraints.Length;
 
 
 public record RegisterUserRequest(
-        @Email
+        @Email(message = "This is not an email.")
         String email,
-        @NotNull(message = "login cannot be null")
-        @NotBlank(message = "login cannot be blank")
-        @Length(min = 3, max = 50, message = "login cannot be shorter than 3 and longer than 50")
+        @NotNull(message = "Login can not be null.")
+        @NotBlank(message = "Login can not be blank.")
+        @Length(min = 3, max = 50, message = "Login can not be shorter than 3 and longer than 50 characters.")
         String login,
-        @NotNull(message = "password cannot be null")
-        @NotBlank(message = "password cannot be blank")
+        @NotNull(message = "Password can not be null.")
+        @NotBlank(message = "Password can not be blank.")
         //TODO CHANGE PASSWORD SIZE - during dev make it small
-        @Length(min = 1, max = 64, message = "password cannot be shorter than 8 and longer than 20")
+        @Length(min = 1, max = 64, message = "Password can not be shorter than 8 and longer than 64 characters.")
         String password) {
-        @Builder
-        public RegisterUserRequest {
-        }
+    @Builder
+    public RegisterUserRequest {
+    }
 }

@@ -9,7 +9,7 @@ import com.example.final_project.api.responses.authentications.RegisterResponseD
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
 import com.example.final_project.domain.users.AppUser;
 import com.example.final_project.domain.users.DefaultUserService;
-import com.example.final_project.domain.users.UnableToRegisterException;
+import com.example.final_project.domain.users.exceptions.UnableToRegisterException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

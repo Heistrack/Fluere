@@ -8,18 +8,13 @@ import org.hibernate.validator.constraints.Length;
 import java.math.BigDecimal;
 
 public record UpdateBudgetRequest(
-
-        @NotEmpty(message = "Budget title cannot be empty")
-        @Length(
-                min = 3,
-                max = 200,
-                message = "Title cannot be shorter than 3 and longer than 200"
-        )
+        @NotEmpty(message = "Budget title can not be empty.")
+        @Length(min = 3, max = 200, message = "Title can not be shorter than 3 and longer than 200 characters.")
         String title,
-        @Positive(message = "Budget limit cannot be negative or zero")
+        @Positive(message = "Budget limit can not be negative or zero.")
         BigDecimal limit,
         TypeOfBudget typeOfBudget,
-        @Positive(message = "Single expense limit cannot be negative or zero")
+        @Positive(message = "Single expense limit can not be negative or zero.")
         BigDecimal maxSingleExpense
 ) {
 }

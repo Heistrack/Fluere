@@ -13,7 +13,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
@@ -24,23 +23,20 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 @RequiredArgsConstructor
 class MainSecurityConfiguration {
 
-    private static final String ADMIN_PASSWORD = "12345";
     private final JwtAuthFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
-    private final PasswordEncoder passwordEncoder;
     private final CustomAuthenticationEntryPointJwt customAuthenticationEntryPointJwt;
     private final CustomAccessDeniedHandlerJwt customAccessDeniedHandlerJwt;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.authorizeHttpRequests(request -> request
-                //TODO configure endpoints security properly
-                                                  .requestMatchers("/budgets/**").authenticated()
-                                                  .requestMatchers("/expenses/**").authenticated()
-                                                  .requestMatchers("/users/**").permitAll()
-                                                  .requestMatchers("/**").permitAll()
-                                                  .anyRequest().authenticated()
-//                           .requestMatchers("/api/**").hasRole("USER")
+                           //TODO configure endpoints security properly
+                           .requestMatchers("/budgets/**").authenticated()
+                           .requestMatchers("/expenses/**").authenticated()
+                           .requestMatchers("/users/**").permitAll()
+                           .requestMatchers("/**").permitAll()
+                           .anyRequest().permitAll()
                    )
                    .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                                      .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
@@ -51,16 +47,11 @@ class MainSecurityConfiguration {
                    .authenticationProvider(authenticationProvider)
                    .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                    .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
-                .exceptionHandling(exceptionHandlers -> exceptionHandlers.authenticationEntryPoint(customAuthenticationEntryPointJwt)
-                        .accessDeniedHandler(customAccessDeniedHandlerJwt))
-                   //TODO add exception handling for security filter chain
-                   /* .exceptionHandling((exceptions) -> exceptions
-                    .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
-                    .accessDeniedHandler(new BearerTokenAccessDeniedHandler()));*/
+                   .exceptionHandling(exceptionHandlers -> exceptionHandlers.authenticationEntryPoint(
+                                                                                    customAuthenticationEntryPointJwt)
+                                                                            .accessDeniedHandler(
+                                                                                    customAccessDeniedHandlerJwt))
                    //FIXME add redirection in form login to start page after successful login
-                   // add exception handling for /*.exceptionHandling((exceptions) -> exceptions
-                   //                           .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
-                   //                           .accessDeniedHandler(new BearerTokenAccessDeniedHandler())*/
                    .build();
     }
 }

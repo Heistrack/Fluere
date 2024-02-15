@@ -11,9 +11,9 @@ import java.util.Optional;
 
 public interface BudgetRepository extends MongoRepository<Budget, BudgetIdWrapper> {
 
-    Optional<Budget> findBudgetByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId);
+    Optional<Budget> findByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId);
 
-    void deleteBudgetByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId);
+    void deleteByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId);
 
     Page<Budget> findAllByUserId(UserIdWrapper userId, Pageable pageable);
 

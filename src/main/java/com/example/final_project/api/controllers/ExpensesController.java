@@ -7,7 +7,6 @@ import com.example.final_project.domain.budgets.BudgetIdWrapper;
 import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.expenses.ExpenseIdWrapper;
 import com.example.final_project.domain.expenses.ExpensesService;
-import com.example.final_project.domain.expenses.TypeOfExpense;
 import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.users.UserIdWrapper;
 import jakarta.validation.Valid;
@@ -19,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,44 +38,19 @@ public class ExpensesController {
             Authentication authentication
     ) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-        Optional<Expense> expenseById = expensesService.getExpenseById(new ExpenseIdWrapper(rawExpenseId), userId);
-        return ResponseEntity.of(expenseById.map(ExpenseResponseDto::fromDomain));
+        Expense expenseById = expensesService.getExpenseById(new ExpenseIdWrapper(rawExpenseId), userId);
+        return ResponseEntity.ok(ExpenseResponseDto.fromDomain(expenseById));
     }
 
-    @GetMapping
-    ResponseEntity<Page<ExpenseResponseDto>> getExpensesByPage(
-            @RequestParam(required = false, defaultValue = "0") Integer page,
-            @RequestParam(required = false, defaultValue = "25") Integer size,
-            @RequestParam(required = false, defaultValue = "expenseId") String sortBy,
-            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
+    @DeleteMapping("/{rawexpenseid}")
+    public ResponseEntity<ExpenseResponseDto> deleteExpense(
+            @PathVariable(name = "rawexpenseid") UUID rawExpenseId,
             Authentication authentication
     ) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-        return ResponseEntity.ok(expensesService.findAllByPage(
-                                                        PageRequest.of(page, size, Sort.by(sortDirection, sortBy)), userId)
-                                                .map(ExpenseResponseDto::fromDomain));
-    }
 
-    @GetMapping("/budget/{rawexpenseid}")
-    ResponseEntity<Page<ExpenseResponseDto>> getExpensesByBudgetId(
-            @PathVariable(name = "rawexpenseid") UUID rawBudgetId,
-            @RequestParam(required = false, defaultValue = "0") Integer page,
-            @RequestParam(required = false, defaultValue = "25") Integer size,
-            @RequestParam(required = false, defaultValue = "id") String sortBy,
-            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
-            Authentication authentication
-    ) {
-
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-
-        return ResponseEntity.ok(expensesService.findAllExpensesByBudgetId(
-                                                        userId,
-                                                        BudgetIdWrapper.newOf(rawBudgetId),
-                                                        PageRequest.of(page, size,
-                                                                       Sort.by(sortDirection, sortBy)
-                                                        )
-                                                )
-                                                .map(ExpenseResponseDto::fromDomain));
+        expensesService.deleteExpenseById(ExpenseIdWrapper.newOf(rawExpenseId), userId);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping
@@ -91,24 +64,11 @@ public class ExpensesController {
         Expense newExpense = expensesService.registerNewExpense(request.title(), request.amount(),
                                                                 BudgetIdWrapper.newFromString(request.budgetId()),
                                                                 userId,
-                                                                request.typeOfExpense()
+                                                                Optional.ofNullable(request.typeOfExpense())
         );
-        ExpenseResponseDto expenseResponseDto = ExpenseResponseDto.fromDomain(newExpense);
-        return ResponseEntity.created(URI.create("/expenses/" + expenseResponseDto.expenseId()))
-                             .body(expenseResponseDto);
-    }
-
-    @DeleteMapping("/{rawexpenseid}")
-    public ResponseEntity<ExpenseResponseDto> deleteExpense(
-            @PathVariable(name = "rawexpenseid") UUID rawExpenseId,
-            Authentication authentication
-    ) {
-
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-
-        expensesService.getExpenseById(new ExpenseIdWrapper(rawExpenseId), userId)
-                       .ifPresent(expense -> expensesService.deleteExpenseById(expense.expenseId(), userId));
-        return ResponseEntity.noContent().build();
+        ExpenseResponseDto response = ExpenseResponseDto.fromDomain(newExpense);
+        return ResponseEntity.created(URI.create("/expenses/" + response.expenseId()))
+                             .body(response);
     }
 
     @PatchMapping("/{rawexpenseid}")
@@ -120,12 +80,13 @@ public class ExpensesController {
 
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
-        Optional<BigDecimal> amount = (Optional.ofNullable(request.amount()));
-        Optional<String> title = Optional.ofNullable(request.title());
-
-        return ResponseEntity.of(expensesService.updateExpenseContent(
-                                                        ExpenseIdWrapper.newOf(rawExpenseId), title, amount, userId, request.typeOfExpense())
-                                                .map(ExpenseResponseDto::fromDomain));
+        return ResponseEntity.ok(ExpenseResponseDto.fromDomain(expensesService.patchExpenseContent(
+                ExpenseIdWrapper.newOf(rawExpenseId),
+                Optional.ofNullable(request.title()),
+                Optional.ofNullable(request.amount()),
+                userId,
+                Optional.ofNullable(request.typeOfExpense())
+        )));
     }
 
     @PutMapping("/{rawexpenseid}")
@@ -143,9 +104,47 @@ public class ExpensesController {
                 request.title(),
                 request.amount(),
                 userId,
-                request.typeOfExpense().orElse(TypeOfExpense.NO_CATEGORY)
+                Optional.ofNullable(request.typeOfExpense())
         );
 
         return ResponseEntity.ok(ExpenseResponseDto.fromDomain(updatedExpense));
+    }
+
+    @GetMapping
+    ResponseEntity<Page<ExpenseResponseDto>> getExpensesByPage(
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "25") Integer size,
+            @RequestParam(required = false, defaultValue = "id") String sortBy,
+            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
+            Authentication authentication
+    ) {
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
+        return ResponseEntity.ok(expensesService.findAllByPage(
+                                                        userId,
+                                                        PageRequest.of(page, size, Sort.by(sortDirection, sortBy))
+                                                )
+                                                .map(ExpenseResponseDto::fromDomain));
+    }
+
+    @GetMapping("/budget/{rawbudgetid}")
+    ResponseEntity<Page<ExpenseResponseDto>> getExpensesByBudgetId(
+            @PathVariable(name = "rawbudgetid") UUID rawBudgetId,
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "25") Integer size,
+            @RequestParam(required = false, defaultValue = "id") String sortBy,
+            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
+            Authentication authentication
+    ) {
+
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
+
+        return ResponseEntity.ok(expensesService.findAllExpensesByBudgetId(
+                                                        userId,
+                                                        BudgetIdWrapper.newOf(rawBudgetId),
+                                                        PageRequest.of(page, size,
+                                                                       Sort.by(sortDirection, sortBy)
+                                                        )
+                                                )
+                                                .map(ExpenseResponseDto::fromDomain));
     }
 }

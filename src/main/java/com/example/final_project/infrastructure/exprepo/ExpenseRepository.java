@@ -15,21 +15,17 @@ import java.util.Optional;
 
 public interface ExpenseRepository extends MongoRepository<Expense, ExpenseIdWrapper> {
 
-    List<Expense> findExpenseByBudgetId(BudgetIdWrapper budgetId);
-
     List<Expense> findAllByBudgetId(BudgetIdWrapper budgetId);
 
-    Optional<Expense> findExpenseByExpenseIdAndUserId(ExpenseIdWrapper expenseId, UserIdWrapper userId);
+    Optional<Expense> findByExpenseIdAndUserId(ExpenseIdWrapper expenseId, UserIdWrapper userId);
 
-    Page<Expense> findExpensesByUserId(UserIdWrapper userId, Pageable pageable);
+    Page<Expense> findAllByUserId(UserIdWrapper userId, Pageable pageable);
 
-    void deleteExpenseByExpenseIdAndUserId(ExpenseIdWrapper expenseId, UserIdWrapper userId);
+    void deleteByExpenseIdAndUserId(ExpenseIdWrapper expenseId, UserIdWrapper userId);
 
-    List<Expense> findAllByUserId(UserIdWrapper userId);
-
-    List<Expense> findExpensesByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId);
+    List<Expense> findAllByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId);
 
     Page<Expense> findAllByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId, Pageable pageable);
 
-    Budget findBudgetByExpenseId(ExpenseIdWrapper expenseId);
+    Optional<Budget> findByExpenseId(ExpenseIdWrapper expenseId);
 }

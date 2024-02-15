@@ -27,7 +27,7 @@ public class AdditionalConfiguration {
     @Bean
     UserDetailsService userDetailsService() {
         return id -> repository.findById(UserIdWrapper.newFromString(id))
-                               .orElseThrow(() -> new BadCredentialsException("Wrong user or password!"));
+                               .orElseThrow(() -> new BadCredentialsException("Wrong user or password."));
     }
 
     @Bean
@@ -38,8 +38,6 @@ public class AdditionalConfiguration {
         return authProvider;
     }
 
-    //    TODO how to add default admin user in memory which can't be removed from endpoint?
-    //TODO inMemoryUserMaybe?
     @Bean
     AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

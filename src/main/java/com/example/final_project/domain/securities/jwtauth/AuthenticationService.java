@@ -11,7 +11,6 @@ import com.example.final_project.domain.users.UserIdWrapper;
 import com.example.final_project.domain.users.WrongCredentialsException;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,8 +20,6 @@ import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
-//TODO remove
 public class AuthenticationService {
 
     private final UserRepository repository;
@@ -49,10 +46,9 @@ public class AuthenticationService {
     }
 
     public AuthResponseDTO authenticate(AuthenticationRequest request) {
-
         AppUser user = repository.findByLogin(request.login())
-                                 .orElseThrow(() -> new WrongCredentialsException("Wrong login or password"));
-        log.warn(user.toString());
+                                 .orElseThrow(() -> new WrongCredentialsException("Wrong login or password."));
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         user.userId().id().toString(),

@@ -74,7 +74,7 @@ public class BudgetController {
                                                            userId
         );
         BudgetResponseDto budgetResponseDto = BudgetResponseDto.fromDomain(newBudget);
-        return ResponseEntity.created(URI.create("/expenses/" + budgetResponseDto.budgetId().id()))
+        return ResponseEntity.created(URI.create("/expenses/" + budgetResponseDto.budgetId().toString()))
                              .body(budgetResponseDto);
     }
 

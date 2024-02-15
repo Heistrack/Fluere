@@ -19,7 +19,7 @@ public record ExpenseResponseDto(
                 expense.title(),
                 expense.expenseId().id().toString(),
                 expense.amount(),
-                expense.timestamp(),
+                expense.timeOfCreation(),
                 expense.typeOfExpense()
         );
     }

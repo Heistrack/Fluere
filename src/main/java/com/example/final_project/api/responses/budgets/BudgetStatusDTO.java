@@ -2,9 +2,10 @@ package com.example.final_project.api.responses.budgets;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public record BudgetStatusDTO(
-        String budgetId,
+        UUID budgetId,
         Integer totalExpensesNumber,
         BigDecimal amountNow,
         BigDecimal amountLeft,
@@ -14,7 +15,7 @@ public record BudgetStatusDTO(
         BigDecimal maxSingleExpense,
         LocalDateTime timestamp
 ) {
-    public static BudgetStatusDTO newOf(String budgetId,
+    public static BudgetStatusDTO newOf(UUID budgetId,
                                         Integer totalExpensesNumber,
                                         BigDecimal amountNow,
                                         BigDecimal amountLeft,
@@ -22,7 +23,8 @@ public record BudgetStatusDTO(
                                         String typeOfBudget,
                                         BigDecimal limit,
                                         BigDecimal maxSingleExpense,
-                                        LocalDateTime timestamp) {
+                                        LocalDateTime timestamp
+    ) {
         return new BudgetStatusDTO(
                 budgetId,
                 totalExpensesNumber,
@@ -32,6 +34,7 @@ public record BudgetStatusDTO(
                 typeOfBudget,
                 limit,
                 maxSingleExpense,
-                timestamp);
+                timestamp
+        );
     }
 }

@@ -17,7 +17,12 @@ public record Expense(
         //FIXME Do I really need bind expenses with users if I have already got
         // such a binding through expenseId -> id -> UserId
         UserIdWrapper userId,
-        LocalDateTime timestamp,
+        LocalDateTime timeOfCreation,
         TypeOfExpense typeOfExpense
 ) {
+    public static Expense newOf(ExpenseIdWrapper expenseId, String title, BigDecimal amount, BudgetIdWrapper budgetId,
+                                UserIdWrapper userId, LocalDateTime timeOfCreation, TypeOfExpense typeOfExpense
+    ) {
+        return new Expense(expenseId, title, amount, budgetId, userId, timeOfCreation, typeOfExpense);
+    }
 }

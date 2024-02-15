@@ -27,18 +27,18 @@ public class DefaultBudgetService implements BudgetService {
 
     @Override
     public Budget getBudgetById(BudgetIdWrapper budgetId, UserIdWrapper userId) {
-        return budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId)
+        return budgetRepository.findByBudgetIdAndUserId(budgetId, userId)
                                .orElseThrow(() -> new NoSuchElementException("There's no such budget."));
     }
 
     @Override
     public void deleteBudgetById(BudgetIdWrapper budgetId, UserIdWrapper userId) {
-        budgetRepository.deleteBudgetByBudgetIdAndUserId(budgetId, userId);
+        budgetRepository.deleteByBudgetIdAndUserId(budgetId, userId);
     }
 
     @Override
     public BudgetStatusDTO getBudgetStatus(BudgetIdWrapper budgetId, UserIdWrapper userId) {
-        Budget budget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId)
+        Budget budget = budgetRepository.findByBudgetIdAndUserId(budgetId, userId)
                                         .orElseThrow(() -> new NoSuchElementException("Budget doesn't exist"));
         BigDecimal moneySpend = totalExpensesValueSum(budget);
         BigDecimal amountLeft = budget.limit().subtract(moneySpend);
@@ -46,7 +46,7 @@ public class DefaultBudgetService implements BudgetService {
         Integer expensesNumber = expenseRepository.findAllByBudgetId(budgetId).size();
         String limitValue = getLimitFromBudget(budget);
 
-        return BudgetStatusDTO.newOf(budgetId.toString(), expensesNumber,
+        return BudgetStatusDTO.newOf(budgetId.id(), expensesNumber,
                                      moneySpend, amountLeft,
                                      budgetFullFillPercent, budget.typeOfBudget().getTitle(), budget.limit(),
                                      budget.maxSingleExpense(),
@@ -62,7 +62,7 @@ public class DefaultBudgetService implements BudgetService {
                                      Optional<BigDecimal> maxSingleExpense,
                                      UserIdWrapper userId
     ) {
-        Budget oldBudget = budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId)
+        Budget oldBudget = budgetRepository.findByBudgetIdAndUserId(budgetId, userId)
                                            .orElseThrow(() -> new NoSuchElementException(
                                                    "There is no such budget for this user"));
         Optional.of(oldBudget).map(
@@ -75,7 +75,7 @@ public class DefaultBudgetService implements BudgetService {
                         userId,
                         budgetFromRepository.registerTime()
                 )).ifPresent(budgetRepository::save);
-        return budgetRepository.findBudgetByBudgetIdAndUserId(budgetId, userId).get();
+        return budgetRepository.findByBudgetIdAndUserId(budgetId, userId).get();
     }
 
     @Override
@@ -121,7 +121,7 @@ public class DefaultBudgetService implements BudgetService {
     }
 
     private BigDecimal totalExpensesValueSum(Budget budget) {
-        return expenseRepository.findExpenseByBudgetId(budget.budgetId())
+        return expenseRepository.findAllByBudgetId(budget.budgetId())
                                 .stream()
                                 .map(Expense::amount)
                                 .reduce(BigDecimal.ZERO, BigDecimal::add);

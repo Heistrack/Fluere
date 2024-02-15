@@ -2,6 +2,7 @@ package com.example.final_project.api.requests.expenses;
 
 
 import com.example.final_project.domain.expenses.TypeOfExpense;
+import com.mongodb.lang.Nullable;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -20,6 +21,7 @@ public record RegisterExpenseRequest(
         @NotNull(message = "Budget's id can not be null.")
         @NotEmpty(message = "Budget's id can not be empty.")
         String budgetId,
+        @Nullable
         TypeOfExpense typeOfExpense
 ) {
 }

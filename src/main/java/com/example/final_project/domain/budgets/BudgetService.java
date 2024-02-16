@@ -7,13 +7,14 @@ import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface BudgetService {
 
     Budget getBudgetById(BudgetIdWrapper budgetId, UserIdWrapper userId);
 
-    void deleteBudgetById(BudgetIdWrapper budgetId, UserIdWrapper userId);
+    void deleteBudgetByBudgetId(BudgetIdWrapper budgetId);
 
     Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget, BigDecimal maxSingleExpense,
                              UserIdWrapper userId
@@ -30,4 +31,6 @@ public interface BudgetService {
     Page<Budget> findAllByPage(UserIdWrapper userId, Pageable pageable);
 
     BudgetStatusDTO getBudgetStatus(BudgetIdWrapper budgetId, UserIdWrapper userId);
+
+    List<Budget> getAllBudgetsByUserId(UserIdWrapper userId);
 }

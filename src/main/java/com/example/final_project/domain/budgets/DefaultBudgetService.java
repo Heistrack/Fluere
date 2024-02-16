@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -32,8 +33,9 @@ public class DefaultBudgetService implements BudgetService {
     }
 
     @Override
-    public void deleteBudgetById(BudgetIdWrapper budgetId, UserIdWrapper userId) {
-        budgetRepository.deleteByBudgetIdAndUserId(budgetId, userId);
+    public void deleteBudgetByBudgetId(BudgetIdWrapper budgetId) {
+        expenseRepository.deleteAllByBudgetId(budgetId);
+        budgetRepository.deleteByBudgetId(budgetId);
     }
 
     @Override
@@ -52,6 +54,11 @@ public class DefaultBudgetService implements BudgetService {
                                      budget.maxSingleExpense(),
                                      LocalDateTime.now()
         );
+    }
+
+    @Override
+    public List<Budget> getAllBudgetsByUserId(UserIdWrapper userId) {
+        return budgetRepository.findAllByUserId(userId);
     }
 
     @Override

@@ -49,7 +49,7 @@ public class BudgetController {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
         Budget currentBudget = budgetService.getBudgetById(BudgetIdWrapper.newOf(rawBudgetId), userId);
-        budgetService.deleteBudgetById(currentBudget.budgetId(), userId);
+        budgetService.deleteBudgetByBudgetId(currentBudget.budgetId());
         return ResponseEntity.noContent().build();
     }
 

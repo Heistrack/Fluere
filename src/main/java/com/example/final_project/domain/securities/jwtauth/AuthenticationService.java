@@ -21,8 +21,6 @@ import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
-//TODO remove slf4
-@Slf4j
 public class AuthenticationService {
 
     private final UserRepository repository;
@@ -51,9 +49,7 @@ public class AuthenticationService {
     public AuthResponseDTO authenticate(AuthenticationRequest request) {
         AppUser user = repository.findByLogin(request.login())
                                  .orElseThrow(() -> new WrongCredentialsException("Wrong login or password."));
-        log.warn("test1");
-        log.warn(user.toString());
-        log.warn("test2");
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         user.userId().id().toString(),

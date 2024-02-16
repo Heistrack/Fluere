@@ -11,12 +11,11 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -34,12 +33,10 @@ class MainSecurityConfiguration {
                            //TODO configure endpoints security properly
                            .requestMatchers("/budgets/**").authenticated()
                            .requestMatchers("/expenses/**").authenticated()
-                           .requestMatchers("/users/**").permitAll()
                            .requestMatchers("/**").permitAll()
-                           .anyRequest().permitAll()
+                           .anyRequest().authenticated()
                    )
-                   .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                                     .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
+                   .csrf(AbstractHttpConfigurer::disable)
                    .httpBasic(Customizer.withDefaults())
                    .cors(Customizer.withDefaults())
                    .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(

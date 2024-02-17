@@ -1,8 +1,12 @@
 package com.example.final_project.domain.users;
 
+import com.example.final_project.api.requests.users.AuthenticationRequest;
+import com.example.final_project.api.requests.users.EmailChangeRequest;
+import com.example.final_project.api.requests.users.PasswordChangeRequest;
 import com.example.final_project.api.requests.users.RegisterUserRequest;
 import com.example.final_project.api.responses.UserDetailsResponse;
 import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
+import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetService;
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
@@ -12,6 +16,7 @@ import io.jsonwebtoken.JwtException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +31,12 @@ public class DefaultUserService implements UserService {
     private final UserRepository userRepository;
     private final AuthenticationService authenticationService;
     private final PasswordEncoder passwordEncoder;
+
+    private final JwtService jwtService;
+
+
     private final BudgetService budgetService;
+
     @Value("${admin.key.value}")
     private String ADMIN_PASSWORD;
 
@@ -101,6 +111,50 @@ public class DefaultUserService implements UserService {
         budgetService.getAllBudgetsByUserId(userId).stream()
                      .map(Budget::budgetId).forEach(budgetService::deleteBudgetByBudgetId);
     }
+
+
+    @Override
+    public AppUser patchEmail(EmailChangeRequest request, UserIdWrapper userIdFromAuth) {
+        AppUser currentUser = userCheckBeforeModifyProperties(request.auth(), userIdFromAuth);
+
+        return userRepository.save(AppUser.builder()
+                                          .userId(currentUser.userId())
+                                          .login(currentUser.login())
+                                          .email(request.newEmail())
+                                          .password(currentUser.password())
+                                          .role(currentUser.role())
+                                          .enabled(currentUser.enabled())
+                                          .build());
+    }
+
+    @Override
+    public AppUser patchPassword(PasswordChangeRequest request, UserIdWrapper userIdFromAuth) {
+        AppUser currentUser = userCheckBeforeModifyProperties(request.auth(), userIdFromAuth);
+
+        if (!request.firstPasswordAttempt().equals(request.secondPasswordAttempt()))
+            throw new BadCredentialsException("The new passwords are not the same");
+
+        return userRepository.save(AppUser.builder()
+                                          .userId(currentUser.userId())
+                                          .login(currentUser.login())
+                                          .email(currentUser.email())
+                                          .password(passwordEncoder.encode(request.firstPasswordAttempt()))
+                                          .role(currentUser.role())
+                                          .enabled(currentUser.enabled())
+                                          .build());
+    }
+
+    private AppUser userCheckBeforeModifyProperties(AuthenticationRequest request, UserIdWrapper userIdFromAuth) {
+        String userIdFromRequest = jwtService.extractUserId(authenticationService.authenticate(request).token());
+        String currentRequestUserId = userIdFromAuth.id().toString();
+
+        if (!userIdFromRequest.equals(currentRequestUserId))
+            throw new BadCredentialsException("Invalid login or password");
+
+        return userRepository.findById(userIdFromAuth).orElseThrow(
+                () -> new NoSuchElementException("There is no such user"));
+    }
+
 
 
     @PostConstruct

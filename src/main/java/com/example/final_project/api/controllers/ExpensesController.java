@@ -43,7 +43,7 @@ public class ExpensesController {
     }
 
     @DeleteMapping("/{rawexpenseid}")
-    public ResponseEntity<ExpenseResponseDto> deleteExpense(
+    ResponseEntity<ExpenseResponseDto> deleteExpense(
             @PathVariable(name = "rawexpenseid") UUID rawExpenseId,
             Authentication authentication
     ) {
@@ -72,7 +72,7 @@ public class ExpensesController {
     }
 
     @PatchMapping("/{rawexpenseid}")
-    public ResponseEntity<ExpenseResponseDto> updateExpenseField(
+    ResponseEntity<ExpenseResponseDto> updateExpenseField(
             @PathVariable(name = "rawexpenseid") UUID rawExpenseId,
             @RequestBody @Valid UpdateExpenseRequest request,
             Authentication authentication
@@ -90,7 +90,7 @@ public class ExpensesController {
     }
 
     @PutMapping("/{rawexpenseid}")
-    public ResponseEntity<ExpenseResponseDto> updateExpense(
+    ResponseEntity<ExpenseResponseDto> updateExpense(
             @PathVariable(name = "rawexpenseid") UUID rawExpenseId,
             @RequestBody @Valid RegisterExpenseRequest request,
             Authentication authentication

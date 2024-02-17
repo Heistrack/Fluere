@@ -1,7 +1,12 @@
 package com.example.final_project;
 
+import com.example.final_project.domain.budgets.BudgetService;
 import com.example.final_project.domain.securities.jwtauth.MongoService;
+import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
+import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -10,7 +15,6 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 @SpringBootApplication
 @EnableMongoRepositories
-@Slf4j
 public class FinalProjectApplication {
 
     public static void main(String[] args) {
@@ -20,5 +24,4 @@ public class FinalProjectApplication {
         MongoService mongoService = context.getBean(MongoService.class);
         mongoService.performConnectivityCheck();
     }
-
 }

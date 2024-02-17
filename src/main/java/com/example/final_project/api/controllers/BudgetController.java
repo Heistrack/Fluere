@@ -43,13 +43,13 @@ public class BudgetController {
     }
 
     @DeleteMapping("/{rawbudgetid}")
-    public ResponseEntity<BudgetResponseDto> deleteBudget(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
+    ResponseEntity<BudgetResponseDto> deleteBudget(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
                                                           Authentication authentication
     ) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
         Budget currentBudget = budgetService.getBudgetById(BudgetIdWrapper.newOf(rawBudgetId), userId);
-        budgetService.deleteBudgetById(currentBudget.budgetId(), userId);
+        budgetService.deleteBudgetByBudgetId(currentBudget.budgetId());
         return ResponseEntity.noContent().build();
     }
 
@@ -79,7 +79,7 @@ public class BudgetController {
     }
 
     @PutMapping("/{rawbudgetid}")
-    public ResponseEntity<BudgetResponseDto> updateBudget(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
+    ResponseEntity<BudgetResponseDto> updateBudget(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
                                                           @Valid @RequestBody RegisterBudgetRequest request,
                                                           Authentication authentication
     ) {
@@ -98,7 +98,7 @@ public class BudgetController {
     }
 
     @PatchMapping("/{rawbudgetid}")
-    public ResponseEntity<BudgetResponseDto> patchBudget(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
+    ResponseEntity<BudgetResponseDto> patchBudget(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
                                                          @Valid @RequestBody UpdateBudgetRequest request,
                                                          Authentication authentication
     ) {

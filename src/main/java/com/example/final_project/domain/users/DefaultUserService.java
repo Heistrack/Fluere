@@ -3,6 +3,8 @@ package com.example.final_project.domain.users;
 import com.example.final_project.api.requests.users.RegisterUserRequest;
 import com.example.final_project.api.responses.UserDetailsResponse;
 import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
+import com.example.final_project.domain.budgets.Budget;
+import com.example.final_project.domain.budgets.BudgetService;
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
 import com.example.final_project.domain.users.exceptions.UnableToRegisterException;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
@@ -15,7 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -24,6 +26,7 @@ public class DefaultUserService implements UserService {
     private final UserRepository userRepository;
     private final AuthenticationService authenticationService;
     private final PasswordEncoder passwordEncoder;
+    private final BudgetService budgetService;
     @Value("${admin.key.value}")
     private String ADMIN_PASSWORD;
 
@@ -73,26 +76,32 @@ public class DefaultUserService implements UserService {
 
     @Override
     public void removeUserByLogin(String login) {
-        Optional<UserIdWrapper> userId = userRepository.findByLogin(login).map(AppUser::userId);
-        userId.ifPresent(userRepository::deleteById);
-
-        registerAdminUser();
+        userRepository.findByLogin(login).map(AppUser::userId).ifPresent(this::userRemoveProcedure);
     }
 
     @Override
     public void removeUserByUserId(UUID userId) {
-        Optional<UserIdWrapper> userToRemove = userRepository.findById(UserIdWrapper.newOf(userId))
-                                                             .map(AppUser::userId);
-        userToRemove.ifPresent(userRepository::deleteById);
-
-        registerAdminUser();
+        userRepository.findById(UserIdWrapper.newOf(userId)).map(AppUser::userId).ifPresent(this::userRemoveProcedure);
     }
 
     @Override
     public void removeThemAll() {
-        userRepository.deleteAll();
-        registerAdminUser();
+        userRepository.findAll().stream().map(AppUser::userId).forEach(this::userRemoveProcedure);
     }
+
+    private void userRemoveProcedure(UserIdWrapper userToRemove) {
+        if (!Objects.isNull(userToRemove)) {
+            userRepository.deleteById(userToRemove);
+            removeUserData(userToRemove);
+            registerAdminUser();
+        }
+    }
+
+    private void removeUserData(UserIdWrapper userId) {
+        budgetService.getAllBudgetsByUserId(userId).stream()
+                     .map(Budget::budgetId).forEach(budgetService::deleteBudgetByBudgetId);
+    }
+
 
     @PostConstruct
     private void registerAdminUser() {

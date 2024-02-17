@@ -1,5 +1,6 @@
 package com.example.final_project.domain.users;
 
+import com.example.final_project.api.requests.users.EmailChangeRequest;
 import com.example.final_project.api.requests.users.PasswordChangeRequest;
 import com.example.final_project.api.requests.users.RegisterUserRequest;
 import com.example.final_project.api.responses.UserDetailsResponse;
@@ -31,7 +32,7 @@ public interface UserService {
 
     void removeThemAll();
 
-    AppUser patchEmail(String firstEmailAttempt, String secondEmailAttempt);
+    AppUser patchEmail(EmailChangeRequest request, UserIdWrapper userIdFromAuth);
 
     AppUser patchPassword(PasswordChangeRequest request, UserIdWrapper userIdFromAuth);
 }

@@ -1,5 +1,7 @@
 package com.example.final_project.domain.users;
 
+import com.example.final_project.api.requests.users.AuthenticationRequest;
+import com.example.final_project.api.requests.users.EmailChangeRequest;
 import com.example.final_project.api.requests.users.PasswordChangeRequest;
 import com.example.final_project.api.requests.users.RegisterUserRequest;
 import com.example.final_project.api.responses.UserDetailsResponse;
@@ -101,20 +103,22 @@ public class DefaultUserService implements UserService {
     }
 
     @Override
-    public AppUser patchEmail(String firstEmailAttempt, String secondEmailAttempt) {
-        return null;
+    public AppUser patchEmail(EmailChangeRequest request, UserIdWrapper userIdFromAuth) {
+        AppUser currentUser = userCheckBeforeModifyProperties(request.auth(), userIdFromAuth);
+
+        return userRepository.save(AppUser.builder()
+                                          .userId(currentUser.userId())
+                                          .login(currentUser.login())
+                                          .email(request.newEmail())
+                                          .password(currentUser.password())
+                                          .role(currentUser.role())
+                                          .enabled(currentUser.enabled())
+                                          .build());
     }
 
     @Override
     public AppUser patchPassword(PasswordChangeRequest request, UserIdWrapper userIdFromAuth) {
-        String userIdFromRequest = jwtService.extractUserId(authenticationService.authenticate(request.auth()).token());
-        String currentRequestUserId = userIdFromAuth.id().toString();
-
-        if (!userIdFromRequest.equals(currentRequestUserId))
-            throw new BadCredentialsException("Invalid login or password");
-
-        AppUser currentUser = userRepository.findById(userIdFromAuth).orElseThrow(
-                () -> new NoSuchElementException("There is no such user"));
+        AppUser currentUser = userCheckBeforeModifyProperties(request.auth(), userIdFromAuth);
 
         if (!request.firstPasswordAttempt().equals(request.secondPasswordAttempt()))
             throw new BadCredentialsException("The new passwords are not the same");
@@ -127,6 +131,18 @@ public class DefaultUserService implements UserService {
                                           .role(currentUser.role())
                                           .enabled(currentUser.enabled())
                                           .build());
+    }
+
+    private AppUser userCheckBeforeModifyProperties(AuthenticationRequest request, UserIdWrapper userIdFromAuth) {
+        String userIdFromRequest = jwtService.extractUserId(authenticationService.authenticate(request).token());
+        String currentRequestUserId = userIdFromAuth.id().toString();
+
+        if (!userIdFromRequest.equals(currentRequestUserId))
+            throw new BadCredentialsException("Invalid login or password");
+
+
+        return userRepository.findById(userIdFromAuth).orElseThrow(
+                () -> new NoSuchElementException("There is no such user"));
     }
 
 

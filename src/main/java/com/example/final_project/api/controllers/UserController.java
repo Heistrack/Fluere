@@ -1,6 +1,7 @@
 package com.example.final_project.api.controllers;
 
 import com.example.final_project.api.requests.users.AuthenticationRequest;
+import com.example.final_project.api.requests.users.EmailChangeRequest;
 import com.example.final_project.api.requests.users.PasswordChangeRequest;
 import com.example.final_project.api.requests.users.RegisterUserRequest;
 import com.example.final_project.api.responses.UserDetailsResponse;
@@ -100,6 +101,18 @@ public class UserController {
         UserIdWrapper userIdFromToken = jwtService.extractUserIdFromRequestAuth(authentication);
 
         AppUser updatedUser = userService.patchPassword(request, userIdFromToken);
+
+        return ResponseEntity.ok(UserDetailsResponse.fromDomain(updatedUser));
+    }
+
+    @PostMapping("/email-change")
+    ResponseEntity<UserDetailsResponse> emailChange(
+            @RequestBody @Valid EmailChangeRequest request,
+            Authentication authentication
+            ) {
+        UserIdWrapper userIdWrapper = jwtService.extractUserIdFromRequestAuth(authentication);
+
+        AppUser updatedUser = userService.patchEmail(request,userIdWrapper);
 
         return ResponseEntity.ok(UserDetailsResponse.fromDomain(updatedUser));
     }

@@ -13,7 +13,6 @@ import com.example.final_project.infrastructure.userRepo.UserRepository;
 import io.jsonwebtoken.JwtException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -139,7 +138,6 @@ public class DefaultUserService implements UserService {
 
         if (!userIdFromRequest.equals(currentRequestUserId))
             throw new BadCredentialsException("Invalid login or password");
-
 
         return userRepository.findById(userIdFromAuth).orElseThrow(
                 () -> new NoSuchElementException("There is no such user"));

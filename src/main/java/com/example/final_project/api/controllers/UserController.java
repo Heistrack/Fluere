@@ -7,7 +7,6 @@ import com.example.final_project.api.requests.users.RegisterUserRequest;
 import com.example.final_project.api.responses.UserDetailsResponse;
 import com.example.final_project.api.responses.authentications.AuthResponseDTO;
 import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
-import com.example.final_project.domain.budgets.BudgetIdWrapper;
 import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
 import com.example.final_project.domain.users.AppUser;
@@ -15,10 +14,8 @@ import com.example.final_project.domain.users.DefaultUserService;
 import com.example.final_project.domain.users.UserIdWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -109,10 +106,10 @@ public class UserController {
     ResponseEntity<UserDetailsResponse> emailChange(
             @RequestBody @Valid EmailChangeRequest request,
             Authentication authentication
-            ) {
+    ) {
         UserIdWrapper userIdWrapper = jwtService.extractUserIdFromRequestAuth(authentication);
 
-        AppUser updatedUser = userService.patchEmail(request,userIdWrapper);
+        AppUser updatedUser = userService.patchEmail(request, userIdWrapper);
 
         return ResponseEntity.ok(UserDetailsResponse.fromDomain(updatedUser));
     }

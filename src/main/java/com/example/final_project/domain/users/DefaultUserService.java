@@ -1,15 +1,19 @@
 package com.example.final_project.domain.users;
 
+import com.example.final_project.api.requests.users.PasswordChangeRequest;
 import com.example.final_project.api.requests.users.RegisterUserRequest;
 import com.example.final_project.api.responses.UserDetailsResponse;
 import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
+import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
 import com.example.final_project.domain.users.exceptions.UnableToRegisterException;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
 import io.jsonwebtoken.JwtException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +28,8 @@ public class DefaultUserService implements UserService {
     private final UserRepository userRepository;
     private final AuthenticationService authenticationService;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+
     @Value("${admin.key.value}")
     private String ADMIN_PASSWORD;
 
@@ -93,6 +99,36 @@ public class DefaultUserService implements UserService {
         userRepository.deleteAll();
         registerAdminUser();
     }
+
+    @Override
+    public AppUser patchEmail(String firstEmailAttempt, String secondEmailAttempt) {
+        return null;
+    }
+
+    @Override
+    public AppUser patchPassword(PasswordChangeRequest request, UserIdWrapper userIdFromAuth) {
+        String userIdFromRequest = jwtService.extractUserId(authenticationService.authenticate(request.auth()).token());
+        String currentRequestUserId = userIdFromAuth.id().toString();
+
+        if (!userIdFromRequest.equals(currentRequestUserId))
+            throw new BadCredentialsException("Invalid login or password");
+
+        AppUser currentUser = userRepository.findById(userIdFromAuth).orElseThrow(
+                () -> new NoSuchElementException("There is no such user"));
+
+        if (!request.firstPasswordAttempt().equals(request.secondPasswordAttempt()))
+            throw new BadCredentialsException("The new passwords are not the same");
+
+        return userRepository.save(AppUser.builder()
+                                          .userId(currentUser.userId())
+                                          .login(currentUser.login())
+                                          .email(currentUser.email())
+                                          .password(passwordEncoder.encode(request.firstPasswordAttempt()))
+                                          .role(currentUser.role())
+                                          .enabled(currentUser.enabled())
+                                          .build());
+    }
+
 
     @PostConstruct
     private void registerAdminUser() {

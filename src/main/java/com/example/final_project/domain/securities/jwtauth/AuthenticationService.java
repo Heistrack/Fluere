@@ -8,11 +8,11 @@ import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.users.AppUser;
 import com.example.final_project.domain.users.Role;
 import com.example.final_project.domain.users.UserIdWrapper;
-import com.example.final_project.domain.users.exceptions.WrongCredentialsException;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -48,7 +48,7 @@ public class AuthenticationService {
 
     public AuthResponseDTO authenticate(AuthenticationRequest request) {
         AppUser user = repository.findByLogin(request.login())
-                                 .orElseThrow(() -> new WrongCredentialsException("Wrong login or password."));
+                                 .orElseThrow(() -> new BadCredentialsException("Invalid login or password"));
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(

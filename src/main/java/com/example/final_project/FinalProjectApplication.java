@@ -10,7 +10,6 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 @SpringBootApplication
 @EnableMongoRepositories
-@Slf4j
 public class FinalProjectApplication {
 
     public static void main(String[] args) {

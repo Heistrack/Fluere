@@ -34,14 +34,14 @@ public class UserController {
     private final AuthenticationService authenticationService;
 
     @PostMapping()
-    public ResponseEntity<RegisterResponseDTO> registerNewUser(
+    ResponseEntity<RegisterResponseDTO> registerNewUser(
             @Valid @RequestBody RegisterUserRequest request
     ) {
         return ResponseEntity.ok(userService.registerNewUser(request));
     }
 
     @PostMapping("/auth")
-    public ResponseEntity<AuthResponseDTO> authenticate(
+    ResponseEntity<AuthResponseDTO> authenticate(
             @Valid @RequestBody AuthenticationRequest request
     ) {
         return ResponseEntity.ok(authenticationService.authenticate(request));
@@ -88,15 +88,6 @@ public class UserController {
     ResponseEntity<UserDetailsResponse> removeAll() {
         userService.removeThemAll();
         return ResponseEntity.noContent().build();
-    }
-
-    @ExceptionHandler(UnableToRegisterException.class)
-    public ResponseEntity<ErrorDTO> exceptionHandler(UnableToRegisterException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorDTO.newOf(
-                ex.getMessage(),
-                HttpStatus.CONFLICT,
-                LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
-        ));
     }
 }
 

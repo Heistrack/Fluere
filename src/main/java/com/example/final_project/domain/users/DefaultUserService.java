@@ -10,7 +10,7 @@ import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetService;
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
-import com.example.final_project.domain.users.exceptions.UnableToRegisterException;
+import com.example.final_project.domain.users.exceptions.UnableToCreateException;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
 import io.jsonwebtoken.JwtException;
 import jakarta.annotation.PostConstruct;
@@ -43,10 +43,10 @@ public class DefaultUserService implements UserService {
     @Override
     public RegisterResponseDTO registerNewUser(RegisterUserRequest request) {
         if (userRepository.existsByEmail(request.email())) {
-            throw new UnableToRegisterException("User's email is already occupied!");
+            throw new UnableToCreateException("User's email is already occupied!");
         }
         if (userRepository.existsByLogin(request.login())) {
-            throw new UnableToRegisterException("User's login is already occupied!");
+            throw new UnableToCreateException("User's login is already occupied!");
         }
 
         return authenticationService.register(request);
@@ -99,24 +99,13 @@ public class DefaultUserService implements UserService {
         userRepository.findAll().stream().map(AppUser::userId).forEach(this::userRemoveProcedure);
     }
 
-    private void userRemoveProcedure(UserIdWrapper userToRemove) {
-        if (!Objects.isNull(userToRemove)) {
-            userRepository.deleteById(userToRemove);
-            removeUserData(userToRemove);
-            registerAdminUser();
-        }
-    }
-
-    private void removeUserData(UserIdWrapper userId) {
-        budgetService.getAllBudgetsByUserId(userId).stream()
-                     .map(Budget::budgetId).forEach(budgetService::deleteBudgetByBudgetId);
-    }
-
-
     @Override
     public AppUser patchEmail(EmailChangeRequest request, UserIdWrapper userIdFromAuth) {
         AppUser currentUser = userCheckBeforeModifyProperties(request.auth(), userIdFromAuth);
 
+        if (userRepository.findByEmail(request.newEmail()).isPresent()) {
+            throw new UnableToCreateException("Such email is occupied.");
+        }
         return userRepository.save(AppUser.builder()
                                           .userId(currentUser.userId())
                                           .login(currentUser.login())
@@ -144,6 +133,19 @@ public class DefaultUserService implements UserService {
                                           .build());
     }
 
+    private void userRemoveProcedure(UserIdWrapper userToRemove) {
+        if (!Objects.isNull(userToRemove)) {
+            userRepository.deleteById(userToRemove);
+            removeUserData(userToRemove);
+            registerAdminUser();
+        }
+    }
+
+    private void removeUserData(UserIdWrapper userId) {
+        budgetService.getAllBudgetsByUserId(userId).stream()
+                     .map(Budget::budgetId).forEach(budgetService::deleteBudgetByBudgetId);
+    }
+
     private AppUser userCheckBeforeModifyProperties(AuthenticationRequest request, UserIdWrapper userIdFromAuth) {
         String userIdFromRequest = jwtService.extractUserId(authenticationService.authenticate(request).token());
         String currentRequestUserId = userIdFromAuth.id().toString();
@@ -154,8 +156,6 @@ public class DefaultUserService implements UserService {
         return userRepository.findById(userIdFromAuth).orElseThrow(
                 () -> new NoSuchElementException("There is no such user"));
     }
-
-
 
     @PostConstruct
     private void registerAdminUser() {

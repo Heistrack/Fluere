@@ -7,6 +7,7 @@ import com.example.final_project.domain.users.UserIdWrapper;
 import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,8 @@ import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
+//TODO remove logs
 public class DefaultExpensesService implements ExpensesService {
 
     private final ExpenseRepository expenseRepository;
@@ -40,6 +43,7 @@ public class DefaultExpensesService implements ExpensesService {
     public Expense registerNewExpense(String title, BigDecimal amount, BudgetIdWrapper budgetId, UserIdWrapper userId,
                                       Optional<TypeOfExpense> typeOfExpense
     ) {
+        title = duplicateExpenseTitleCheck(title, budgetId);
         validationForNewExpense(amount, budgetId, userId);
 
         Expense expense = new Expense(expenseIdSupplier.get(), title, amount, budgetId, userId, LocalDateTime.now(),
@@ -59,8 +63,13 @@ public class DefaultExpensesService implements ExpensesService {
         //TODO if findByExpenseId find budgets?? and do I really need to find in separate repo
         BudgetIdWrapper budgetId = expenseRepository.findByExpenseId(expenseId)
                                                     .orElseThrow(
-                                                            () -> new NoSuchElementException("There's no such budget."))
+                                                            () -> new NoSuchElementException(
+                                                                    "There's no such expense."))
                                                     .budgetId();
+        if (title.isPresent()) {
+            title = Optional.of(duplicateExpenseTitleCheck(title.get(), budgetId));
+        }
+        Optional<String> checkedTitle = title;
 
         Budget budget = budgetRepository.findByBudgetIdAndUserId(budgetId, userId)
                                         .orElseThrow(() -> new NoSuchElementException("There is no such budget."));
@@ -73,7 +82,7 @@ public class DefaultExpensesService implements ExpensesService {
         expenseRepository.findByExpenseIdAndUserId(expenseId, userId).map(
                 expenseFromRepository -> Expense.newOf(
                         expenseId,
-                        title.orElseGet(expenseFromRepository::title),
+                        checkedTitle.orElseGet(expenseFromRepository::title),
                         amount.orElseGet(expenseFromRepository::amount),
                         budget.budgetId(),
                         userId,
@@ -93,6 +102,10 @@ public class DefaultExpensesService implements ExpensesService {
             UserIdWrapper userId,
             Optional<TypeOfExpense> typeOfExpense
     ) {
+        if (!expenseRepository.existsByExpenseId(expenseId)) {
+            throw new NoSuchElementException("Can't update expense, because it doesn't exist");
+        }
+        title = duplicateExpenseTitleCheck(title, budgetId);
         validationForNewExpense(amount, budgetId, userId);
         //TODO add linked hash map for all timestamps
         LocalDateTime now = LocalDateTime.now();
@@ -116,6 +129,20 @@ public class DefaultExpensesService implements ExpensesService {
     @Override
     public Page<Expense> findAllByPage(UserIdWrapper userId, Pageable pageable) {
         return expenseRepository.findAllByUserId(userId, pageable);
+    }
+
+    private String duplicateExpenseTitleCheck(String title, BudgetIdWrapper budgetId) {
+        if (expenseRepository.existsByTitleAndBudgetId(title, budgetId)) {
+            long counter = 0;
+            StringBuilder stringBuilder = new StringBuilder();
+            while (expenseRepository.existsByTitleAndBudgetId(stringBuilder.toString(), budgetId)) {
+                counter++;
+                stringBuilder = new StringBuilder(title);
+                stringBuilder.append("(").append(counter).append(")");
+            }
+            return stringBuilder.toString();
+        }
+        return title;
     }
 
     private void validationForNewExpense(BigDecimal amount, BudgetIdWrapper budgetId, UserIdWrapper userId) {

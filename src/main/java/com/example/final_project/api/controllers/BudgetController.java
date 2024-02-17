@@ -44,7 +44,7 @@ public class BudgetController {
 
     @DeleteMapping("/{rawbudgetid}")
     ResponseEntity<BudgetResponseDto> deleteBudget(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
-                                                          Authentication authentication
+                                                   Authentication authentication
     ) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
@@ -73,6 +73,7 @@ public class BudgetController {
                                                            request.typeOfBudget(), request.maxSingleExpense(),
                                                            userId
         );
+
         BudgetResponseDto budgetResponseDto = BudgetResponseDto.fromDomain(newBudget);
         return ResponseEntity.created(URI.create("/expenses/" + budgetResponseDto.budgetId().toString()))
                              .body(budgetResponseDto);
@@ -80,8 +81,8 @@ public class BudgetController {
 
     @PutMapping("/{rawbudgetid}")
     ResponseEntity<BudgetResponseDto> updateBudget(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
-                                                          @Valid @RequestBody RegisterBudgetRequest request,
-                                                          Authentication authentication
+                                                   @Valid @RequestBody RegisterBudgetRequest request,
+                                                   Authentication authentication
     ) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
@@ -99,8 +100,8 @@ public class BudgetController {
 
     @PatchMapping("/{rawbudgetid}")
     ResponseEntity<BudgetResponseDto> patchBudget(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
-                                                         @Valid @RequestBody UpdateBudgetRequest request,
-                                                         Authentication authentication
+                                                  @Valid @RequestBody UpdateBudgetRequest request,
+                                                  Authentication authentication
     ) {
 
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);

@@ -4,8 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.CONFLICT)
-public class UnableToRegisterException extends IllegalStateException {
-    public UnableToRegisterException(String message) {
+public class UnableToCreateException extends IllegalStateException {
+    public UnableToCreateException(String message) {
         super(message);
     }
 }

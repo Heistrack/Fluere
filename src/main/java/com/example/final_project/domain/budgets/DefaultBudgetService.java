@@ -3,6 +3,7 @@ package com.example.final_project.domain.budgets;
 import com.example.final_project.api.responses.budgets.BudgetStatusDTO;
 import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.users.UserIdWrapper;
+import com.example.final_project.domain.users.exceptions.UnableToCreateException;
 import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
@@ -72,6 +73,11 @@ public class DefaultBudgetService implements BudgetService {
         Budget oldBudget = budgetRepository.findByBudgetIdAndUserId(budgetId, userId)
                                            .orElseThrow(() -> new NoSuchElementException(
                                                    "There is no such budget for this user"));
+        if (title.isPresent()) {
+            if (budgetRepository.existsByTitleAndUserId(title.get(), userId)) {
+                throw new UnableToCreateException("Such budget already exists");
+            }
+        }
         Optional.of(oldBudget).map(
                 budgetFromRepository -> new Budget(
                         budgetId,
@@ -89,6 +95,9 @@ public class DefaultBudgetService implements BudgetService {
     public Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget,
                                     BigDecimal maxSingleExpense, UserIdWrapper userId
     ) {
+        if (budgetRepository.existsByTitleAndUserId(title, userId)) {
+            throw new UnableToCreateException("Such budget already exists");
+        }
         Budget budget = new Budget(
                 budgetIdSupplier.get(), title, limit, typeOfBudget, maxSingleExpense, userId, LocalDateTime.now());
         budgetRepository.save(budget);
@@ -106,7 +115,10 @@ public class DefaultBudgetService implements BudgetService {
                                    LocalDateTime timestamp
     ) {
         if (!budgetRepository.existsByBudgetIdAndUserId(budgetId, userId)) {
-            throw new NoSuchElementException("Can't update budget");
+            throw new NoSuchElementException("Can't update budget, because it doesn't exist");
+        }
+        if (budgetRepository.existsByTitleAndUserId(title, userId)) {
+            throw new UnableToCreateException("Such budget's name is already occupied");
         }
         return budgetRepository.save(Budget.newOf(
                 budgetId,

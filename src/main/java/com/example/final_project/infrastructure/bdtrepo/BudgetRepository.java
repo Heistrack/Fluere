@@ -20,5 +20,7 @@ public interface BudgetRepository extends MongoRepository<Budget, BudgetIdWrappe
 
     boolean existsByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId);
 
+    boolean existsByTitleAndUserId(String title, UserIdWrapper userId);
+
     List<Budget> findAllByUserId(UserIdWrapper userId);
 }

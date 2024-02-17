@@ -10,7 +10,7 @@ import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetService;
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
-import com.example.final_project.domain.users.exceptions.UnableToRegisterException;
+import com.example.final_project.domain.users.exceptions.UnableToCreateException;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
 import io.jsonwebtoken.JwtException;
 import jakarta.annotation.PostConstruct;
@@ -43,10 +43,10 @@ public class DefaultUserService implements UserService {
     @Override
     public RegisterResponseDTO registerNewUser(RegisterUserRequest request) {
         if (userRepository.existsByEmail(request.email())) {
-            throw new UnableToRegisterException("User's email is already occupied!");
+            throw new UnableToCreateException("User's email is already occupied!");
         }
         if (userRepository.existsByLogin(request.login())) {
-            throw new UnableToRegisterException("User's login is already occupied!");
+            throw new UnableToCreateException("User's login is already occupied!");
         }
 
         return authenticationService.register(request);
@@ -104,7 +104,7 @@ public class DefaultUserService implements UserService {
         AppUser currentUser = userCheckBeforeModifyProperties(request.auth(), userIdFromAuth);
 
         if (userRepository.findByEmail(request.newEmail()).isPresent()) {
-            throw new UnableToRegisterException("Such email is occupied.");
+            throw new UnableToCreateException("Such email is occupied.");
         }
         return userRepository.save(AppUser.builder()
                                           .userId(currentUser.userId())

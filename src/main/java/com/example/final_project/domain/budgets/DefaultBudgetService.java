@@ -3,7 +3,6 @@ package com.example.final_project.domain.budgets;
 import com.example.final_project.api.responses.budgets.BudgetStatusDTO;
 import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.users.UserIdWrapper;
-import com.example.final_project.domain.users.exceptions.UnableToCreateException;
 import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
@@ -72,16 +71,17 @@ public class DefaultBudgetService implements BudgetService {
     ) {
         Budget oldBudget = budgetRepository.findByBudgetIdAndUserId(budgetId, userId)
                                            .orElseThrow(() -> new NoSuchElementException(
-                                                   "There is no such budget for this user"));
+                                                   "Can't update budget, because it doesn't exist"));
+
         if (title.isPresent()) {
-            if (budgetRepository.existsByTitleAndUserId(title.get(), userId)) {
-                throw new UnableToCreateException("Such budget already exists");
-            }
+            title = Optional.of(duplicateBudgetTitleCheck(title.get(), userId));
         }
+        Optional<String> checkedTitle = title;
+
         Optional.of(oldBudget).map(
-                budgetFromRepository -> new Budget(
+                budgetFromRepository -> Budget.newOf(
                         budgetId,
-                        title.orElseGet(budgetFromRepository::title),
+                        checkedTitle.orElseGet(budgetFromRepository::title),
                         limit.orElseGet(budgetFromRepository::limit),
                         typeOfBudget.orElseGet(budgetFromRepository::typeOfBudget),
                         maxSingleExpense.orElseGet(budgetFromRepository::maxSingleExpense),
@@ -95,9 +95,7 @@ public class DefaultBudgetService implements BudgetService {
     public Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget,
                                     BigDecimal maxSingleExpense, UserIdWrapper userId
     ) {
-        if (budgetRepository.existsByTitleAndUserId(title, userId)) {
-            throw new UnableToCreateException("Such budget already exists");
-        }
+        title = duplicateBudgetTitleCheck(title, userId);
         Budget budget = new Budget(
                 budgetIdSupplier.get(), title, limit, typeOfBudget, maxSingleExpense, userId, LocalDateTime.now());
         budgetRepository.save(budget);
@@ -117,9 +115,8 @@ public class DefaultBudgetService implements BudgetService {
         if (!budgetRepository.existsByBudgetIdAndUserId(budgetId, userId)) {
             throw new NoSuchElementException("Can't update budget, because it doesn't exist");
         }
-        if (budgetRepository.existsByTitleAndUserId(title, userId)) {
-            throw new UnableToCreateException("Such budget's name is already occupied");
-        }
+        title = duplicateBudgetTitleCheck(title, userId);
+
         return budgetRepository.save(Budget.newOf(
                 budgetId,
                 title,
@@ -137,6 +134,20 @@ public class DefaultBudgetService implements BudgetService {
         Page<Budget> allByUserId = budgetRepository.findAllByUserId(userId, pageable);
         if (allByUserId.isEmpty()) throw new NoSuchElementException("No results match");
         return allByUserId;
+    }
+
+    private String duplicateBudgetTitleCheck(String title, UserIdWrapper userId) {
+        if (budgetRepository.existsByTitleAndUserId(title, userId)) {
+            long counter = 0;
+            StringBuilder stringBuilder = new StringBuilder();
+            while (budgetRepository.existsByTitleAndUserId(stringBuilder.toString(), userId)) {
+                counter++;
+                stringBuilder = new StringBuilder(title);
+                stringBuilder.append("(").append(counter).append(")");
+            }
+            return stringBuilder.toString();
+        }
+        return title;
     }
 
     private BigDecimal totalExpensesValueSum(Budget budget) {

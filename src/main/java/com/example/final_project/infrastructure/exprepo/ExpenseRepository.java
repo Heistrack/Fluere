@@ -35,5 +35,5 @@ public interface ExpenseRepository extends MongoRepository<Expense, ExpenseIdWra
 
     boolean existsByTitleAndBudgetId(String title, BudgetIdWrapper budgetId);
 
-    List<Expense> findAlLByTitleRegex(String title);
+    boolean existsByExpenseId(ExpenseIdWrapper expenseId);
 }

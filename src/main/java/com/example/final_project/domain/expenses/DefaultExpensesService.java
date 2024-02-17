@@ -63,7 +63,8 @@ public class DefaultExpensesService implements ExpensesService {
         //TODO if findByExpenseId find budgets?? and do I really need to find in separate repo
         BudgetIdWrapper budgetId = expenseRepository.findByExpenseId(expenseId)
                                                     .orElseThrow(
-                                                            () -> new NoSuchElementException("There's no such budget."))
+                                                            () -> new NoSuchElementException(
+                                                                    "There's no such expense."))
                                                     .budgetId();
         if (title.isPresent()) {
             title = Optional.of(duplicateExpenseTitleCheck(title.get(), budgetId));
@@ -101,6 +102,9 @@ public class DefaultExpensesService implements ExpensesService {
             UserIdWrapper userId,
             Optional<TypeOfExpense> typeOfExpense
     ) {
+        if (!expenseRepository.existsByExpenseId(expenseId)) {
+            throw new NoSuchElementException("Can't update expense, because it doesn't exist");
+        }
         title = duplicateExpenseTitleCheck(title, budgetId);
         validationForNewExpense(amount, budgetId, userId);
         //TODO add linked hash map for all timestamps

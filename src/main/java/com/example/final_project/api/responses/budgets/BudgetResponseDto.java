@@ -5,6 +5,7 @@ import com.example.final_project.domain.budgets.TypeOfBudget;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.TreeMap;
 import java.util.UUID;
 
 public record BudgetResponseDto(
@@ -13,17 +14,17 @@ public record BudgetResponseDto(
         BigDecimal limit,
         TypeOfBudget typeOfBudget,
         BigDecimal maxSingleExpense,
-        LocalDateTime timestamp
+        TreeMap<Integer, LocalDateTime> historyOfChanges
 ) {
 
     public static BudgetResponseDto fromDomain(Budget budget) {
         return new BudgetResponseDto(
                 budget.budgetId().id(),
-                budget.title(),
-                budget.limit(),
-                budget.typeOfBudget(),
-                budget.maxSingleExpense(),
-                budget.registerTime()
+                budget.budgetDetails().title(),
+                budget.budgetDetails().limit(),
+                budget.budgetDetails().typeOfBudget(),
+                budget.budgetDetails().maxSingleExpense(),
+                budget.budgetDetails().historyOfChanges()
         );
     }
 }

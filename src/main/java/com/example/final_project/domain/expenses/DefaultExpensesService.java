@@ -7,7 +7,6 @@ import com.example.final_project.domain.users.UserIdWrapper;
 import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,7 +18,6 @@ import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j //TODO remove logs
 public class DefaultExpensesService implements ExpensesService {
 
     private final ExpenseRepository expenseRepository;
@@ -41,13 +39,13 @@ public class DefaultExpensesService implements ExpensesService {
     public Expense registerNewExpense(String title, BigDecimal amount, BudgetIdWrapper budgetId, UserIdWrapper userId,
                                       TypeOfExpense typeOfExpense
     ) {
-        title = duplicateExpenseTitleCheck(title, budgetId);
+        String checkedTitle = duplicateExpenseTitleCheck(title, budgetId);
         validationExpenseAmount(amount, budgetId);
 
         TreeMap<Integer, LocalDateTime> historyOfChange = new TreeMap<>();
         historyOfChange.put(1, LocalDateTime.now());
 
-        Expense expense = Expense.newOf(expenseIdSupplier.get(), budgetId, userId, ExpenseDetails.newOf(title, amount,
+        Expense expense = Expense.newOf(expenseIdSupplier.get(), budgetId, userId, ExpenseDetails.newOf(checkedTitle, amount,
                                                                                                         historyOfChange,
                                                                                                         typeOfExpense
         ));
@@ -124,6 +122,16 @@ public class DefaultExpensesService implements ExpensesService {
         ));
     }
 
+    @Override
+    public Page<Expense> findAllByPage(UserIdWrapper userId, Pageable pageable) {
+        return expenseRepository.findAllByUserId(userId, pageable);
+    }
+
+    @Override
+    public Page<Expense> findAllExpensesByBudgetId(UserIdWrapper userId, BudgetIdWrapper budgetId, Pageable pageable) {
+        return expenseRepository.findAllByBudgetIdAndUserId(budgetId, userId, pageable);
+    }
+
     private Map<String, Object> validationForNewExpense(Expense oldExpense,
                                                         String title,
                                                         BigDecimal amount
@@ -155,16 +163,6 @@ public class DefaultExpensesService implements ExpensesService {
                                                       });
     }
 
-    @Override
-    public Page<Expense> findAllExpensesByBudgetId(UserIdWrapper userId, BudgetIdWrapper budgetId, Pageable pageable) {
-        return expenseRepository.findAllByBudgetIdAndUserId(budgetId, userId, pageable);
-    }
-
-    @Override
-    public Page<Expense> findAllByPage(UserIdWrapper userId, Pageable pageable) {
-        return expenseRepository.findAllByUserId(userId, pageable);
-    }
-
     private String duplicateExpenseTitleCheck(String title, BudgetIdWrapper budgetId) {
         if (expenseRepository.existsByBudgetIdAndExpenseDetails_Title(budgetId, title)) {
             long counter = 0;
@@ -180,17 +178,18 @@ public class DefaultExpensesService implements ExpensesService {
     }
 
     private void singleMaxExpValidation(BigDecimal amount, Budget budget) {
-        if (budget.maxSingleExpense().compareTo(amount) < 0) {
+        if (budget.budgetDetails().maxSingleExpense().compareTo(amount) < 0) {
             throw new ExpenseTooBigException("Expense exceed single maximal expense amount in the budget!");
         }
     }
 
     private void checkBudgetLimit(BigDecimal amount, Budget budget) {
-        if (budget.typeOfBudget().getValue().compareTo(BigDecimal.valueOf(0)) < 0) {
+        if (budget.budgetDetails().typeOfBudget().getValue().compareTo(BigDecimal.valueOf(0)) < 0) {
             return;
         }
 
-        BigDecimal totalBudgetLimit = budget.limit().multiply(budget.typeOfBudget().getValue());
+        BigDecimal totalBudgetLimit = budget.budgetDetails().limit()
+                                            .multiply(budget.budgetDetails().typeOfBudget().getValue());
 
         BigDecimal totalExpensesSum = expenseRepository.findAllByBudgetIdAndUserId(
                                                                budget.budgetId(), budget.userId())

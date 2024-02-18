@@ -92,8 +92,7 @@ public class BudgetController {
                 request.limit(),
                 request.typeOfBudget(),
                 request.maxSingleExpense(),
-                userId,
-                LocalDateTime.now()
+                userId
         );
         return ResponseEntity.ok(BudgetResponseDto.fromDomain(updatedBudget));
     }

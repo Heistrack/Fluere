@@ -25,8 +25,7 @@ public interface BudgetService {
     );
 
     Budget updateBudgetById(BudgetIdWrapper BudgetId, String title, BigDecimal limit, TypeOfBudget typeOfBudget,
-                            BigDecimal maxSingleExpense, UserIdWrapper userId, LocalDateTime timestamp
-    );
+                            BigDecimal maxSingleExpense, UserIdWrapper userId);
 
     Page<Budget> findAllByPage(UserIdWrapper userId, Pageable pageable);
 

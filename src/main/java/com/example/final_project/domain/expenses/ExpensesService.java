@@ -12,7 +12,7 @@ public interface ExpensesService {
     Expense getExpenseById(ExpenseIdWrapper expenseId, UserIdWrapper userId);
 
     Expense registerNewExpense(String title, BigDecimal amount, BudgetIdWrapper budgetId, UserIdWrapper userId,
-                               Optional<TypeOfExpense> typeOfExpense
+                               TypeOfExpense typeOfExpense
     );
 
     void deleteExpenseById(ExpenseIdWrapper expenseId, UserIdWrapper userId);
@@ -24,7 +24,7 @@ public interface ExpensesService {
                                 Optional<TypeOfExpense> typeOfExpense
     );
 
-    Expense updateExpenseById(ExpenseIdWrapper expenseId, BudgetIdWrapper budgetId, String title, BigDecimal amount,
+    Expense updateExpenseById(ExpenseIdWrapper expenseId, String title, BigDecimal amount,
                               UserIdWrapper userId,
                               Optional<TypeOfExpense> typeOfExpense
     );

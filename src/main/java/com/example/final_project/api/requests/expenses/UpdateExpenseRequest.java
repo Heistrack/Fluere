@@ -12,15 +12,14 @@ import java.math.BigDecimal;
 
 public record UpdateExpenseRequest(
         @Nullable
-        @NotEmpty(message = "Title can not be null.")
         @Length(min = 3, max = 200, message = "Title can not be shorter than 3 and longer than 200 characters.")
         String title,
         @Nullable
         @Positive(message = "Expense amount can not be negative or zero.")
         BigDecimal amount,
-        @NotNull(message = "Budget's id can not be null.")
-        @NotEmpty(message = "Budget's id can not be empty.")
-        String budgetId,
+        @NotNull(message = "Expense's id can not be null.")
+        @NotEmpty(message = "Expense's id can not be empty.")
+        String expenseId,
         @Nullable
         TypeOfExpense typeOfExpense) {
 }

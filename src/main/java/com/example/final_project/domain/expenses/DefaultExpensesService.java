@@ -14,14 +14,12 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
-//TODO remove logs
+@Slf4j //TODO remove logs
 public class DefaultExpensesService implements ExpensesService {
 
     private final ExpenseRepository expenseRepository;
@@ -41,14 +39,18 @@ public class DefaultExpensesService implements ExpensesService {
 
     @Override
     public Expense registerNewExpense(String title, BigDecimal amount, BudgetIdWrapper budgetId, UserIdWrapper userId,
-                                      Optional<TypeOfExpense> typeOfExpense
+                                      TypeOfExpense typeOfExpense
     ) {
         title = duplicateExpenseTitleCheck(title, budgetId);
-        validationForNewExpense(amount, budgetId, userId);
+        validationExpenseAmount(amount, budgetId);
 
-        Expense expense = new Expense(expenseIdSupplier.get(), title, amount, budgetId, userId, LocalDateTime.now(),
-                                      typeOfExpense.orElse(TypeOfExpense.NO_CATEGORY)
-        );
+        TreeMap<Integer, LocalDateTime> historyOfChange = new TreeMap<>();
+        historyOfChange.put(1, LocalDateTime.now());
+
+        Expense expense = Expense.newOf(expenseIdSupplier.get(), budgetId, userId, ExpenseDetails.newOf(title, amount,
+                                                                                                        historyOfChange,
+                                                                                                        typeOfExpense
+        ));
         return expenseRepository.save(expense);
     }
 
@@ -60,65 +62,97 @@ public class DefaultExpensesService implements ExpensesService {
             UserIdWrapper userId,
             Optional<TypeOfExpense> typeOfExpense
     ) {
-        //TODO if findByExpenseId find budgets?? and do I really need to find in separate repo
-        BudgetIdWrapper budgetId = expenseRepository.findByExpenseId(expenseId)
-                                                    .orElseThrow(
-                                                            () -> new NoSuchElementException(
-                                                                    "There's no such expense."))
-                                                    .budgetId();
-        if (title.isPresent()) {
-            title = Optional.of(duplicateExpenseTitleCheck(title.get(), budgetId));
-        }
-        Optional<String> checkedTitle = title;
+        Expense oldExpense = expenseRepository.findByExpenseIdAndUserId(expenseId, userId)
+                                              .orElseThrow(() -> new NoSuchElementException(
+                                                      "There's no such expense."));
 
-        Budget budget = budgetRepository.findByBudgetIdAndUserId(budgetId, userId)
-                                        .orElseThrow(() -> new NoSuchElementException("There is no such budget."));
 
-        singleMaxExpValidation(amount.orElse(BigDecimal.ZERO), budget);
-        checkBudgetLimit(amount.orElse(BigDecimal.ZERO), budget);
-        //TODO add hashmap to expense and budget put and patch for history of changes linked hashmap
-        Optional<LocalDateTime> timestamp = Optional.empty();
+        if (Objects.equals(oldExpense.expenseDetails().title(), title.get()) &&
+                Objects.equals(oldExpense.expenseDetails().typeOfExpense(), typeOfExpense.get()) &&
+                Objects.equals(oldExpense.expenseDetails().amount(), amount.get())) return oldExpense;
 
-        expenseRepository.findByExpenseIdAndUserId(expenseId, userId).map(
+        Map<String, Object> stringObjectMap = validationForNewExpense(
+                oldExpense,
+                title.orElse(oldExpense.expenseDetails().title()),
+                amount.orElse(oldExpense.expenseDetails().amount())
+        );
+
+        Optional<String> checkedTitle = Optional.ofNullable((String) stringObjectMap.get("checkedTitle"));
+
+        return expenseRepository.save(expenseRepository.findByExpenseIdAndUserId(expenseId, userId).map(
                 expenseFromRepository -> Expense.newOf(
                         expenseId,
-                        checkedTitle.orElseGet(expenseFromRepository::title),
-                        amount.orElseGet(expenseFromRepository::amount),
-                        budget.budgetId(),
+                        oldExpense.budgetId(),
                         userId,
-                        timestamp.orElseGet(expenseFromRepository::timeOfCreation),
-                        typeOfExpense.orElseGet(expenseFromRepository::typeOfExpense)
-                )).ifPresent(expenseRepository::save);
-
-        return expenseRepository.findByExpenseIdAndUserId(expenseId, userId).get();
+                        ExpenseDetails.newOf(
+                                checkedTitle.orElseGet(() -> expenseFromRepository.expenseDetails().title()),
+                                amount.orElseGet(() -> expenseFromRepository.expenseDetails().amount()),
+                                oldExpense.expenseDetails().historyOfChanges(),
+                                typeOfExpense.orElseGet(() -> expenseFromRepository.expenseDetails().typeOfExpense())
+                        )
+                )
+        ).orElseThrow(IllegalArgumentException::new));
     }
 
     @Override
     public Expense updateExpenseById(
             ExpenseIdWrapper expenseId,
-            BudgetIdWrapper budgetId,
             String title,
             BigDecimal amount,
             UserIdWrapper userId,
             Optional<TypeOfExpense> typeOfExpense
     ) {
-        if (!expenseRepository.existsByExpenseId(expenseId)) {
-            throw new NoSuchElementException("Can't update expense, because it doesn't exist");
-        }
-        title = duplicateExpenseTitleCheck(title, budgetId);
-        validationForNewExpense(amount, budgetId, userId);
-        //TODO add linked hash map for all timestamps
-        LocalDateTime now = LocalDateTime.now();
+        Expense oldExpense = expenseRepository.findByExpenseIdAndUserId(expenseId, userId).orElseThrow(
+                () -> new NoSuchElementException("Can't update expense, because it doesn't exist"));
+
+        if (Objects.equals(oldExpense.expenseDetails().title(), title) &&
+                Objects.equals(oldExpense.expenseDetails().typeOfExpense(), typeOfExpense.get()) &&
+                Objects.equals(oldExpense.expenseDetails().amount(), amount)) return oldExpense;
+
+        Map<String, Object> validatedValues = validationForNewExpense(oldExpense, title, amount);
 
         return expenseRepository.save(Expense.newOf(
                 expenseId,
-                title,
-                amount,
-                budgetId,
+                oldExpense.budgetId(),
                 userId,
-                now,
-                typeOfExpense.orElse(TypeOfExpense.NO_CATEGORY)
+                ExpenseDetails.newOf(
+                        (String) validatedValues.get("checkedTitle"),
+                        amount,
+                        oldExpense.expenseDetails().historyOfChanges(),
+                        typeOfExpense.orElse(TypeOfExpense.NO_CATEGORY)
+                )
         ));
+    }
+
+    private Map<String, Object> validationForNewExpense(Expense oldExpense,
+                                                        String title,
+                                                        BigDecimal amount
+    ) {
+        ExpenseDetails oldExpenseDetails = oldExpense.expenseDetails();
+        BudgetIdWrapper budgetId = oldExpense.budgetId();
+
+        if (!amount.equals(oldExpense.expenseDetails().amount())) {
+            validationExpenseAmount(amount, budgetId);
+        }
+
+        HashMap<String, Object> returnMap = new HashMap<>();
+
+        if (!title.equals(oldExpenseDetails.title())) {
+            returnMap.put("checkedTitle", duplicateExpenseTitleCheck(title, budgetId));
+        }
+
+        Integer newRecordNumber = oldExpenseDetails.historyOfChanges().lastEntry().getKey() + 1;
+        oldExpenseDetails.historyOfChanges().put(newRecordNumber, LocalDateTime.now());
+
+        return returnMap;
+    }
+
+    private void validationExpenseAmount(BigDecimal amount, BudgetIdWrapper budgetId) {
+        budgetRepository.findById(budgetId).ifPresent((budget) ->
+                                                      {
+                                                          checkBudgetLimit(amount, budget);
+                                                          singleMaxExpValidation(amount, budget);
+                                                      });
     }
 
     @Override
@@ -132,10 +166,10 @@ public class DefaultExpensesService implements ExpensesService {
     }
 
     private String duplicateExpenseTitleCheck(String title, BudgetIdWrapper budgetId) {
-        if (expenseRepository.existsByTitleAndBudgetId(title, budgetId)) {
+        if (expenseRepository.existsByBudgetIdAndExpenseDetails_Title(budgetId, title)) {
             long counter = 0;
-            StringBuilder stringBuilder = new StringBuilder();
-            while (expenseRepository.existsByTitleAndBudgetId(stringBuilder.toString(), budgetId)) {
+            StringBuilder stringBuilder = new StringBuilder(title);
+            while (expenseRepository.existsByBudgetIdAndExpenseDetails_Title(budgetId, stringBuilder.toString())) {
                 counter++;
                 stringBuilder = new StringBuilder(title);
                 stringBuilder.append("(").append(counter).append(")");
@@ -143,13 +177,6 @@ public class DefaultExpensesService implements ExpensesService {
             return stringBuilder.toString();
         }
         return title;
-    }
-
-    private void validationForNewExpense(BigDecimal amount, BudgetIdWrapper budgetId, UserIdWrapper userId) {
-        Budget checkBudget = budgetRepository.findByBudgetIdAndUserId(budgetId, userId)
-                                             .orElseThrow(() -> new NoSuchElementException("There's no such budget."));
-        checkBudgetLimit(amount, checkBudget);
-        singleMaxExpValidation(amount, checkBudget);
     }
 
     private void singleMaxExpValidation(BigDecimal amount, Budget budget) {
@@ -168,7 +195,8 @@ public class DefaultExpensesService implements ExpensesService {
         BigDecimal totalExpensesSum = expenseRepository.findAllByBudgetIdAndUserId(
                                                                budget.budgetId(), budget.userId())
                                                        .stream()
-                                                       .map(Expense::amount)
+                                                       .map(Expense::expenseDetails)
+                                                       .map(ExpenseDetails::amount)
                                                        .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal amountLeft = totalBudgetLimit.subtract(totalExpensesSum);

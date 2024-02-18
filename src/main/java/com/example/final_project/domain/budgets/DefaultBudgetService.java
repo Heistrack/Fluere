@@ -2,6 +2,7 @@ package com.example.final_project.domain.budgets;
 
 import com.example.final_project.api.responses.budgets.BudgetStatusDTO;
 import com.example.final_project.domain.expenses.Expense;
+import com.example.final_project.domain.expenses.ExpenseDetails;
 import com.example.final_project.domain.users.UserIdWrapper;
 import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
@@ -139,7 +140,7 @@ public class DefaultBudgetService implements BudgetService {
     private String duplicateBudgetTitleCheck(String title, UserIdWrapper userId) {
         if (budgetRepository.existsByTitleAndUserId(title, userId)) {
             long counter = 0;
-            StringBuilder stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder = new StringBuilder(title);
             while (budgetRepository.existsByTitleAndUserId(stringBuilder.toString(), userId)) {
                 counter++;
                 stringBuilder = new StringBuilder(title);
@@ -153,7 +154,8 @@ public class DefaultBudgetService implements BudgetService {
     private BigDecimal totalExpensesValueSum(Budget budget) {
         return expenseRepository.findAllByBudgetId(budget.budgetId())
                                 .stream()
-                                .map(Expense::amount)
+                                .map(Expense::expenseDetails)
+                                .map(ExpenseDetails::amount)
                                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 

@@ -64,16 +64,15 @@ public class ExpensesController {
         Expense newExpense = expensesService.registerNewExpense(request.title(), request.amount(),
                                                                 BudgetIdWrapper.newFromString(request.budgetId()),
                                                                 userId,
-                                                                Optional.ofNullable(request.typeOfExpense())
+                                                                request.expenseType()
         );
         ExpenseResponseDto response = ExpenseResponseDto.fromDomain(newExpense);
         return ResponseEntity.created(URI.create("/expenses/" + response.expenseId()))
                              .body(response);
     }
 
-    @PatchMapping("/{rawexpenseid}")
+    @PatchMapping()
     ResponseEntity<ExpenseResponseDto> updateExpenseField(
-            @PathVariable(name = "rawexpenseid") UUID rawExpenseId,
             @RequestBody @Valid UpdateExpenseRequest request,
             Authentication authentication
     ) {
@@ -81,11 +80,11 @@ public class ExpensesController {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
         return ResponseEntity.ok(ExpenseResponseDto.fromDomain(expensesService.patchExpenseContent(
-                ExpenseIdWrapper.newOf(rawExpenseId),
+                ExpenseIdWrapper.newOf(UUID.fromString(request.expenseId())),
                 Optional.ofNullable(request.title()),
                 Optional.ofNullable(request.amount()),
                 userId,
-                Optional.ofNullable(request.typeOfExpense())
+                Optional.ofNullable(request.expenseType())
         )));
     }
 
@@ -100,11 +99,10 @@ public class ExpensesController {
 
         Expense updatedExpense = expensesService.updateExpenseById(
                 ExpenseIdWrapper.newOf(rawExpenseId),
-                BudgetIdWrapper.newFromString(request.budgetId()),
                 request.title(),
                 request.amount(),
                 userId,
-                Optional.ofNullable(request.typeOfExpense())
+                Optional.ofNullable(request.expenseType())
         );
 
         return ResponseEntity.ok(ExpenseResponseDto.fromDomain(updatedExpense));

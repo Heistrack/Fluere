@@ -1,6 +1,5 @@
 package com.example.final_project.infrastructure.exprepo;
 
-import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetIdWrapper;
 import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.expenses.ExpenseIdWrapper;
@@ -11,8 +10,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 
 public interface ExpenseRepository extends MongoRepository<Expense, ExpenseIdWrapper> {
@@ -29,11 +26,7 @@ public interface ExpenseRepository extends MongoRepository<Expense, ExpenseIdWra
 
     Page<Expense> findAllByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId, Pageable pageable);
 
-    Optional<Budget> findByExpenseId(ExpenseIdWrapper expenseId);
-
     void deleteAllByBudgetId(BudgetIdWrapper budgetId);
 
-    boolean existsByTitleAndBudgetId(String title, BudgetIdWrapper budgetId);
-
-    boolean existsByExpenseId(ExpenseIdWrapper expenseId);
+    boolean existsByBudgetIdAndExpenseDetails_Title(BudgetIdWrapper budgetId, String title);
 }

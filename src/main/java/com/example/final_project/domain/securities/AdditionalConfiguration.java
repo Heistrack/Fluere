@@ -22,9 +22,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @RequiredArgsConstructor
 public class AdditionalConfiguration {
     private final UserRepository repository;
-
-    //FIXME how to make separate ex handler for userDetailsService for bad token and bad credentials and for
-    // and for sending response message to postman not only for IDE console?
     @Bean
     UserDetailsService userDetailsService() {
         return id -> repository.findById(UserIdWrapper.newFromString(id))

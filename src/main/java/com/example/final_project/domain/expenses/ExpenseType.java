@@ -1,9 +1,11 @@
 package com.example.final_project.domain.expenses;
 
+import lombok.Getter;
 import lombok.ToString;
 
 @ToString
-public enum TypeOfExpense {
+@Getter
+public enum ExpenseType {
     ENTERTAINMENT("Entertainment"),
     ACCOMMODATION("Accommodation"),
     OTHER_BILLS("Other bills"),
@@ -16,7 +18,7 @@ public enum TypeOfExpense {
 
     private final String title;
 
-    TypeOfExpense(String title) {
+    ExpenseType(String title) {
         this.title = title;
     }
 

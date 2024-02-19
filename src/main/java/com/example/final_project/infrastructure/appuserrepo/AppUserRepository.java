@@ -1,4 +1,4 @@
-package com.example.final_project.infrastructure.userRepo;
+package com.example.final_project.infrastructure.appuserrepo;
 
 import com.example.final_project.domain.users.AppUser;
 import com.example.final_project.domain.users.UserIdWrapper;
@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;
 
-public interface UserRepository extends MongoRepository<AppUser, UserIdWrapper> {
+public interface AppUserRepository extends MongoRepository<AppUser, UserIdWrapper> {
     boolean existsByEmail(String email);
 
     Optional<AppUser> findByLogin(String login);

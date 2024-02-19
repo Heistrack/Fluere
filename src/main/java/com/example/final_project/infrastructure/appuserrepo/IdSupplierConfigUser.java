@@ -1,4 +1,4 @@
-package com.example.final_project.infrastructure.userRepo;
+package com.example.final_project.infrastructure.appuserrepo;
 
 
 import com.example.final_project.domain.users.UserIdWrapper;

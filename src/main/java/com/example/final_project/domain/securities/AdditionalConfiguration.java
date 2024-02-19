@@ -1,7 +1,7 @@
 package com.example.final_project.domain.securities;
 
 import com.example.final_project.domain.users.UserIdWrapper;
-import com.example.final_project.infrastructure.userRepo.UserRepository;
+import com.example.final_project.infrastructure.appuserrepo.AppUserRepository;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -21,7 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 @RequiredArgsConstructor
 public class AdditionalConfiguration {
-    private final UserRepository repository;
+    private final AppUserRepository repository;
     @Bean
     UserDetailsService userDetailsService() {
         return id -> repository.findById(UserIdWrapper.newFromString(id))

@@ -1,4 +1,4 @@
-package com.example.final_project.api.controllers;
+package com.example.final_project.api.controllers.users;
 
 import com.example.final_project.api.requests.expenses.RegisterExpenseRequest;
 import com.example.final_project.api.requests.expenses.PatchExpenseRequest;
@@ -23,7 +23,7 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.example.final_project.api.controllers.ExpensesController.EXPENSES_BASE_PATH;
+import static com.example.final_project.api.controllers.users.ExpensesController.EXPENSES_BASE_PATH;
 
 @RestController
 @RequiredArgsConstructor

@@ -8,8 +8,9 @@ import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.users.AppUser;
 import com.example.final_project.domain.users.Role;
 import com.example.final_project.domain.users.UserIdWrapper;
-import com.example.final_project.infrastructure.userRepo.UserRepository;
+import com.example.final_project.infrastructure.appuserrepo.AppUserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,9 +22,11 @@ import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
+//TODO remove logs
 public class AuthenticationService {
 
-    private final UserRepository repository;
+    private final AppUserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
@@ -59,7 +62,7 @@ public class AuthenticationService {
         );
 
         String jwtToken = jwtService.generateToken(user);
-
+        log.warn(jwtToken);
         return AuthResponseDTO.builder().token(jwtToken).build();
     }
 }

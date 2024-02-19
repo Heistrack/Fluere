@@ -1,4 +1,4 @@
-package com.example.final_project.api.controllers;
+package com.example.final_project.api.controllers.users;
 
 import com.example.final_project.api.responses.ErrorDTO;
 import com.example.final_project.domain.expenses.exceptions.ExpenseTooBigException;

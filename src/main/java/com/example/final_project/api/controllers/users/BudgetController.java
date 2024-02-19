@@ -1,4 +1,4 @@
-package com.example.final_project.api.controllers;
+package com.example.final_project.api.controllers.users;
 
 import com.example.final_project.api.requests.budgets.PatchBudgetRequest;
 import com.example.final_project.api.requests.budgets.RegisterBudgetRequest;
@@ -23,7 +23,7 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.example.final_project.api.controllers.BudgetController.BUDGETS_CONTROLLER_BASE_PATH;
+import static com.example.final_project.api.controllers.users.BudgetController.BUDGETS_CONTROLLER_BASE_PATH;
 
 @RestController
 @RequiredArgsConstructor
@@ -121,7 +121,7 @@ public class BudgetController {
     ResponseEntity<Page<BudgetResponseDto>> getBudgetByPage(
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "25") Integer size,
-            @RequestParam(required = false, defaultValue = "id") String sortBy,
+            @RequestParam(required = false, defaultValue = "budgetId") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
             Authentication authentication
     ) {

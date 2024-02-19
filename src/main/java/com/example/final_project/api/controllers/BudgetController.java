@@ -19,7 +19,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -70,7 +69,7 @@ public class BudgetController {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
         Budget newBudget = budgetService.registerNewBudget(request.title(), request.limit(),
-                                                           request.typeOfBudget(), request.maxSingleExpense(),
+                                                           request.budgetType(), request.maxSingleExpense(),
                                                            userId
         );
 
@@ -90,7 +89,7 @@ public class BudgetController {
                 BudgetIdWrapper.newOf(rawBudgetId),
                 request.title(),
                 request.limit(),
-                request.typeOfBudget(),
+                request.budgetType(),
                 request.maxSingleExpense(),
                 userId
         );
@@ -109,7 +108,7 @@ public class BudgetController {
                 BudgetIdWrapper.newOf(rawBudgetId),
                 Optional.ofNullable(request.title()),
                 Optional.ofNullable(request.limit()),
-                Optional.ofNullable(request.typeOfBudget()),
+                Optional.ofNullable(request.budgetType()),
                 Optional.ofNullable(request.maxSingleExpense()),
                 userId
         );

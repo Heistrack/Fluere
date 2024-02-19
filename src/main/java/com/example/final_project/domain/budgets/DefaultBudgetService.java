@@ -3,6 +3,7 @@ package com.example.final_project.domain.budgets;
 import com.example.final_project.api.responses.budgets.BudgetStatusDTO;
 import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.expenses.ExpenseDetails;
+import com.example.final_project.domain.expenses.ExpenseType;
 import com.example.final_project.domain.users.UserIdWrapper;
 import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
@@ -49,7 +50,7 @@ public class DefaultBudgetService implements BudgetService {
 
         return BudgetStatusDTO.newOf(budgetId.id(), expensesNumber,
                                      moneySpend, amountLeft,
-                                     budgetFullFillPercent, budget.budgetDetails().typeOfBudget().getTitle(),
+                                     budgetFullFillPercent, budget.budgetDetails().budgetType().getTitle(),
                                      budget.budgetDetails().limit(),
                                      budget.budgetDetails().maxSingleExpense(),
                                      LocalDateTime.now()
@@ -62,7 +63,7 @@ public class DefaultBudgetService implements BudgetService {
     }
 
     @Override
-    public Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget,
+    public Budget registerNewBudget(String title, BigDecimal limit, BudgetType budgetType,
                                     BigDecimal maxSingleExpense, UserIdWrapper userId
     ) {
         String checkedTitle = duplicateBudgetTitleCheck(title, userId);
@@ -73,7 +74,7 @@ public class DefaultBudgetService implements BudgetService {
         Budget budget = Budget.newOf(
                 budgetIdSupplier.get(), userId,
                 BudgetDetails.newOf(checkedTitle, limit,
-                                    typeOfBudget, maxSingleExpense, historyOfChange
+                                    budgetType, maxSingleExpense, historyOfChange
                 )
         );
         return budgetRepository.save(budget);
@@ -83,7 +84,7 @@ public class DefaultBudgetService implements BudgetService {
     public Budget patchBudgetContent(BudgetIdWrapper budgetId,
                                      Optional<String> title,
                                      Optional<BigDecimal> limit,
-                                     Optional<TypeOfBudget> typeOfBudget,
+                                     Optional<BudgetType> budgetType,
                                      Optional<BigDecimal> maxSingleExpense,
                                      UserIdWrapper userId
     ) {
@@ -91,13 +92,12 @@ public class DefaultBudgetService implements BudgetService {
                                            .orElseThrow(() -> new NoSuchElementException(
                                                    "Can't update budget, because it doesn't exist"));
 
-        if (Objects.equals(oldBudget.budgetDetails().title(), title.get()) &&
-                Objects.equals(oldBudget.budgetDetails().limit(), limit.get()) &&
-                Objects.equals(oldBudget.budgetDetails().typeOfBudget(), typeOfBudget.get()) &&
-                Objects.equals(oldBudget.budgetDetails().maxSingleExpense(), maxSingleExpense.get())) return oldBudget;
+        if (noParamChangeCheck(oldBudget, title, limit, budgetType,
+                               maxSingleExpense)) {
+            return oldBudget;
+        }
 
-
-        if (!title.get().equals(oldBudget.budgetDetails().title())) {
+        if (title.isPresent() && !title.get().equals(oldBudget.budgetDetails().title())) {
             title = Optional.of(duplicateBudgetTitleCheck(title.get(), userId));
         }
         Optional<String> checkedTitle = title;
@@ -113,8 +113,9 @@ public class DefaultBudgetService implements BudgetService {
                         BudgetDetails.newOf(
                                 checkedTitle.orElseGet(() -> budgetFromRepository.budgetDetails().title()),
                                 limit.orElseGet(() -> budgetFromRepository.budgetDetails().limit()),
-                                typeOfBudget.orElseGet(() -> budgetFromRepository.budgetDetails().typeOfBudget()),
-                                maxSingleExpense.orElseGet(() -> budgetFromRepository.budgetDetails().maxSingleExpense()),
+                                budgetType.orElseGet(() -> budgetFromRepository.budgetDetails().budgetType()),
+                                maxSingleExpense.orElseGet(
+                                        () -> budgetFromRepository.budgetDetails().maxSingleExpense()),
                                 ourBudgetDetails.historyOfChanges()
                         )
                 )).orElseThrow(IllegalArgumentException::new));
@@ -125,7 +126,7 @@ public class DefaultBudgetService implements BudgetService {
     public Budget updateBudgetById(BudgetIdWrapper budgetId,
                                    String title,
                                    BigDecimal limit,
-                                   TypeOfBudget typeOfBudget,
+                                   BudgetType budgetType,
                                    BigDecimal maxSingleExpense,
                                    UserIdWrapper userId
     ) {
@@ -133,17 +134,16 @@ public class DefaultBudgetService implements BudgetService {
                                            .orElseThrow(() -> new NoSuchElementException(
                                                    "Can't update budget, because it doesn't exist"));
 
-        if (Objects.equals(oldBudget.budgetDetails().title(), title) &&
-                Objects.equals(oldBudget.budgetDetails().limit(), limit) &&
-                Objects.equals(oldBudget.budgetDetails().typeOfBudget(), typeOfBudget) &&
-                Objects.equals(oldBudget.budgetDetails().maxSingleExpense(), maxSingleExpense)) return oldBudget;
+        if (noParamChangeCheck(oldBudget, Optional.of(title), Optional.of(limit), Optional.of(budgetType),
+                               Optional.of(maxSingleExpense))) {
+            return oldBudget;
+        }
 
-        String checkedTitle = title;
+        String checkedTitle = "";
 
         if (!title.equals(oldBudget.budgetDetails().title())) {
             checkedTitle = duplicateBudgetTitleCheck(title, userId);
         }
-
 
         BudgetDetails ourBudgetDetails = oldBudget.budgetDetails();
         Integer newRecordNumber = ourBudgetDetails.historyOfChanges().lastEntry().getKey() + 1;
@@ -155,11 +155,27 @@ public class DefaultBudgetService implements BudgetService {
                 BudgetDetails.newOf(
                         checkedTitle,
                         limit,
-                        typeOfBudget,
+                        budgetType,
                         maxSingleExpense,
                         ourBudgetDetails.historyOfChanges()
                 )
         ));
+    }
+
+    private boolean noParamChangeCheck(Budget oldBudget, Optional<String> title,
+                                       Optional<BigDecimal> limit,
+                                       Optional<BudgetType> budgetType,
+                                       Optional<BigDecimal> maxSingleExpense
+    ) {
+        String newTitle = title.orElse(oldBudget.budgetDetails().title());
+        BigDecimal newLimit = limit.orElse(oldBudget.budgetDetails().limit());
+        BudgetType newBudgetType = budgetType.orElse(oldBudget.budgetDetails().budgetType());
+        BigDecimal newMaxSingleExpense = maxSingleExpense.orElse(oldBudget.budgetDetails().maxSingleExpense());
+
+        return Objects.equals(oldBudget.budgetDetails().title(), newTitle) &&
+                Objects.equals(oldBudget.budgetDetails().limit(), newLimit) &&
+                Objects.equals(oldBudget.budgetDetails().budgetType(), newBudgetType) &&
+                Objects.equals(oldBudget.budgetDetails().maxSingleExpense(), newMaxSingleExpense);
     }
 
     @Override
@@ -172,7 +188,7 @@ public class DefaultBudgetService implements BudgetService {
     }
 
     private String duplicateBudgetTitleCheck(String title, UserIdWrapper userId) {
-        if (budgetRepository.existsByUserIdAndBudgetDetails_Title(userId,title)) {
+        if (budgetRepository.existsByUserIdAndBudgetDetails_Title(userId, title)) {
             long counter = 0;
             StringBuilder stringBuilder = new StringBuilder(title);
             while (budgetRepository.existsByUserIdAndBudgetDetails_Title(userId, stringBuilder.toString())) {
@@ -198,9 +214,9 @@ public class DefaultBudgetService implements BudgetService {
     }
 
     private String getLimitFromBudget(Budget budget) {
-        TypeOfBudget ourTypeOfBudget = budget.budgetDetails().typeOfBudget();
-        BigDecimal limit = budget.budgetDetails().limit().multiply(ourTypeOfBudget.getValue());
-        if (!ourTypeOfBudget.getValue().equals(BigDecimal.valueOf(-1))) {
+        BudgetType ourBudgetType = budget.budgetDetails().budgetType();
+        BigDecimal limit = budget.budgetDetails().limit().multiply(ourBudgetType.getValue());
+        if (!ourBudgetType.getValue().equals(BigDecimal.valueOf(-1))) {
             return limit.toString();
         } else {
             return "no limit";

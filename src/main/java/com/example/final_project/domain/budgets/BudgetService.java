@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,15 +15,15 @@ public interface BudgetService {
 
     void deleteBudgetByBudgetId(BudgetIdWrapper budgetId);
 
-    Budget registerNewBudget(String title, BigDecimal limit, TypeOfBudget typeOfBudget, BigDecimal maxSingleExpense,
+    Budget registerNewBudget(String title, BigDecimal limit, BudgetType budgetType, BigDecimal maxSingleExpense,
                              UserIdWrapper userId
     );
 
     Budget patchBudgetContent(BudgetIdWrapper budgetId, Optional<String> title, Optional<BigDecimal> limit,
-                              Optional<TypeOfBudget> typeOfBudget, Optional<BigDecimal> maxSingleExpense, UserIdWrapper userId
+                              Optional<BudgetType> typeOfBudget, Optional<BigDecimal> maxSingleExpense, UserIdWrapper userId
     );
 
-    Budget updateBudgetById(BudgetIdWrapper BudgetId, String title, BigDecimal limit, TypeOfBudget typeOfBudget,
+    Budget updateBudgetById(BudgetIdWrapper BudgetId, String title, BigDecimal limit, BudgetType budgetType,
                             BigDecimal maxSingleExpense, UserIdWrapper userId);
 
     Page<Budget> findAllByPage(UserIdWrapper userId, Pageable pageable);

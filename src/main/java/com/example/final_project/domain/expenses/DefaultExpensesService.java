@@ -163,12 +163,9 @@ public class DefaultExpensesService implements ExpensesService {
         String newTitle = title.orElse(oldExpense.expenseDetails().title());
         BigDecimal newAmount = amount.orElse(oldExpense.expenseDetails().amount());
 
-        if (Objects.equals(oldExpense.expenseDetails().title(), newTitle) &&
+        return Objects.equals(oldExpense.expenseDetails().title(), newTitle) &&
                 Objects.equals(oldExpense.expenseDetails().expenseType(), newExpenseType) &&
-                Objects.equals(oldExpense.expenseDetails().amount(), newAmount)) {
-            return true;
-        }
-        return false;
+                Objects.equals(oldExpense.expenseDetails().amount(), newAmount);
     }
 
     private void validationExpenseAmount(BigDecimal amount, BudgetIdWrapper budgetId) {
@@ -200,12 +197,12 @@ public class DefaultExpensesService implements ExpensesService {
     }
 
     private void checkBudgetLimit(BigDecimal amount, Budget budget) {
-        if (budget.budgetDetails().typeOfBudget().getValue().compareTo(BigDecimal.valueOf(0)) < 0) {
+        if (budget.budgetDetails().budgetType().getValue().compareTo(BigDecimal.valueOf(0)) < 0) {
             return;
         }
 
         BigDecimal totalBudgetLimit = budget.budgetDetails().limit()
-                                            .multiply(budget.budgetDetails().typeOfBudget().getValue());
+                                            .multiply(budget.budgetDetails().budgetType().getValue());
 
         BigDecimal totalExpensesSum = expenseRepository.findAllByBudgetIdAndUserId(
                                                                budget.budgetId(), budget.userId())

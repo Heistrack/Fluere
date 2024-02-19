@@ -1,6 +1,7 @@
 package com.example.final_project.api.controllers;
 
 import com.example.final_project.api.requests.expenses.RegisterExpenseRequest;
+import com.example.final_project.api.requests.expenses.PatchExpenseRequest;
 import com.example.final_project.api.requests.expenses.UpdateExpenseRequest;
 import com.example.final_project.api.responses.expenses.ExpenseResponseDto;
 import com.example.final_project.domain.budgets.BudgetIdWrapper;
@@ -73,7 +74,7 @@ public class ExpensesController {
 
     @PatchMapping()
     ResponseEntity<ExpenseResponseDto> updateExpenseField(
-            @RequestBody @Valid UpdateExpenseRequest request,
+            @RequestBody @Valid PatchExpenseRequest request,
             Authentication authentication
     ) {
 
@@ -88,17 +89,16 @@ public class ExpensesController {
         )));
     }
 
-    @PutMapping("/{rawexpenseid}")
+    @PutMapping()
     ResponseEntity<ExpenseResponseDto> updateExpense(
-            @PathVariable(name = "rawexpenseid") UUID rawExpenseId,
-            @RequestBody @Valid RegisterExpenseRequest request,
+            @RequestBody @Valid UpdateExpenseRequest request,
             Authentication authentication
     ) {
 
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
         Expense updatedExpense = expensesService.updateExpenseById(
-                ExpenseIdWrapper.newOf(rawExpenseId),
+                ExpenseIdWrapper.newOf(UUID.fromString(request.expenseId())),
                 request.title(),
                 request.amount(),
                 userId,

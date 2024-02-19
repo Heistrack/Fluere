@@ -1,7 +1,7 @@
 package com.example.final_project.api.responses.expenses;
 
 import com.example.final_project.domain.expenses.Expense;
-import com.example.final_project.domain.expenses.TypeOfExpense;
+import com.example.final_project.domain.expenses.ExpenseType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,7 +12,7 @@ public record ExpenseResponseDto(
         String expenseId,
         BigDecimal amount,
         TreeMap<Integer, LocalDateTime> historyOfChanges,
-        TypeOfExpense typeOfExpense
+        ExpenseType expenseType
 ) {
 
     public static ExpenseResponseDto fromDomain(Expense expense) {
@@ -21,7 +21,7 @@ public record ExpenseResponseDto(
                 expense.expenseId().id().toString(),
                 expense.expenseDetails().amount(),
                 expense.expenseDetails().historyOfChanges(),
-                expense.expenseDetails().typeOfExpense()
+                expense.expenseDetails().expenseType()
         );
     }
 }

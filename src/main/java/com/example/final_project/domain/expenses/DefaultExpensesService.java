@@ -37,7 +37,7 @@ public class DefaultExpensesService implements ExpensesService {
 
     @Override
     public Expense registerNewExpense(String title, BigDecimal amount, BudgetIdWrapper budgetId, UserIdWrapper userId,
-                                      TypeOfExpense typeOfExpense
+                                      ExpenseType expenseType
     ) {
         String checkedTitle = duplicateExpenseTitleCheck(title, budgetId);
         validationExpenseAmount(amount, budgetId);
@@ -45,10 +45,11 @@ public class DefaultExpensesService implements ExpensesService {
         TreeMap<Integer, LocalDateTime> historyOfChange = new TreeMap<>();
         historyOfChange.put(1, LocalDateTime.now());
 
-        Expense expense = Expense.newOf(expenseIdSupplier.get(), budgetId, userId, ExpenseDetails.newOf(checkedTitle, amount,
-                                                                                                        historyOfChange,
-                                                                                                        typeOfExpense
-        ));
+        Expense expense = Expense.newOf(
+                expenseIdSupplier.get(), budgetId, userId, ExpenseDetails.newOf(checkedTitle, amount,
+                                                                                historyOfChange,
+                                                                                expenseType
+                ));
         return expenseRepository.save(expense);
     }
 
@@ -58,16 +59,15 @@ public class DefaultExpensesService implements ExpensesService {
             Optional<String> title,
             Optional<BigDecimal> amount,
             UserIdWrapper userId,
-            Optional<TypeOfExpense> typeOfExpense
+            Optional<ExpenseType> expenseType
     ) {
         Expense oldExpense = expenseRepository.findByExpenseIdAndUserId(expenseId, userId)
                                               .orElseThrow(() -> new NoSuchElementException(
                                                       "There's no such expense."));
 
-
-        if (Objects.equals(oldExpense.expenseDetails().title(), title.get()) &&
-                Objects.equals(oldExpense.expenseDetails().typeOfExpense(), typeOfExpense.get()) &&
-                Objects.equals(oldExpense.expenseDetails().amount(), amount.get())) return oldExpense;
+        if (noParamChangeCheck(oldExpense, title, amount, expenseType)) {
+            return oldExpense;
+        }
 
         Map<String, Object> stringObjectMap = validationForNewExpense(
                 oldExpense,
@@ -86,7 +86,7 @@ public class DefaultExpensesService implements ExpensesService {
                                 checkedTitle.orElseGet(() -> expenseFromRepository.expenseDetails().title()),
                                 amount.orElseGet(() -> expenseFromRepository.expenseDetails().amount()),
                                 oldExpense.expenseDetails().historyOfChanges(),
-                                typeOfExpense.orElseGet(() -> expenseFromRepository.expenseDetails().typeOfExpense())
+                                expenseType.orElseGet(() -> expenseFromRepository.expenseDetails().expenseType())
                         )
                 )
         ).orElseThrow(IllegalArgumentException::new));
@@ -98,14 +98,14 @@ public class DefaultExpensesService implements ExpensesService {
             String title,
             BigDecimal amount,
             UserIdWrapper userId,
-            Optional<TypeOfExpense> typeOfExpense
+            Optional<ExpenseType> expenseType
     ) {
         Expense oldExpense = expenseRepository.findByExpenseIdAndUserId(expenseId, userId).orElseThrow(
                 () -> new NoSuchElementException("Can't update expense, because it doesn't exist"));
 
-        if (Objects.equals(oldExpense.expenseDetails().title(), title) &&
-                Objects.equals(oldExpense.expenseDetails().typeOfExpense(), typeOfExpense.get()) &&
-                Objects.equals(oldExpense.expenseDetails().amount(), amount)) return oldExpense;
+        if (noParamChangeCheck(oldExpense, Optional.of(title), Optional.of(amount), expenseType)) {
+            return oldExpense;
+        }
 
         Map<String, Object> validatedValues = validationForNewExpense(oldExpense, title, amount);
 
@@ -117,7 +117,7 @@ public class DefaultExpensesService implements ExpensesService {
                         (String) validatedValues.get("checkedTitle"),
                         amount,
                         oldExpense.expenseDetails().historyOfChanges(),
-                        typeOfExpense.orElse(TypeOfExpense.NO_CATEGORY)
+                        expenseType.orElse(ExpenseType.NO_CATEGORY)
                 )
         ));
     }
@@ -153,6 +153,22 @@ public class DefaultExpensesService implements ExpensesService {
         oldExpenseDetails.historyOfChanges().put(newRecordNumber, LocalDateTime.now());
 
         return returnMap;
+    }
+
+    private boolean noParamChangeCheck(Expense oldExpense, Optional<String> title,
+                                       Optional<BigDecimal> amount,
+                                       Optional<ExpenseType> expenseType
+    ) {
+        ExpenseType newExpenseType = expenseType.orElse(oldExpense.expenseDetails().expenseType());
+        String newTitle = title.orElse(oldExpense.expenseDetails().title());
+        BigDecimal newAmount = amount.orElse(oldExpense.expenseDetails().amount());
+
+        if (Objects.equals(oldExpense.expenseDetails().title(), newTitle) &&
+                Objects.equals(oldExpense.expenseDetails().expenseType(), newExpenseType) &&
+                Objects.equals(oldExpense.expenseDetails().amount(), newAmount)) {
+            return true;
+        }
+        return false;
     }
 
     private void validationExpenseAmount(BigDecimal amount, BudgetIdWrapper budgetId) {

@@ -166,6 +166,7 @@ public class DefaultBudgetService implements BudgetService {
     public Page<Budget> findAllByPage(UserIdWrapper userId, Pageable pageable) {
 
         Page<Budget> allByUserId = budgetRepository.findAllByUserId(userId, pageable);
+
         if (allByUserId.isEmpty()) throw new NoSuchElementException("No results match");
         return allByUserId;
     }

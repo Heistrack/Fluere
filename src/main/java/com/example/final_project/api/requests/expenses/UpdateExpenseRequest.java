@@ -1,25 +1,24 @@
 package com.example.final_project.api.requests.expenses;
 
 
-import com.example.final_project.domain.expenses.TypeOfExpense;
+import com.example.final_project.domain.expenses.ExpenseType;
 import com.mongodb.lang.Nullable;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import org.hibernate.validator.constraints.Length;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
 public record UpdateExpenseRequest(
-        @Nullable
-        @Length(min = 3, max = 200, message = "Title can not be shorter than 3 and longer than 200 characters.")
+
+        @Size(min = 3, message = "Title can not be shorter than 3 characters")
+        @Size(max = 200, message = "Title can not be longer than 200 characters")
         String title,
-        @Nullable
         @Positive(message = "Expense amount can not be negative or zero.")
         BigDecimal amount,
-        @NotNull(message = "Expense's id can not be null.")
-        @NotEmpty(message = "Expense's id can not be empty.")
+        @NotBlank(message = "Expense's id can not be null or blank.")
         String expenseId,
         @Nullable
-        TypeOfExpense typeOfExpense) {
+        ExpenseType expenseType) {
 }

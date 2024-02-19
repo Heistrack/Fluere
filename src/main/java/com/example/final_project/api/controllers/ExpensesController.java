@@ -64,7 +64,7 @@ public class ExpensesController {
         Expense newExpense = expensesService.registerNewExpense(request.title(), request.amount(),
                                                                 BudgetIdWrapper.newFromString(request.budgetId()),
                                                                 userId,
-                                                                request.typeOfExpense()
+                                                                request.expenseType()
         );
         ExpenseResponseDto response = ExpenseResponseDto.fromDomain(newExpense);
         return ResponseEntity.created(URI.create("/expenses/" + response.expenseId()))
@@ -84,7 +84,7 @@ public class ExpensesController {
                 Optional.ofNullable(request.title()),
                 Optional.ofNullable(request.amount()),
                 userId,
-                Optional.ofNullable(request.typeOfExpense())
+                Optional.ofNullable(request.expenseType())
         )));
     }
 
@@ -102,7 +102,7 @@ public class ExpensesController {
                 request.title(),
                 request.amount(),
                 userId,
-                Optional.ofNullable(request.typeOfExpense())
+                Optional.ofNullable(request.expenseType())
         );
 
         return ResponseEntity.ok(ExpenseResponseDto.fromDomain(updatedExpense));

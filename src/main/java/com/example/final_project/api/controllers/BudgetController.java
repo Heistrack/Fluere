@@ -128,6 +128,7 @@ public class BudgetController {
 
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
+
         return ResponseEntity.ok(budgetService.findAllByPage(
                                                       userId,
                                                       PageRequest.of(page, size, Sort.by(sortDirection, sortBy))

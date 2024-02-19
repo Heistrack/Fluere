@@ -1,5 +1,6 @@
 package com.example.final_project.api.controllers;
 
+import com.example.final_project.api.requests.budgets.PatchBudgetRequest;
 import com.example.final_project.api.requests.budgets.RegisterBudgetRequest;
 import com.example.final_project.api.requests.budgets.UpdateBudgetRequest;
 import com.example.final_project.api.responses.budgets.BudgetResponseDto;
@@ -78,15 +79,15 @@ public class BudgetController {
                              .body(budgetResponseDto);
     }
 
-    @PutMapping("/{rawbudgetid}")
-    ResponseEntity<BudgetResponseDto> updateBudget(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
-                                                   @Valid @RequestBody RegisterBudgetRequest request,
-                                                   Authentication authentication
+    @PutMapping()
+    ResponseEntity<BudgetResponseDto> updateBudget(
+            @Valid @RequestBody UpdateBudgetRequest request,
+            Authentication authentication
     ) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
         Budget updatedBudget = budgetService.updateBudgetById(
-                BudgetIdWrapper.newOf(rawBudgetId),
+                BudgetIdWrapper.newFromString(request.budgetId()),
                 request.title(),
                 request.limit(),
                 request.budgetType(),
@@ -96,16 +97,16 @@ public class BudgetController {
         return ResponseEntity.ok(BudgetResponseDto.fromDomain(updatedBudget));
     }
 
-    @PatchMapping("/{rawbudgetid}")
-    ResponseEntity<BudgetResponseDto> patchBudget(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
-                                                  @Valid @RequestBody UpdateBudgetRequest request,
-                                                  Authentication authentication
+    @PatchMapping()
+    ResponseEntity<BudgetResponseDto> patchBudget(
+            @Valid @RequestBody PatchBudgetRequest request,
+            Authentication authentication
     ) {
 
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
 
         Budget patchedBudget = budgetService.patchBudgetContent(
-                BudgetIdWrapper.newOf(rawBudgetId),
+                BudgetIdWrapper.newFromString(request.budgetId()),
                 Optional.ofNullable(request.title()),
                 Optional.ofNullable(request.limit()),
                 Optional.ofNullable(request.budgetType()),

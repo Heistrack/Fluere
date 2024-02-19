@@ -15,8 +15,6 @@ public record UpdateExpenseRequest(
         @NotNull(message = "Expense amount can not be null.")
         @Positive(message = "Expense amount can not be negative or zero.")
         BigDecimal amount,
-        @NotBlank(message = "Budget's id can not be null or blank.")
-        String budgetId,
         @NotBlank(message = "Expense's id can not be null or blank.")
         String expenseId,
         @Nullable

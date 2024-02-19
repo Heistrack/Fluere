@@ -10,13 +10,13 @@ import com.example.final_project.domain.users.Role;
 import com.example.final_project.domain.users.UserIdWrapper;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.function.Supplier;
 
 @Service
@@ -37,6 +37,7 @@ public class AuthenticationService {
                               .password(passwordEncoder.encode(request.password()))
                               .role(Role.USER)
                               .enabled(Boolean.TRUE)
+                              .creationTime(LocalDateTime.now())
                               .build();
 
         repository.save(user);

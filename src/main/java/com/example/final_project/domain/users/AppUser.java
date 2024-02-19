@@ -9,9 +9,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 @Document
 public record AppUser(@MongoId
@@ -21,7 +21,8 @@ public record AppUser(@MongoId
                       String password,
                       @Enumerated(EnumType.STRING)
                       Role role,
-                      Boolean enabled
+                      Boolean enabled,
+                      LocalDateTime creationTime
 ) implements UserDetails {
     @Builder
     public AppUser {

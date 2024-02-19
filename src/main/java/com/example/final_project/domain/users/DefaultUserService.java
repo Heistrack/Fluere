@@ -6,9 +6,9 @@ import com.example.final_project.api.requests.users.PasswordChangeRequest;
 import com.example.final_project.api.requests.users.RegisterUserRequest;
 import com.example.final_project.api.responses.UserDetailsResponse;
 import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
-import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetService;
+import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
 import com.example.final_project.domain.users.exceptions.UnableToCreateException;
 import com.example.final_project.infrastructure.userRepo.UserRepository;
@@ -20,6 +20,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -113,6 +114,7 @@ public class DefaultUserService implements UserService {
                                           .password(currentUser.password())
                                           .role(currentUser.role())
                                           .enabled(currentUser.enabled())
+                                          .creationTime(currentUser.creationTime())
                                           .build());
     }
 
@@ -130,6 +132,7 @@ public class DefaultUserService implements UserService {
                                           .password(passwordEncoder.encode(request.firstPasswordAttempt()))
                                           .role(currentUser.role())
                                           .enabled(currentUser.enabled())
+                                          .creationTime(currentUser.creationTime())
                                           .build());
     }
 
@@ -167,6 +170,7 @@ public class DefaultUserService implements UserService {
                                    .password(passwordEncoder.encode(ADMIN_PASSWORD))
                                    .role(Role.ADMIN)
                                    .enabled(true)
+                                   .creationTime(LocalDateTime.now())
                                    .build();
             userRepository.save(admin);
         }

@@ -71,6 +71,10 @@ public class DefaultBudgetService implements BudgetService {
         TreeMap<Integer, LocalDateTime> historyOfChange = new TreeMap<>();
         historyOfChange.put(1, LocalDateTime.now());
 
+        if (maxSingleExpense.compareTo(limit) > 0) {
+            maxSingleExpense = limit;
+        }
+
         Budget budget = Budget.newOf(
                 budgetIdSupplier.get(), userId,
                 BudgetDetails.newOf(checkedTitle, limit,
@@ -92,8 +96,7 @@ public class DefaultBudgetService implements BudgetService {
                                            .orElseThrow(() -> new NoSuchElementException(
                                                    "Can't update budget, because it doesn't exist"));
 
-        if (noParamChangeCheck(oldBudget, title, limit, budgetType,
-                               maxSingleExpense)) {
+        if (noParamChangeCheck(oldBudget, title, limit, budgetType, maxSingleExpense)) {
             return oldBudget;
         }
 
@@ -101,6 +104,12 @@ public class DefaultBudgetService implements BudgetService {
             title = Optional.of(duplicateBudgetTitleCheck(title.get(), userId));
         }
         Optional<String> checkedTitle = title;
+
+
+        if(maxSingleExpense.isPresent() && maxSingleExpense.get().compareTo(limit.orElse(oldBudget.budgetDetails().limit())) > 0){
+            maxSingleExpense = limit;
+        }
+        Optional<BigDecimal> checkedMaxSingleExpense = maxSingleExpense;
 
         BudgetDetails ourBudgetDetails = oldBudget.budgetDetails();
         Integer newRecordNumber = ourBudgetDetails.historyOfChanges().lastEntry().getKey() + 1;
@@ -114,7 +123,7 @@ public class DefaultBudgetService implements BudgetService {
                                 checkedTitle.orElseGet(() -> budgetFromRepository.budgetDetails().title()),
                                 limit.orElseGet(() -> budgetFromRepository.budgetDetails().limit()),
                                 budgetType.orElseGet(() -> budgetFromRepository.budgetDetails().budgetType()),
-                                maxSingleExpense.orElseGet(
+                                checkedMaxSingleExpense.orElseGet(
                                         () -> budgetFromRepository.budgetDetails().maxSingleExpense()),
                                 ourBudgetDetails.historyOfChanges()
                         )
@@ -143,6 +152,10 @@ public class DefaultBudgetService implements BudgetService {
 
         if (!title.equals(oldBudget.budgetDetails().title())) {
             checkedTitle = duplicateBudgetTitleCheck(title, userId);
+        }
+
+        if(maxSingleExpense.compareTo(limit) > 0){
+            maxSingleExpense = limit;
         }
 
         BudgetDetails ourBudgetDetails = oldBudget.budgetDetails();

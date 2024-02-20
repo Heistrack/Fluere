@@ -4,7 +4,6 @@ import com.example.final_project.api.requests.users.appusers.AuthenticationReque
 import com.example.final_project.api.requests.users.appusers.EmailChangeRequest;
 import com.example.final_project.api.requests.users.appusers.PasswordChangeRequest;
 import com.example.final_project.api.requests.users.appusers.RegisterUserRequest;
-import com.example.final_project.api.responses.users.appusers.UserDetailsResponse;
 import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
 import com.example.final_project.domain.budgets.Budget;
 import com.example.final_project.domain.budgets.BudgetService;
@@ -12,16 +11,13 @@ import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
 import com.example.final_project.domain.users.exceptions.UnableToCreateException;
 import com.example.final_project.infrastructure.appuserrepo.AppUserRepository;
-import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -40,58 +36,8 @@ public class DefaultUserService implements UserService {
     }
 
     @Override
-    public AppUser findFromToken(String userId) {
-        //TODO Move this method for admin only
-        return userRepository.findById(UserIdWrapper.newFromString(userId))
-                             .orElseThrow(() -> new JwtException("Invalid token"));
-    }
-
-    @Override
-    public List<UserDetailsResponse> getAllUsers() {
-        //TODO move to admin service
-        return userRepository.findAll()
-                             .stream()
-                             .map(UserDetailsResponse::fromDomain).toList();
-    }
-
-    @Override
-    public UserDetailsResponse findByUserId(UUID userId) {
-        //TODO remove to admin service
-        return userRepository.findById(UserIdWrapper.newOf(userId))
-                             .map(UserDetailsResponse::fromDomain)
-                             .orElseThrow(() -> new NoSuchElementException("There is no such user id!"));
-    }
-
-    @Override
-    public AppUser findByLogin(String login) {
-        //TODO remove to admin service
-        return userRepository.findByLogin(login)
-                             .orElseThrow(() -> new NoSuchElementException("There is no user with such login"));
-    }
-
-    @Override
-    public AppUser findByEmail(String email) {
-        //TODO remove to admin service
-        return userRepository.findByEmail(email)
-                             .orElseThrow(() -> new NoSuchElementException("There is no user with such email"));
-    }
-
-    @Override
-    public void removeMyAccount(String login) {
-        //TODO let it be but it should remove only auth account
-        userRepository.findByLogin(login).map(AppUser::userId).ifPresent(this::userRemoveProcedure);
-    }
-
-    @Override
-    public void removeUserByUserId(UUID userId) {
-        //TODO remove to admin service
-        userRepository.findById(UserIdWrapper.newOf(userId)).map(AppUser::userId).ifPresent(this::userRemoveProcedure);
-    }
-
-    @Override
-    public void removeThemAll() {
-        //TODO remove to admin service
-        userRepository.findAll().stream().map(AppUser::userId).forEach(this::userRemoveProcedure);
+    public void removeOwnAccount(UserIdWrapper userId) {
+        userRepository.findById(userId).map(AppUser::userId).ifPresent(this::userRemoveProcedure);
     }
 
     @Override
@@ -117,7 +63,7 @@ public class DefaultUserService implements UserService {
         AppUser currentUser = userCheckBeforeModifyProperties(request.auth(), userIdFromAuth);
 
         if (!request.firstPasswordAttempt().equals(request.secondPasswordAttempt()))
-            throw new BadCredentialsException("The new passwords are not the same");
+            throw new BadCredentialsException("Passwords are not the same");
 
         return userRepository.save(AppUser.builder()
                                           .userId(currentUser.userId())
@@ -132,8 +78,8 @@ public class DefaultUserService implements UserService {
 
     private void userRemoveProcedure(UserIdWrapper userToRemove) {
         if (!Objects.isNull(userToRemove)) {
-            userRepository.deleteById(userToRemove);
             removeUserData(userToRemove);
+            userRepository.deleteById(userToRemove);
         }
     }
 

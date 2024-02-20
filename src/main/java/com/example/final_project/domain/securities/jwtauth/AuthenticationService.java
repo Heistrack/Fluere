@@ -5,9 +5,9 @@ import com.example.final_project.api.requests.users.appusers.RegisterUserRequest
 import com.example.final_project.api.responses.authentications.AuthResponseDTO;
 import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
 import com.example.final_project.domain.securities.jwt.JwtService;
-import com.example.final_project.domain.users.AppUser;
-import com.example.final_project.domain.users.Role;
-import com.example.final_project.domain.users.UserIdWrapper;
+import com.example.final_project.domain.users.appusers.AppUser;
+import com.example.final_project.domain.users.appusers.Role;
+import com.example.final_project.domain.users.appusers.UserIdWrapper;
 import com.example.final_project.infrastructure.appuserrepo.AppUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;

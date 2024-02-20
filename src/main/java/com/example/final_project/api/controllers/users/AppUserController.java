@@ -7,11 +7,9 @@ import com.example.final_project.api.requests.users.appusers.RegisterUserRequest
 import com.example.final_project.api.responses.authentications.AuthResponseDTO;
 import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
 import com.example.final_project.api.responses.users.appusers.UserDetailsResponse;
-import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
-import com.example.final_project.domain.users.AppUser;
-import com.example.final_project.domain.users.UserIdWrapper;
-import com.example.final_project.domain.users.UserService;
+import com.example.final_project.domain.users.appusers.AppUser;
+import com.example.final_project.domain.users.appusers.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +25,6 @@ public class AppUserController {
     static final String USERS_BASE_CONTROLLER_PATH = "/users";
     private final UserService userService;
     private final AuthenticationService authenticationService;
-    private final JwtService jwtService;
 
     @PostMapping()
     ResponseEntity<RegisterResponseDTO> registerNewUser(
@@ -43,14 +40,17 @@ public class AppUserController {
         return ResponseEntity.ok(authenticationService.authenticate(request));
     }
 
+    @GetMapping
+    ResponseEntity<AppUser> getMyAccountInfo(Authentication authentication) {
+        return ResponseEntity.ok(userService.getUserDetailsFromToken(authentication));
+    }
+
 
     @DeleteMapping()
     ResponseEntity<AppUser> removeOneselfAccount(
             Authentication authentication
     ) {
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-
-        userService.removeOwnAccount(userId);
+        userService.removeOwnAccount(authentication);
         return ResponseEntity.noContent().build();
     }
 
@@ -59,10 +59,7 @@ public class AppUserController {
             @RequestBody @Valid PasswordChangeRequest request,
             Authentication authentication
     ) {
-        UserIdWrapper userIdFromToken = jwtService.extractUserIdFromRequestAuth(authentication);
-
-        AppUser updatedUser = userService.patchPassword(request, userIdFromToken);
-
+        AppUser updatedUser = userService.patchPassword(request, authentication);
         return ResponseEntity.ok(UserDetailsResponse.fromDomain(updatedUser));
     }
 
@@ -71,10 +68,7 @@ public class AppUserController {
             @RequestBody @Valid EmailChangeRequest request,
             Authentication authentication
     ) {
-        UserIdWrapper userIdWrapper = jwtService.extractUserIdFromRequestAuth(authentication);
-
-        AppUser updatedUser = userService.patchEmail(request, userIdWrapper);
-
+        AppUser updatedUser = userService.patchEmail(request, authentication);
         return ResponseEntity.ok(UserDetailsResponse.fromDomain(updatedUser));
     }
 }

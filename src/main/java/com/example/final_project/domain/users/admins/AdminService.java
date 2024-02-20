@@ -1,10 +1,10 @@
-package com.example.final_project.domain.admins;
+package com.example.final_project.domain.users.admins;
 
 import com.example.final_project.api.requests.users.admins.AdminEmailChangeRequest;
 import com.example.final_project.api.requests.users.admins.AdminPasswordChangeRequest;
 import com.example.final_project.api.requests.users.appusers.RegisterUserRequest;
 import com.example.final_project.api.responses.users.admins.AdminOperationResponse;
-import com.example.final_project.domain.users.AppUser;
+import com.example.final_project.domain.users.appusers.AppUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

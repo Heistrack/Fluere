@@ -30,7 +30,7 @@ public class CustomAccessDeniedHandlerJwt implements AccessDeniedHandler {
         Map<String, Object> body = new HashMap<>();
         body.put("code", HttpServletResponse.SC_UNAUTHORIZED);
         body.put("message", "No authorization to this resource.");
-        body.put("timestamp", LocalDateTime.now());
+        body.put("historyOfChanges", LocalDateTime.now());
 
         objectMapper.writeValue(response.getOutputStream(), body);
     }

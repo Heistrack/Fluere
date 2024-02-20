@@ -1,4 +1,4 @@
-package com.example.final_project.domain.budgets;
+package com.example.final_project.domain.budgets.appusers;
 
 import lombok.Builder;
 

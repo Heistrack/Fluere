@@ -1,7 +1,7 @@
 package com.example.final_project.infrastructure.appuserrepo;
 
 
-import com.example.final_project.domain.users.UserIdWrapper;
+import com.example.final_project.domain.users.appusers.UserIdWrapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

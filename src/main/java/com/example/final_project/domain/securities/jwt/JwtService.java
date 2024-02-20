@@ -1,12 +1,11 @@
 package com.example.final_project.domain.securities.jwt;
 
-import com.example.final_project.domain.users.AppUser;
-import com.example.final_project.domain.users.UserIdWrapper;
+import com.example.final_project.domain.users.appusers.AppUser;
+import com.example.final_project.domain.users.appusers.UserIdWrapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;

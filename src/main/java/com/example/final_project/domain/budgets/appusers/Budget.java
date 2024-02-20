@@ -1,13 +1,9 @@
-package com.example.final_project.domain.budgets;
+package com.example.final_project.domain.budgets.appusers;
 
 
-import com.example.final_project.domain.users.UserIdWrapper;
+import com.example.final_project.domain.users.appusers.UserIdWrapper;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.TreeMap;
 
 @Document
 public record Budget(

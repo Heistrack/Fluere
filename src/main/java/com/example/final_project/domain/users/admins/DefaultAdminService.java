@@ -1,18 +1,19 @@
-package com.example.final_project.domain.admins;
+package com.example.final_project.domain.users.admins;
 
 import com.example.final_project.api.requests.users.admins.AdminEmailChangeRequest;
 import com.example.final_project.api.requests.users.admins.AdminPasswordChangeRequest;
 import com.example.final_project.api.requests.users.appusers.RegisterUserRequest;
 import com.example.final_project.api.responses.users.admins.AdminOperationResponse;
-import com.example.final_project.domain.budgets.Budget;
-import com.example.final_project.domain.budgets.BudgetService;
+import com.example.final_project.domain.budgets.admins.AdminBudgetService;
+import com.example.final_project.domain.budgets.appusers.Budget;
 import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
-import com.example.final_project.domain.users.AppUser;
-import com.example.final_project.domain.users.Role;
-import com.example.final_project.domain.users.UserIdWrapper;
-import com.example.final_project.domain.users.exceptions.UnableToCreateException;
+import com.example.final_project.domain.users.appusers.AppUser;
+import com.example.final_project.domain.users.appusers.Role;
+import com.example.final_project.domain.users.appusers.UserIdWrapper;
+import com.example.final_project.domain.users.appusers.exceptions.UnableToCreateException;
 import com.example.final_project.infrastructure.appuserrepo.AppUserRepository;
+import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
 import io.jsonwebtoken.JwtException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,7 @@ public class DefaultAdminService implements AdminService {
     private final AuthenticationService authenticationService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final BudgetService budgetService;
+    private final AdminBudgetService adminBudgetService;
     @Value("${admin.key.value}")
     private String ADMIN_PASSWORD;
 
@@ -160,8 +161,8 @@ public class DefaultAdminService implements AdminService {
     }
 
     private void removeUserData(UserIdWrapper userId) {
-        budgetService.getAllBudgetsByUserId(userId).stream()
-                     .map(Budget::budgetId).forEach(budgetService::deleteBudgetByBudgetId);
+        adminBudgetService.getAllBudgetsByUserId(userId).stream()
+                     .map(Budget::budgetId).forEach(adminBudgetService::deleteBudgetByBudgetId);
     }
 
     private void emailAndLoginDuplicatesCheck(RegisterUserRequest request) {

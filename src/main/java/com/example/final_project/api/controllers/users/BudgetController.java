@@ -1,15 +1,13 @@
 package com.example.final_project.api.controllers.users;
 
-import com.example.final_project.api.requests.budgets.PatchBudgetRequest;
-import com.example.final_project.api.requests.budgets.RegisterBudgetRequest;
-import com.example.final_project.api.requests.budgets.UpdateBudgetRequest;
+import com.example.final_project.api.requests.budgets.appusers.PatchBudgetRequest;
+import com.example.final_project.api.requests.budgets.appusers.RegisterBudgetRequest;
+import com.example.final_project.api.requests.budgets.appusers.UpdateBudgetRequest;
 import com.example.final_project.api.responses.budgets.BudgetResponseDto;
 import com.example.final_project.api.responses.budgets.BudgetStatusDTO;
-import com.example.final_project.domain.budgets.Budget;
-import com.example.final_project.domain.budgets.BudgetIdWrapper;
-import com.example.final_project.domain.budgets.BudgetService;
-import com.example.final_project.domain.securities.jwt.JwtService;
-import com.example.final_project.domain.users.UserIdWrapper;
+import com.example.final_project.domain.budgets.appusers.Budget;
+import com.example.final_project.domain.budgets.appusers.BudgetIdWrapper;
+import com.example.final_project.domain.budgets.appusers.BudgetService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -31,47 +29,14 @@ import static com.example.final_project.api.controllers.users.BudgetController.B
 public class BudgetController {
     static final String BUDGETS_CONTROLLER_BASE_PATH = "/budgets";
     private final BudgetService budgetService;
-    private final JwtService jwtService;
-
-    @GetMapping("/{rawbudgetid}")
-    ResponseEntity<BudgetResponseDto> getSingleBudget(
-            @PathVariable(name = "rawbudgetid") UUID rawBudgetId, Authentication authentication
-    ) {
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-        Budget budgetById = budgetService.getBudgetById(BudgetIdWrapper.newOf(rawBudgetId), userId);
-        return ResponseEntity.ok(BudgetResponseDto.fromDomain(budgetById));
-    }
-
-    @DeleteMapping("/{rawbudgetid}")
-    ResponseEntity<BudgetResponseDto> deleteBudget(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
-                                                   Authentication authentication
-    ) {
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-
-        Budget currentBudget = budgetService.getBudgetById(BudgetIdWrapper.newOf(rawBudgetId), userId);
-        budgetService.deleteBudgetByBudgetId(currentBudget.budgetId());
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/status/{rawbudgetid}")
-    ResponseEntity<BudgetStatusDTO> getBudgetStatus(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
-                                                    Authentication authentication
-    ) {
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-
-        return ResponseEntity.ok(budgetService.getBudgetStatus(BudgetIdWrapper.newOf(rawBudgetId), userId));
-    }
 
     @PostMapping
     ResponseEntity<BudgetResponseDto> registerNewBudget(
             @RequestBody @Valid RegisterBudgetRequest request, Authentication authentication
     ) {
-
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-
         Budget newBudget = budgetService.registerNewBudget(request.title(), request.limit(),
                                                            request.budgetType(), request.maxSingleExpense(),
-                                                           userId
+                                                           authentication
         );
 
         BudgetResponseDto budgetResponseDto = BudgetResponseDto.fromDomain(newBudget);
@@ -79,22 +44,54 @@ public class BudgetController {
                              .body(budgetResponseDto);
     }
 
+    @GetMapping("/{rawbudgetid}")
+    ResponseEntity<BudgetResponseDto> getSingleBudget(
+            @PathVariable(name = "rawbudgetid") UUID rawBudgetId, Authentication authentication
+    ) {
+        Budget budgetById = budgetService.getBudgetById(BudgetIdWrapper.newOf(rawBudgetId), authentication);
+        return ResponseEntity.ok(BudgetResponseDto.fromDomain(budgetById));
+    }
+
+    @GetMapping("/status/{rawbudgetid}")
+    ResponseEntity<BudgetStatusDTO> getBudgetStatus(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
+                                                    Authentication authentication
+    ) {
+        return ResponseEntity.ok(budgetService.getBudgetStatus(BudgetIdWrapper.newOf(rawBudgetId), authentication));
+    }
+
+    @GetMapping
+    ResponseEntity<Page<BudgetResponseDto>> getBudgetsByPage(
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "25") Integer size,
+            @RequestParam(required = false, defaultValue = "budgetId") String sortBy,
+            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(budgetService
+                                         .getAllByPage(authentication, PageRequest.of(
+                                                 page,
+                                                 size,
+                                                 Sort.by(
+                                                         sortDirection,
+                                                         sortBy
+                                                 )
+                                         ))
+                                         .map(BudgetResponseDto::fromDomain));
+    }
+
     @PutMapping()
     ResponseEntity<BudgetResponseDto> updateBudget(
             @Valid @RequestBody UpdateBudgetRequest request,
             Authentication authentication
     ) {
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-
-        Budget updatedBudget = budgetService.updateBudgetById(
+        return ResponseEntity.ok(BudgetResponseDto.fromDomain(budgetService.updateBudgetById(
                 BudgetIdWrapper.newFromString(request.budgetId()),
                 request.title(),
                 request.limit(),
                 request.budgetType(),
                 request.maxSingleExpense(),
-                userId
-        );
-        return ResponseEntity.ok(BudgetResponseDto.fromDomain(updatedBudget));
+                authentication
+        )));
     }
 
     @PatchMapping()
@@ -102,37 +99,21 @@ public class BudgetController {
             @Valid @RequestBody PatchBudgetRequest request,
             Authentication authentication
     ) {
-
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-
-        Budget patchedBudget = budgetService.patchBudgetContent(
+        return ResponseEntity.ok(BudgetResponseDto.fromDomain(budgetService.patchBudgetContent(
                 BudgetIdWrapper.newFromString(request.budgetId()),
                 Optional.ofNullable(request.title()),
                 Optional.ofNullable(request.limit()),
                 Optional.ofNullable(request.budgetType()),
                 Optional.ofNullable(request.maxSingleExpense()),
-                userId
-        );
-
-        return ResponseEntity.ok(BudgetResponseDto.fromDomain(patchedBudget));
+                authentication
+        )));
     }
 
-    @GetMapping
-    ResponseEntity<Page<BudgetResponseDto>> getBudgetByPage(
-            @RequestParam(required = false, defaultValue = "0") Integer page,
-            @RequestParam(required = false, defaultValue = "25") Integer size,
-            @RequestParam(required = false, defaultValue = "budgetId") String sortBy,
-            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
-            Authentication authentication
+    @DeleteMapping("/{rawbudgetid}")
+    ResponseEntity<BudgetResponseDto> deleteBudget(@PathVariable(name = "rawbudgetid") UUID rawBudgetId,
+                                                   Authentication authentication
     ) {
-
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-
-
-        return ResponseEntity.ok(budgetService.findAllByPage(
-                                                      userId,
-                                                      PageRequest.of(page, size, Sort.by(sortDirection, sortBy))
-                                              )
-                                              .map(BudgetResponseDto::fromDomain));
+        budgetService.deleteAllBudgetExpensesByBudgetId(BudgetIdWrapper.newOf(rawBudgetId), authentication);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -1,6 +1,6 @@
 package com.example.final_project.domain.securities;
 
-import com.example.final_project.domain.users.UserIdWrapper;
+import com.example.final_project.domain.users.appusers.UserIdWrapper;
 import com.example.final_project.infrastructure.appuserrepo.AppUserRepository;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

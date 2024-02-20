@@ -1,4 +1,4 @@
-package com.example.final_project.domain.users;
+package com.example.final_project.domain.users.appusers;
 
 import java.util.UUID;
 

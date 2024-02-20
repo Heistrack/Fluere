@@ -1,6 +1,6 @@
 package com.example.final_project.api.responses.users.appusers;
 
-import com.example.final_project.domain.users.AppUser;
+import com.example.final_project.domain.users.appusers.AppUser;
 
 import java.util.UUID;
 

@@ -1,7 +1,7 @@
 package com.example.final_project.domain.expenses;
 
-import com.example.final_project.domain.budgets.BudgetIdWrapper;
-import com.example.final_project.domain.users.UserIdWrapper;
+import com.example.final_project.domain.budgets.appusers.BudgetIdWrapper;
+import com.example.final_project.domain.users.appusers.UserIdWrapper;
 import lombok.Builder;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;

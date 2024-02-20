@@ -2,7 +2,7 @@ package com.example.final_project.api.controllers;
 
 import com.example.final_project.api.responses.ErrorDTO;
 import com.example.final_project.domain.expenses.exceptions.ExpenseTooBigException;
-import com.example.final_project.domain.users.exceptions.UnableToCreateException;
+import com.example.final_project.domain.users.appusers.exceptions.UnableToCreateException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

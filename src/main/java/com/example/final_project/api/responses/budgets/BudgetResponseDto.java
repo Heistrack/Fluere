@@ -1,7 +1,7 @@
 package com.example.final_project.api.responses.budgets;
 
-import com.example.final_project.domain.budgets.Budget;
-import com.example.final_project.domain.budgets.BudgetType;
+import com.example.final_project.domain.budgets.appusers.Budget;
+import com.example.final_project.domain.budgets.appusers.BudgetType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

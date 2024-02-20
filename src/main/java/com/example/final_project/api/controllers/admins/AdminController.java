@@ -5,8 +5,8 @@ import com.example.final_project.api.requests.users.admins.AdminPasswordChangeRe
 import com.example.final_project.api.requests.users.appusers.RegisterUserRequest;
 import com.example.final_project.api.responses.users.admins.AdminOperationResponse;
 import com.example.final_project.api.responses.users.appusers.UserDetailsResponse;
-import com.example.final_project.domain.admins.AdminService;
-import com.example.final_project.domain.users.AppUser;
+import com.example.final_project.domain.users.admins.AdminService;
+import com.example.final_project.domain.users.appusers.AppUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,7 +24,7 @@ import static com.example.final_project.api.controllers.admins.AdminController.A
 @RequestMapping(ADMIN_BASE_CONTROLLER_PATH)
 @RequiredArgsConstructor
 public class AdminController {
-    static final String ADMIN_BASE_CONTROLLER_PATH = "/admin/users";
+    static final String ADMIN_BASE_CONTROLLER_PATH = "/x/users";
     private final AdminService adminService;
 
     @PostMapping()

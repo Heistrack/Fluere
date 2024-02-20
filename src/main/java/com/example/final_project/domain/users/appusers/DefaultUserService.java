@@ -1,23 +1,23 @@
-package com.example.final_project.domain.users;
+package com.example.final_project.domain.users.appusers;
 
 import com.example.final_project.api.requests.users.appusers.AuthenticationRequest;
 import com.example.final_project.api.requests.users.appusers.EmailChangeRequest;
 import com.example.final_project.api.requests.users.appusers.PasswordChangeRequest;
 import com.example.final_project.api.requests.users.appusers.RegisterUserRequest;
 import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
-import com.example.final_project.domain.budgets.Budget;
-import com.example.final_project.domain.budgets.BudgetService;
+import com.example.final_project.domain.budgets.appusers.Budget;
+import com.example.final_project.domain.budgets.appusers.BudgetService;
 import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
-import com.example.final_project.domain.users.exceptions.UnableToCreateException;
+import com.example.final_project.domain.users.appusers.exceptions.UnableToCreateException;
 import com.example.final_project.infrastructure.appuserrepo.AppUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -31,17 +31,28 @@ public class DefaultUserService implements UserService {
     @Override
     public RegisterResponseDTO registerNewUser(RegisterUserRequest request) {
         emailAndLoginDuplicatesCheck(request);
-
         return authenticationService.register(request);
     }
 
     @Override
-    public void removeOwnAccount(UserIdWrapper userId) {
-        userRepository.findById(userId).map(AppUser::userId).ifPresent(this::userRemoveProcedure);
+    public AppUser getUserDetailsFromToken(Authentication authentication) {
+        UserIdWrapper userIdWrapper = jwtService.extractUserIdFromRequestAuth(authentication);
+        return userRepository.findById(userIdWrapper)
+                             .orElseThrow(() -> new NoSuchElementException("No user has been found"));
+    }
+
+
+    @Override
+    public void removeOwnAccount(Authentication authentication) {
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
+        if (userRepository.findById(userId).map(AppUser::userId).isPresent()) {
+            userRemoveProcedure(authentication);
+        }
     }
 
     @Override
-    public AppUser patchEmail(EmailChangeRequest request, UserIdWrapper userIdFromAuth) {
+    public AppUser patchEmail(EmailChangeRequest request, Authentication authentication) {
+        UserIdWrapper userIdFromAuth = jwtService.extractUserIdFromRequestAuth(authentication);
         AppUser currentUser = userCheckBeforeModifyProperties(request.auth(), userIdFromAuth);
 
         if (userRepository.findByEmail(request.newEmail()).isPresent()) {
@@ -59,7 +70,8 @@ public class DefaultUserService implements UserService {
     }
 
     @Override
-    public AppUser patchPassword(PasswordChangeRequest request, UserIdWrapper userIdFromAuth) {
+    public AppUser patchPassword(PasswordChangeRequest request, Authentication authentication) {
+        UserIdWrapper userIdFromAuth = jwtService.extractUserIdFromRequestAuth(authentication);
         AppUser currentUser = userCheckBeforeModifyProperties(request.auth(), userIdFromAuth);
 
         if (!request.firstPasswordAttempt().equals(request.secondPasswordAttempt()))
@@ -76,16 +88,16 @@ public class DefaultUserService implements UserService {
                                           .build());
     }
 
-    private void userRemoveProcedure(UserIdWrapper userToRemove) {
-        if (!Objects.isNull(userToRemove)) {
-            removeUserData(userToRemove);
-            userRepository.deleteById(userToRemove);
-        }
+    private void userRemoveProcedure(Authentication authentication) {
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
+        removeUserData(authentication);
+        userRepository.deleteById(userId);
     }
 
-    private void removeUserData(UserIdWrapper userId) {
-        budgetService.getAllBudgetsByUserId(userId).stream()
-                     .map(Budget::budgetId).forEach(budgetService::deleteBudgetByBudgetId);
+    private void removeUserData(Authentication authentication) {
+        budgetService.getAllBudgetsByUserId(authentication).stream()
+                     .map(Budget::budgetId)
+                     .forEach((budgetId) -> budgetService.deleteAllBudgetExpensesByBudgetId(budgetId, authentication));
     }
 
     private void emailAndLoginDuplicatesCheck(RegisterUserRequest request) {

@@ -1,9 +1,9 @@
 package com.example.final_project.domain.expenses;
 
-import com.example.final_project.domain.budgets.Budget;
-import com.example.final_project.domain.budgets.BudgetIdWrapper;
+import com.example.final_project.domain.budgets.appusers.Budget;
+import com.example.final_project.domain.budgets.appusers.BudgetIdWrapper;
 import com.example.final_project.domain.expenses.exceptions.ExpenseTooBigException;
-import com.example.final_project.domain.users.UserIdWrapper;
+import com.example.final_project.domain.users.appusers.UserIdWrapper;
 import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
-public class DefaultExpensesService implements ExpensesService {
+public class DefaultExpenseService implements ExpensesService {
 
     private final ExpenseRepository expenseRepository;
     private final Supplier<ExpenseIdWrapper> expenseIdSupplier;

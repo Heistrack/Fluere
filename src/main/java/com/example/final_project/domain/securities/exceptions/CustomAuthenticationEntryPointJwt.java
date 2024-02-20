@@ -32,7 +32,7 @@ public class CustomAuthenticationEntryPointJwt implements AuthenticationEntryPoi
 
         Map<String, Object> body = new HashMap<>();
         body.put("code", HttpServletResponse.SC_FORBIDDEN);
-        body.put("message", "Wrong login or password.");
+        body.put("message", "Wrong login or newPassword.");
         body.put("timestamp", LocalDateTime.now());
 
         objectMapper.writeValue(response.getOutputStream(), body);

@@ -1,4 +1,4 @@
-package com.example.final_project.api.controllers.users;
+package com.example.final_project.api.controllers;
 
 import com.example.final_project.api.responses.ErrorDTO;
 import com.example.final_project.domain.expenses.exceptions.ExpenseTooBigException;
@@ -76,7 +76,7 @@ public class GlobalExHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorDTO> handleBadCredentialsExceptionExceptions(BadCredentialsException ex) {
         String properResponse = ex.getMessage();
-        if (ex.getMessage().equals("Bad credentials")) properResponse = "Invalid login or password";
+        if (ex.getMessage().equals("Bad credentials")) properResponse = "Invalid login or newPassword";
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                              .body(ErrorDTO.newOf(
                                      properResponse,

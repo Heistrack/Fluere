@@ -1,7 +1,7 @@
 package com.example.final_project.api.controllers.users;
 
-import com.example.final_project.api.requests.expenses.RegisterExpenseRequest;
 import com.example.final_project.api.requests.expenses.PatchExpenseRequest;
+import com.example.final_project.api.requests.expenses.RegisterExpenseRequest;
 import com.example.final_project.api.requests.expenses.UpdateExpenseRequest;
 import com.example.final_project.api.responses.expenses.ExpenseResponseDto;
 import com.example.final_project.domain.budgets.BudgetIdWrapper;
@@ -23,12 +23,12 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.example.final_project.api.controllers.users.ExpensesController.EXPENSES_BASE_PATH;
+import static com.example.final_project.api.controllers.users.ExpenseController.EXPENSES_BASE_PATH;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(EXPENSES_BASE_PATH)
-public class ExpensesController {
+public class ExpenseController {
     public static final String EXPENSES_BASE_PATH = "/expenses";
     private final ExpensesService expensesService;
     private final JwtService jwtService;

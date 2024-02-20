@@ -1,26 +1,21 @@
 package com.example.final_project.api.controllers.admins;
 
-import com.example.final_project.api.requests.users.AuthenticationRequest;
-import com.example.final_project.api.requests.users.EmailChangeRequest;
-import com.example.final_project.api.requests.users.PasswordChangeRequest;
-import com.example.final_project.api.requests.users.RegisterUserRequest;
-import com.example.final_project.api.responses.UserDetailsResponse;
-import com.example.final_project.api.responses.authentications.AuthResponseDTO;
-import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
+import com.example.final_project.api.requests.users.admins.AdminEmailChangeRequest;
+import com.example.final_project.api.requests.users.admins.AdminPasswordChangeRequest;
+import com.example.final_project.api.requests.users.appusers.RegisterUserRequest;
+import com.example.final_project.api.responses.users.admins.AdminOperationResponse;
+import com.example.final_project.api.responses.users.appusers.UserDetailsResponse;
 import com.example.final_project.domain.admins.AdminService;
-import com.example.final_project.domain.securities.jwt.JwtService;
-import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
 import com.example.final_project.domain.users.AppUser;
-import com.example.final_project.domain.users.UserIdWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static com.example.final_project.api.controllers.admins.AdminController.ADMIN_BASE_CONTROLLER_PATH;
@@ -31,8 +26,6 @@ import static com.example.final_project.api.controllers.admins.AdminController.A
 public class AdminController {
     static final String ADMIN_BASE_CONTROLLER_PATH = "/admin/users";
     private final AdminService adminService;
-    private final AuthenticationService authenticationService;
-    private final JwtService jwtService;
 
     @PostMapping()
     ResponseEntity<AppUser> registerNewUser(
@@ -41,59 +34,68 @@ public class AdminController {
         return ResponseEntity.ok(adminService.registerNewUser(request));
     }
 
-    @PostMapping("/auth")
-    ResponseEntity<AuthResponseDTO> authenticate(
-            @Valid @RequestBody AuthenticationRequest request
+    @GetMapping("/auth-check/{login}")
+    ResponseEntity<AdminOperationResponse> authenticate(
+            @PathVariable(name = "login") String login
     ) {
-        //TODO should return boolean for test if auth is correct
-        return ResponseEntity.ok(authenticationService.authenticate(request));
+        return ResponseEntity.ok(adminService.authenticateTest(login));
     }
 
     @GetMapping
-    ResponseEntity<List<AppUser>> getAllUsers(
+    ResponseEntity<Page<UserDetailsResponse>> getAllUsers(
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "25") Integer size,
             @RequestParam(required = false, defaultValue = "id") String sortBy,
-            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
-            Authentication authentication
+            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
     ) {
-        //TODO should return pagable list of all users as short DTO. For more details
-        //TODO should once use more specified methods
-        return ResponseEntity.ok(adminService.getAllUsers());
+        return ResponseEntity.ok(
+                adminService.getAllUsersByPage(PageRequest.of(page, size, Sort.by(sortDirection, sortBy)))
+                            .map(UserDetailsResponse::fromDomain));
     }
 
     @GetMapping("/fromToken")
     ResponseEntity<AppUser> getUserFromToken(Authentication authentication) {
-        //TODO Should return userDetails for admin for tests
         return ResponseEntity.ok(adminService.findFromToken(authentication.getName()));
     }
 
     @GetMapping("/id/{id}")
     ResponseEntity<AppUser> getUserById(@PathVariable(name = "id") UUID userId) {
-
         return ResponseEntity.ok(adminService.findByUserId(userId));
     }
 
-    @PostMapping("/logins")
-    ResponseEntity<AppUser> getUserByLogin(@RequestBody Map<String, String> loginMap) {
-        //TODO should return user by login with details
-        return ResponseEntity.ok(adminService.findByLogin(loginMap.get("login")));
+    @GetMapping("/logins/{login}")
+    ResponseEntity<AppUser> getUserByLogin(@PathVariable(name = "login") String login) {
+        return ResponseEntity.ok(adminService.findUserByLogin(login));
     }
 
-    @PostMapping("/emails")
-    ResponseEntity<AppUser> getUserByEmail(@RequestBody Map<String, String> emailMap) {
-        return ResponseEntity.ok(adminService.findByEmail(emailMap.get("email")));
+    @GetMapping("/emails/{email}")
+    ResponseEntity<AppUser> getUserByEmail(@PathVariable(name = "email") String email) {
+        return ResponseEntity.ok(adminService.findUserByEmail(email));
     }
 
-    @DeleteMapping()
-    ResponseEntity<AppUser> removeUserByLogin(@RequestBody Map<String, String> loginMap) {
-        //TODO because it's a admin controller we should get info from db if delete was
-        //TODO successful
-        adminService.removeUserByLogin(loginMap.get("login"));
+    @PostMapping("/password-reset")
+    ResponseEntity<AppUser> passwordChange(
+            @RequestBody @Valid AdminPasswordChangeRequest request
+    ) {
+        AppUser updatedUser = adminService.resetUserPassword(request);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    @PostMapping("/email-change")
+    ResponseEntity<AppUser> emailChange(
+            @RequestBody @Valid AdminEmailChangeRequest request
+    ) {
+        AppUser updatedUser = adminService.patchUserEmail(request);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    @DeleteMapping("logins/{login}")
+    ResponseEntity<AdminOperationResponse> removeUserByLogin(@PathVariable(name = "login") String login) {
+        adminService.removeUserByLogin(login);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("ids/{id}")
     ResponseEntity<UserDetailsResponse> removeUserByUserId(@PathVariable(name = "id") UUID userId) {
         adminService.removeUserByUserId(userId);
         return ResponseEntity.noContent().build();
@@ -101,49 +103,19 @@ public class AdminController {
 
     @DeleteMapping("/{email}")
     ResponseEntity<UserDetailsResponse> removeUserByEmail(@PathVariable(name = "email") String email) {
-        //TODO should remove users by email
-        adminService.removeUserByUserId(userId);
+        adminService.removeUserByEmail(email);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/purge-them")
     ResponseEntity<UserDetailsResponse> removeAllExceptAdmin() {
-        //TODO should remove all users except admin
-        adminService.removeThemAll();
+        adminService.removeAllUsers();
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/purge-them-all")
     ResponseEntity<UserDetailsResponse> removeAll() {
-        //TODO should remove all users including admin
-        adminService.removeThemAll();
+        adminService.databaseRestart();
         return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/login-change")
-    ResponseEntity<UserDetailsResponse> passwordChange(
-            @RequestBody @Valid PasswordChangeRequest request,
-            Authentication authentication
-    ) {
-        //TODO should allow to change every user login
-        UserIdWrapper userIdFromToken = jwtService.extractUserIdFromRequestAuth(authentication);
-
-        AppUser updatedUser = adminService.patchPassword(request, userIdFromToken);
-
-        return ResponseEntity.ok(UserDetailsResponse.fromDomain(updatedUser));
-    }
-
-    @PostMapping("/email-change")
-    ResponseEntity<UserDetailsResponse> emailChange(
-            @RequestBody @Valid EmailChangeRequest request,
-            Authentication authentication
-    ) {
-        //TODO should allow to change every user email
-
-        UserIdWrapper userIdWrapper = jwtService.extractUserIdFromRequestAuth(authentication);
-
-        AppUser updatedUser = adminService.patchEmail(request, userIdWrapper);
-
-        return ResponseEntity.ok(UserDetailsResponse.fromDomain(updatedUser));
     }
 }

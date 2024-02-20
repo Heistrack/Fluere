@@ -1,26 +1,25 @@
 package com.example.final_project.domain.admins;
 
-import com.example.final_project.api.requests.users.EmailChangeRequest;
-import com.example.final_project.api.requests.users.PasswordChangeRequest;
-import com.example.final_project.api.requests.users.RegisterUserRequest;
-import com.example.final_project.api.responses.UserDetailsResponse;
-import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
+import com.example.final_project.api.requests.users.admins.AdminEmailChangeRequest;
+import com.example.final_project.api.requests.users.admins.AdminPasswordChangeRequest;
+import com.example.final_project.api.requests.users.appusers.RegisterUserRequest;
+import com.example.final_project.api.responses.users.admins.AdminOperationResponse;
 import com.example.final_project.domain.users.AppUser;
-import com.example.final_project.domain.users.UserIdWrapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface AdminService {
     AppUser registerNewUser(RegisterUserRequest request);
 
-    UserDetailsResponse findByUserId(UUID userId);
+    AppUser findByUserId(UUID userId);
 
     AppUser findFromToken(String userId);
 
-    AppUser findByLogin(String login);
+    AppUser findUserByLogin(String login);
 
-    List<UserDetailsResponse> getAllUsers();
+    Page<AppUser> getAllUsersByPage(Pageable pageable);
 
     AppUser findUserByEmail(String email);
 
@@ -28,10 +27,15 @@ public interface AdminService {
 
     void removeUserByUserId(UUID userId);
 
+    void removeUserByEmail(String email);
+
     void removeAllUsers();
-    void removeThemAll();
 
-    AppUser patchUserEmail(EmailChangeRequest request, UserIdWrapper userIdFromAuth);
+    void databaseRestart();
 
-    AppUser patchUserPassword(PasswordChangeRequest request, UserIdWrapper userIdFromAuth);
+    AppUser patchUserEmail(AdminEmailChangeRequest request);
+
+    AppUser resetUserPassword(AdminPasswordChangeRequest request);
+
+    AdminOperationResponse authenticateTest(String login);
 }

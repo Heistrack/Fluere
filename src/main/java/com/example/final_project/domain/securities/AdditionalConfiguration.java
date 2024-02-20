@@ -22,10 +22,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @RequiredArgsConstructor
 public class AdditionalConfiguration {
     private final AppUserRepository repository;
+
     @Bean
     UserDetailsService userDetailsService() {
         return id -> repository.findById(UserIdWrapper.newFromString(id))
-                               .orElseThrow(() -> new BadCredentialsException("Wrong user or password."));
+                               .orElseThrow(() -> new BadCredentialsException("Wrong user or newPassword."));
     }
 
     @Bean

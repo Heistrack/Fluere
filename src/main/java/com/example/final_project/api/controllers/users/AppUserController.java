@@ -1,12 +1,12 @@
 package com.example.final_project.api.controllers.users;
 
-import com.example.final_project.api.requests.users.AuthenticationRequest;
-import com.example.final_project.api.requests.users.EmailChangeRequest;
-import com.example.final_project.api.requests.users.PasswordChangeRequest;
-import com.example.final_project.api.requests.users.RegisterUserRequest;
-import com.example.final_project.api.responses.UserDetailsResponse;
+import com.example.final_project.api.requests.users.appusers.AuthenticationRequest;
+import com.example.final_project.api.requests.users.appusers.EmailChangeRequest;
+import com.example.final_project.api.requests.users.appusers.PasswordChangeRequest;
+import com.example.final_project.api.requests.users.appusers.RegisterUserRequest;
 import com.example.final_project.api.responses.authentications.AuthResponseDTO;
 import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
+import com.example.final_project.api.responses.users.appusers.UserDetailsResponse;
 import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
 import com.example.final_project.domain.users.AppUser;
@@ -48,43 +48,51 @@ public class AppUserController {
     }
 
     @GetMapping
+        //TODO REMOVE AND MOVE TO ADMIN PANEL
     ResponseEntity<List<UserDetailsResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @GetMapping("/fromToken")
+        //TODO REMOVE AND MOVE TO ADMIN PANEL
     ResponseEntity<AppUser> getUserFromToken(Authentication authentication) {
         return ResponseEntity.ok(userService.findFromToken(authentication.getName()));
     }
 
     @GetMapping("/id/{id}")
+        //TODO REMOVE AND MOVE TO ADMIN PANEL
     ResponseEntity<UserDetailsResponse> getUserById(@PathVariable(name = "id") UUID userId) {
         return ResponseEntity.ok(userService.findByUserId(userId));
     }
 
     @PostMapping("/logins")
+        //TODO REMOVE AND MOVE TO ADMIN PANEL
     ResponseEntity<AppUser> getUserByLogin(@RequestBody Map<String, String> loginMap) {
         return ResponseEntity.ok(userService.findByLogin(loginMap.get("login")));
     }
 
     @PostMapping("/emails")
+        //TODO REMOVE AND MOVE TO ADMIN PANEL
     ResponseEntity<AppUser> getUserByEmail(@RequestBody Map<String, String> emailMap) {
         return ResponseEntity.ok(userService.findByEmail(emailMap.get("email")));
     }
 
     @DeleteMapping()
+        //TODO REMOVE AND MOVE TO ADMIN PANEL
     ResponseEntity<AppUser> removeUserByLogin(@RequestBody Map<String, String> loginMap) {
-        userService.removeUserByLogin(loginMap.get("login"));
+        userService.removeMyAccount(loginMap.get("login"));
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
+//TODO REMOVE AND MOVE TO ADMIN PANEL
     ResponseEntity<UserDetailsResponse> removeUserByUserId(@PathVariable(name = "id") UUID userId) {
         userService.removeUserByUserId(userId);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/purge-them-all")
+        //TODO REMOVE AND MOVE TO ADMIN PANEL
     ResponseEntity<UserDetailsResponse> removeAll() {
         userService.removeThemAll();
         return ResponseEntity.noContent().build();

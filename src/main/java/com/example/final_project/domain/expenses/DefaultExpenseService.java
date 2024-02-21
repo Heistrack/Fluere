@@ -3,12 +3,14 @@ package com.example.final_project.domain.expenses;
 import com.example.final_project.domain.budgets.appusers.Budget;
 import com.example.final_project.domain.budgets.appusers.BudgetIdWrapper;
 import com.example.final_project.domain.expenses.exceptions.ExpenseTooBigException;
+import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.users.appusers.UserIdWrapper;
 import com.example.final_project.infrastructure.bdtrepo.BudgetRepository;
 import com.example.final_project.infrastructure.exprepo.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -23,9 +25,11 @@ public class DefaultExpenseService implements ExpensesService {
     private final ExpenseRepository expenseRepository;
     private final Supplier<ExpenseIdWrapper> expenseIdSupplier;
     private final BudgetRepository budgetRepository;
+    private final JwtService jwtService;
 
     @Override
-    public Expense registerNewExpense(String title, BigDecimal amount, BudgetIdWrapper budgetId, UserIdWrapper userId,
+    public Expense registerNewExpense(String title, BigDecimal amount, BudgetIdWrapper budgetId,
+                                      Authentication authentication,
                                       ExpenseType expenseType
     ) {
         String checkedTitle = duplicateExpenseTitleCheck(title, budgetId);
@@ -34,6 +38,7 @@ public class DefaultExpenseService implements ExpensesService {
         TreeMap<Integer, LocalDateTime> historyOfChange = new TreeMap<>();
         historyOfChange.put(1, LocalDateTime.now());
 
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
         Expense expense = Expense.newOf(
                 expenseIdSupplier.get(), budgetId, userId, ExpenseDetails.newOf(checkedTitle, amount,
                                                                                 historyOfChange,
@@ -43,18 +48,23 @@ public class DefaultExpenseService implements ExpensesService {
     }
 
     @Override
-    public Expense getExpenseById(ExpenseIdWrapper expenseId, UserIdWrapper userId) {
+    public Expense getExpenseById(ExpenseIdWrapper expenseId, Authentication authentication) {
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
         return expenseRepository.findByExpenseIdAndUserId(expenseId, userId)
                                 .orElseThrow(() -> new NoSuchElementException("Expense doesn't exist."));
     }
 
     @Override
-    public Page<Expense> getAllByPage(UserIdWrapper userId, Pageable pageable) {
+    public Page<Expense> getAllByPage(Authentication authentication, Pageable pageable) {
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
         return expenseRepository.findAllByUserId(userId, pageable);
     }
 
     @Override
-    public Page<Expense> getAllExpensesByBudgetId(UserIdWrapper userId, BudgetIdWrapper budgetId, Pageable pageable) {
+    public Page<Expense> getAllExpensesByBudgetId(Authentication authentication, BudgetIdWrapper budgetId,
+                                                  Pageable pageable
+    ) {
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
         return expenseRepository.findAllByBudgetIdAndUserId(budgetId, userId, pageable);
     }
 
@@ -63,9 +73,10 @@ public class DefaultExpenseService implements ExpensesService {
             ExpenseIdWrapper expenseId,
             String title,
             BigDecimal amount,
-            UserIdWrapper userId,
+            Authentication authentication,
             Optional<ExpenseType> expenseType
     ) {
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
         Expense oldExpense = expenseRepository.findByExpenseIdAndUserId(expenseId, userId).orElseThrow(
                 () -> new NoSuchElementException("Can't update expense, because it doesn't exist"));
 
@@ -93,9 +104,10 @@ public class DefaultExpenseService implements ExpensesService {
             ExpenseIdWrapper expenseId,
             Optional<String> title,
             Optional<BigDecimal> amount,
-            UserIdWrapper userId,
+            Authentication authentication,
             Optional<ExpenseType> expenseType
     ) {
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
         Expense oldExpense = expenseRepository.findByExpenseIdAndUserId(expenseId, userId)
                                               .orElseThrow(() -> new NoSuchElementException(
                                                       "There's no such expense."));
@@ -128,7 +140,8 @@ public class DefaultExpenseService implements ExpensesService {
     }
 
     @Override
-    public void deleteExpenseById(ExpenseIdWrapper expenseId, UserIdWrapper userId) {
+    public void deleteExpenseById(ExpenseIdWrapper expenseId, Authentication authentication) {
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
         expenseRepository.deleteByExpenseIdAndUserId(expenseId, userId);
     }
 

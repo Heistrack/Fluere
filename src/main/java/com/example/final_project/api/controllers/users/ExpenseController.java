@@ -8,8 +8,6 @@ import com.example.final_project.domain.budgets.appusers.BudgetIdWrapper;
 import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.expenses.ExpenseIdWrapper;
 import com.example.final_project.domain.expenses.ExpensesService;
-import com.example.final_project.domain.securities.jwt.JwtService;
-import com.example.final_project.domain.users.appusers.UserIdWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -31,19 +29,15 @@ import static com.example.final_project.api.controllers.users.ExpenseController.
 public class ExpenseController {
     public static final String EXPENSES_CONTROLLER_BASE_PATH = "/expenses";
     private final ExpensesService expensesService;
-    private final JwtService jwtService;
 
     @PostMapping
     ResponseEntity<ExpenseResponseDto> registerNewExpense(
             @RequestBody @Valid RegisterExpenseRequest request,
             Authentication authentication
     ) {
-
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-
         Expense newExpense = expensesService.registerNewExpense(request.title(), request.amount(),
                                                                 BudgetIdWrapper.newFromString(request.budgetId()),
-                                                                userId,
+                                                                authentication,
                                                                 request.expenseType()
         );
         ExpenseResponseDto response = ExpenseResponseDto.fromDomain(newExpense);
@@ -56,8 +50,7 @@ public class ExpenseController {
             @PathVariable(name = "rawexpenseid") UUID rawExpenseId,
             Authentication authentication
     ) {
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-        Expense expenseById = expensesService.getExpenseById(ExpenseIdWrapper.newOf(rawExpenseId), userId);
+        Expense expenseById = expensesService.getExpenseById(ExpenseIdWrapper.newOf(rawExpenseId), authentication);
         return ResponseEntity.ok(ExpenseResponseDto.fromDomain(expenseById));
     }
 
@@ -70,11 +63,8 @@ public class ExpenseController {
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
             Authentication authentication
     ) {
-
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-
         return ResponseEntity.ok(expensesService.getAllExpensesByBudgetId(
-                                                        userId,
+                                                        authentication,
                                                         BudgetIdWrapper.newOf(rawBudgetId),
                                                         PageRequest.of(page, size,
                                                                        Sort.by(sortDirection, sortBy)
@@ -83,7 +73,6 @@ public class ExpenseController {
                                                 .map(ExpenseResponseDto::fromDomain));
     }
 
-    //TODO remove auth and move it to method parameter instead of controller logic
     @GetMapping
     ResponseEntity<Page<ExpenseResponseDto>> getExpensesByPage(
             @RequestParam(required = false, defaultValue = "0") Integer page,
@@ -92,9 +81,8 @@ public class ExpenseController {
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
             Authentication authentication
     ) {
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
         return ResponseEntity.ok(expensesService.getAllByPage(
-                                                        userId,
+                                                        authentication,
                                                         PageRequest.of(page, size, Sort.by(sortDirection, sortBy))
                                                 )
                                                 .map(ExpenseResponseDto::fromDomain));
@@ -105,14 +93,11 @@ public class ExpenseController {
             @RequestBody @Valid PatchExpenseRequest request,
             Authentication authentication
     ) {
-
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-
         return ResponseEntity.ok(ExpenseResponseDto.fromDomain(expensesService.patchExpenseContent(
                 ExpenseIdWrapper.newOf(UUID.fromString(request.expenseId())),
                 Optional.ofNullable(request.title()),
                 Optional.ofNullable(request.amount()),
-                userId,
+                authentication,
                 Optional.ofNullable(request.expenseType())
         )));
     }
@@ -122,17 +107,13 @@ public class ExpenseController {
             @RequestBody @Valid UpdateExpenseRequest request,
             Authentication authentication
     ) {
-
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-
         Expense updatedExpense = expensesService.updateExpenseById(
                 ExpenseIdWrapper.newOf(UUID.fromString(request.expenseId())),
                 request.title(),
                 request.amount(),
-                userId,
+                authentication,
                 Optional.ofNullable(request.expenseType())
         );
-
         return ResponseEntity.ok(ExpenseResponseDto.fromDomain(updatedExpense));
     }
 
@@ -141,9 +122,7 @@ public class ExpenseController {
             @PathVariable(name = "rawexpenseid") UUID rawExpenseId,
             Authentication authentication
     ) {
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-
-        expensesService.deleteExpenseById(ExpenseIdWrapper.newOf(rawExpenseId), userId);
+        expensesService.deleteExpenseById(ExpenseIdWrapper.newOf(rawExpenseId), authentication);
         return ResponseEntity.noContent().build();
     }
 }

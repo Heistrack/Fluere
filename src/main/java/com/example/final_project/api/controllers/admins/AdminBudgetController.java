@@ -21,13 +21,13 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.example.final_project.api.controllers.admins.AdminBudgetController.ADMIN_BUDGETS_CONTROLLER_BASE_PATH;
+import static com.example.final_project.api.controllers.admins.AdminBudgetController.ADMIN_BUDGET_CONTROLLERS_BASE_PATH;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(ADMIN_BUDGETS_CONTROLLER_BASE_PATH)
+@RequestMapping(ADMIN_BUDGET_CONTROLLERS_BASE_PATH)
 public class AdminBudgetController {
-    static final String ADMIN_BUDGETS_CONTROLLER_BASE_PATH = "/x/budgets";
+    static final String ADMIN_BUDGET_CONTROLLERS_BASE_PATH = "/x/budgets";
     private final AdminBudgetService adminBudgetService;
 
     @PostMapping

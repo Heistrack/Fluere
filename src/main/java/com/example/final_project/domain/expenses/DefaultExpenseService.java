@@ -25,17 +25,6 @@ public class DefaultExpenseService implements ExpensesService {
     private final BudgetRepository budgetRepository;
 
     @Override
-    public void deleteExpenseById(ExpenseIdWrapper expenseId, UserIdWrapper userId) {
-        expenseRepository.deleteByExpenseIdAndUserId(expenseId, userId);
-    }
-
-    @Override
-    public Expense getExpenseById(ExpenseIdWrapper expenseId, UserIdWrapper userId) {
-        return expenseRepository.findByExpenseIdAndUserId(expenseId, userId)
-                                .orElseThrow(() -> new NoSuchElementException("Expense doesn't exist."));
-    }
-
-    @Override
     public Expense registerNewExpense(String title, BigDecimal amount, BudgetIdWrapper budgetId, UserIdWrapper userId,
                                       ExpenseType expenseType
     ) {
@@ -51,6 +40,52 @@ public class DefaultExpenseService implements ExpensesService {
                                                                                 expenseType
                 ));
         return expenseRepository.save(expense);
+    }
+
+    @Override
+    public Expense getExpenseById(ExpenseIdWrapper expenseId, UserIdWrapper userId) {
+        return expenseRepository.findByExpenseIdAndUserId(expenseId, userId)
+                                .orElseThrow(() -> new NoSuchElementException("Expense doesn't exist."));
+    }
+
+    @Override
+    public Page<Expense> getAllByPage(UserIdWrapper userId, Pageable pageable) {
+        return expenseRepository.findAllByUserId(userId, pageable);
+    }
+
+    @Override
+    public Page<Expense> getAllExpensesByBudgetId(UserIdWrapper userId, BudgetIdWrapper budgetId, Pageable pageable) {
+        return expenseRepository.findAllByBudgetIdAndUserId(budgetId, userId, pageable);
+    }
+
+    @Override
+    public Expense updateExpenseById(
+            ExpenseIdWrapper expenseId,
+            String title,
+            BigDecimal amount,
+            UserIdWrapper userId,
+            Optional<ExpenseType> expenseType
+    ) {
+        Expense oldExpense = expenseRepository.findByExpenseIdAndUserId(expenseId, userId).orElseThrow(
+                () -> new NoSuchElementException("Can't update expense, because it doesn't exist"));
+
+        if (noParamChangeCheck(oldExpense, Optional.of(title), Optional.of(amount), expenseType)) {
+            return oldExpense;
+        }
+
+        Map<String, Object> validatedValues = validationForNewExpense(oldExpense, title, amount);
+
+        return expenseRepository.save(Expense.newOf(
+                expenseId,
+                oldExpense.budgetId(),
+                userId,
+                ExpenseDetails.newOf(
+                        (String) validatedValues.get("checkedTitle"),
+                        amount,
+                        oldExpense.expenseDetails().historyOfChanges(),
+                        expenseType.orElse(ExpenseType.NO_CATEGORY)
+                )
+        ));
     }
 
     @Override
@@ -93,43 +128,8 @@ public class DefaultExpenseService implements ExpensesService {
     }
 
     @Override
-    public Expense updateExpenseById(
-            ExpenseIdWrapper expenseId,
-            String title,
-            BigDecimal amount,
-            UserIdWrapper userId,
-            Optional<ExpenseType> expenseType
-    ) {
-        Expense oldExpense = expenseRepository.findByExpenseIdAndUserId(expenseId, userId).orElseThrow(
-                () -> new NoSuchElementException("Can't update expense, because it doesn't exist"));
-
-        if (noParamChangeCheck(oldExpense, Optional.of(title), Optional.of(amount), expenseType)) {
-            return oldExpense;
-        }
-
-        Map<String, Object> validatedValues = validationForNewExpense(oldExpense, title, amount);
-
-        return expenseRepository.save(Expense.newOf(
-                expenseId,
-                oldExpense.budgetId(),
-                userId,
-                ExpenseDetails.newOf(
-                        (String) validatedValues.get("checkedTitle"),
-                        amount,
-                        oldExpense.expenseDetails().historyOfChanges(),
-                        expenseType.orElse(ExpenseType.NO_CATEGORY)
-                )
-        ));
-    }
-
-    @Override
-    public Page<Expense> findAllByPage(UserIdWrapper userId, Pageable pageable) {
-        return expenseRepository.findAllByUserId(userId, pageable);
-    }
-
-    @Override
-    public Page<Expense> findAllExpensesByBudgetId(UserIdWrapper userId, BudgetIdWrapper budgetId, Pageable pageable) {
-        return expenseRepository.findAllByBudgetIdAndUserId(budgetId, userId, pageable);
+    public void deleteExpenseById(ExpenseIdWrapper expenseId, UserIdWrapper userId) {
+        expenseRepository.deleteByExpenseIdAndUserId(expenseId, userId);
     }
 
     private Map<String, Object> validationForNewExpense(Expense oldExpense,
@@ -147,6 +147,8 @@ public class DefaultExpenseService implements ExpensesService {
 
         if (!title.equals(oldExpenseDetails.title())) {
             returnMap.put("checkedTitle", duplicateExpenseTitleCheck(title, budgetId));
+        } else {
+            returnMap.put("checkedTitle", title);
         }
 
         Integer newRecordNumber = oldExpenseDetails.historyOfChanges().lastEntry().getKey() + 1;

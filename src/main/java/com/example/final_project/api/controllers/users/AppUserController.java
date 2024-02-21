@@ -16,13 +16,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import static com.example.final_project.api.controllers.users.AppUserController.USERS_BASE_CONTROLLER_PATH;
+import static com.example.final_project.api.controllers.users.AppUserController.USERS_CONTROLLER_BASE_PATH;
 
 @RestController
-@RequestMapping(USERS_BASE_CONTROLLER_PATH)
+@RequestMapping(USERS_CONTROLLER_BASE_PATH)
 @RequiredArgsConstructor
 public class AppUserController {
-    static final String USERS_BASE_CONTROLLER_PATH = "/users";
+    static final String USERS_CONTROLLER_BASE_PATH = "/users";
     private final UserService userService;
     private final AuthenticationService authenticationService;
 
@@ -38,20 +38,6 @@ public class AppUserController {
             @Valid @RequestBody AuthenticationRequest request
     ) {
         return ResponseEntity.ok(authenticationService.authenticate(request));
-    }
-
-    @GetMapping
-    ResponseEntity<AppUser> getMyAccountInfo(Authentication authentication) {
-        return ResponseEntity.ok(userService.getUserDetailsFromToken(authentication));
-    }
-
-
-    @DeleteMapping()
-    ResponseEntity<AppUser> removeOneselfAccount(
-            Authentication authentication
-    ) {
-        userService.removeOwnAccount(authentication);
-        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/login-change")
@@ -70,6 +56,20 @@ public class AppUserController {
     ) {
         AppUser updatedUser = userService.patchEmail(request, authentication);
         return ResponseEntity.ok(UserDetailsResponse.fromDomain(updatedUser));
+    }
+
+    @GetMapping
+    ResponseEntity<AppUser> getMyAccountInfo(Authentication authentication) {
+        return ResponseEntity.ok(userService.getUserDetailsFromToken(authentication));
+    }
+
+
+    @DeleteMapping()
+    ResponseEntity<AppUser> removeOneselfAccount(
+            Authentication authentication
+    ) {
+        userService.removeOwnAccount(authentication);
+        return ResponseEntity.noContent().build();
     }
 }
 

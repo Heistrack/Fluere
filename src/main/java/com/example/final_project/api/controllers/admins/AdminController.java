@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-import static com.example.final_project.api.controllers.admins.AdminController.ADMIN_BASE_CONTROLLER_PATH;
+import static com.example.final_project.api.controllers.admins.AdminController.ADMIN_CONTROLLERS_BASE_PATH;
 
 @RestController
-@RequestMapping(ADMIN_BASE_CONTROLLER_PATH)
+@RequestMapping(ADMIN_CONTROLLERS_BASE_PATH)
 @RequiredArgsConstructor
 public class AdminController {
-    static final String ADMIN_BASE_CONTROLLER_PATH = "/x/users";
+    static final String ADMIN_CONTROLLERS_BASE_PATH = "/x/users";
     private final AdminService adminService;
 
     @PostMapping()
@@ -53,6 +53,22 @@ public class AdminController {
                             .map(UserDetailsResponse::fromDomain));
     }
 
+    @PostMapping("/password-reset")
+    ResponseEntity<AppUser> passwordChange(
+            @RequestBody @Valid AdminPasswordChangeRequest request
+    ) {
+        AppUser updatedUser = adminService.resetUserPassword(request);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    @PostMapping("/email-change")
+    ResponseEntity<AppUser> emailChange(
+            @RequestBody @Valid AdminEmailChangeRequest request
+    ) {
+        AppUser updatedUser = adminService.patchUserEmail(request);
+        return ResponseEntity.ok(updatedUser);
+    }
+
     @GetMapping("/fromToken")
     ResponseEntity<AppUser> getUserFromToken(Authentication authentication) {
         return ResponseEntity.ok(adminService.findFromToken(authentication.getName()));
@@ -73,28 +89,6 @@ public class AdminController {
         return ResponseEntity.ok(adminService.findUserByEmail(email));
     }
 
-    @PostMapping("/password-reset")
-    ResponseEntity<AppUser> passwordChange(
-            @RequestBody @Valid AdminPasswordChangeRequest request
-    ) {
-        AppUser updatedUser = adminService.resetUserPassword(request);
-        return ResponseEntity.ok(updatedUser);
-    }
-
-    @PostMapping("/email-change")
-    ResponseEntity<AppUser> emailChange(
-            @RequestBody @Valid AdminEmailChangeRequest request
-    ) {
-        AppUser updatedUser = adminService.patchUserEmail(request);
-        return ResponseEntity.ok(updatedUser);
-    }
-
-    @DeleteMapping("logins/{login}")
-    ResponseEntity<AdminOperationResponse> removeUserByLogin(@PathVariable(name = "login") String login) {
-        adminService.removeUserByLogin(login);
-        return ResponseEntity.noContent().build();
-    }
-
     @DeleteMapping("ids/{id}")
     ResponseEntity<UserDetailsResponse> removeUserByUserId(@PathVariable(name = "id") UUID userId) {
         adminService.removeUserByUserId(userId);
@@ -104,6 +98,12 @@ public class AdminController {
     @DeleteMapping("/{email}")
     ResponseEntity<UserDetailsResponse> removeUserByEmail(@PathVariable(name = "email") String email) {
         adminService.removeUserByEmail(email);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("logins/{login}")
+    ResponseEntity<AdminOperationResponse> removeUserByLogin(@PathVariable(name = "login") String login) {
+        adminService.removeUserByLogin(login);
         return ResponseEntity.noContent().build();
     }
 

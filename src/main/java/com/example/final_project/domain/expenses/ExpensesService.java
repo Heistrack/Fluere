@@ -29,7 +29,7 @@ public interface ExpensesService {
                               Optional<ExpenseType> typeOfExpense
     );
 
-    Page<Expense> findAllExpensesByBudgetId(UserIdWrapper userId, BudgetIdWrapper budgetId, Pageable pageable);
+    Page<Expense> getAllExpensesByBudgetId(UserIdWrapper userId, BudgetIdWrapper budgetId, Pageable pageable);
 
-    Page<Expense> findAllByPage(UserIdWrapper userId, Pageable pageable);
+    Page<Expense> getAllByPage(UserIdWrapper userId, Pageable pageable);
 }

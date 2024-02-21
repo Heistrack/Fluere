@@ -1,4 +1,4 @@
-package com.example.final_project.api.requests.expenses;
+package com.example.final_project.api.requests.expenses.appusers;
 
 
 import com.example.final_project.domain.expenses.ExpenseType;
@@ -13,10 +13,11 @@ public record PatchExpenseRequest(
         @Size(min = 3, message = "Title can not be shorter than 3 characters")
         @Size(max = 200, message = "Title can not be longer than 200 characters")
         String title,
-        @Positive(message = "Expense amount can not be negative or zero.")
+        @Positive(message = "Expense's amount can not be negative or zero.")
         BigDecimal amount,
-        @NotBlank(message = "Expense's id can not be null or blank.")
+        @NotBlank(message = "Expense's ID can not be null or blank.")
         String expenseId,
         @Nullable
-        ExpenseType expenseType) {
+        ExpenseType expenseType
+) {
 }

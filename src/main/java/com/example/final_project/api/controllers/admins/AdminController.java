@@ -24,7 +24,7 @@ import static com.example.final_project.api.controllers.admins.AdminController.A
 @RequestMapping(ADMIN_CONTROLLERS_BASE_PATH)
 @RequiredArgsConstructor
 public class AdminController {
-    static final String ADMIN_CONTROLLERS_BASE_PATH = "/x/users";
+    static final String ADMIN_CONTROLLERS_BASE_PATH = "/api/x/users";
     private final AdminService adminService;
 
     @PostMapping()

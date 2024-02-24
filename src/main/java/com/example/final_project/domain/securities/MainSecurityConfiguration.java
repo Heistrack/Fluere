@@ -4,6 +4,7 @@ package com.example.final_project.domain.securities;
 import com.example.final_project.domain.securities.exceptions.CustomAccessDeniedHandlerJwt;
 import com.example.final_project.domain.securities.exceptions.CustomAuthenticationEntryPointJwt;
 import com.example.final_project.domain.securities.jwt.JwtAuthFilter;
+import com.example.final_project.domain.users.appusers.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +36,7 @@ class MainSecurityConfiguration {
                            .requestMatchers("/budgets/**").authenticated()
                            .requestMatchers("/admin/**").authenticated()
                            .requestMatchers("/expenses/**").authenticated()
+                           .requestMatchers("/users/auth").permitAll()
                            .requestMatchers("/**").permitAll()
                            .anyRequest().authenticated()
                    )

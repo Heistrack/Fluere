@@ -27,7 +27,7 @@ import static com.example.final_project.api.controllers.users.ExpenseController.
 @RequiredArgsConstructor
 @RequestMapping(EXPENSES_CONTROLLER_BASE_PATH)
 public class ExpenseController {
-    public static final String EXPENSES_CONTROLLER_BASE_PATH = "/expenses";
+    public static final String EXPENSES_CONTROLLER_BASE_PATH = "/api/expenses";
     private final ExpensesService expensesService;
 
     @PostMapping

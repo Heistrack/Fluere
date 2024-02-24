@@ -27,7 +27,7 @@ import static com.example.final_project.api.controllers.admins.AdminExpenseContr
 @RequiredArgsConstructor
 @RequestMapping(ADMIN_EXPENSE_CONTROLLERS_BASE_PATH)
 public class AdminExpenseController {
-    public static final String ADMIN_EXPENSE_CONTROLLERS_BASE_PATH = "/x/expenses";
+    public static final String ADMIN_EXPENSE_CONTROLLERS_BASE_PATH = "/api/x/expenses";
     private final AdminExpenseService adminExpenseService;
 
     @PostMapping

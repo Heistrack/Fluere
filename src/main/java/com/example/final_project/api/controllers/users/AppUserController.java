@@ -22,7 +22,7 @@ import static com.example.final_project.api.controllers.users.AppUserController.
 @RequestMapping(USERS_CONTROLLER_BASE_PATH)
 @RequiredArgsConstructor
 public class AppUserController {
-    static final String USERS_CONTROLLER_BASE_PATH = "/users";
+    static final String USERS_CONTROLLER_BASE_PATH = "/api/users";
     private final UserService userService;
     private final AuthenticationService authenticationService;
 

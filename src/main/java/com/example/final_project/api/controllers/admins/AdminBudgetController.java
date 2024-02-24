@@ -11,6 +11,7 @@ import com.example.final_project.domain.budgets.appusers.BudgetIdWrapper;
 import com.example.final_project.domain.users.appusers.UserIdWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -27,7 +28,7 @@ import static com.example.final_project.api.controllers.admins.AdminBudgetContro
 @RequiredArgsConstructor
 @RequestMapping(ADMIN_BUDGET_CONTROLLERS_BASE_PATH)
 public class AdminBudgetController {
-    static final String ADMIN_BUDGET_CONTROLLERS_BASE_PATH = "/x/budgets";
+    static final String ADMIN_BUDGET_CONTROLLERS_BASE_PATH = "/api/x/budgets";
     private final AdminBudgetService adminBudgetService;
 
     @PostMapping

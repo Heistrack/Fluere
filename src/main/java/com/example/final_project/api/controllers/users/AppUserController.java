@@ -26,7 +26,7 @@ public class AppUserController {
     private final UserService userService;
     private final AuthenticationService authenticationService;
 
-    @PostMapping()
+    @PostMapping("/new-user")
     ResponseEntity<RegisterResponseDTO> registerNewUser(
             @Valid @RequestBody RegisterUserRequest request
     ) {

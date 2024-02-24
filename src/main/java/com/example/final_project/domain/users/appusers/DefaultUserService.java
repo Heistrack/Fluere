@@ -41,7 +41,6 @@ public class DefaultUserService implements UserService {
                              .orElseThrow(() -> new NoSuchElementException("No user has been found"));
     }
 
-
     @Override
     public void removeOwnAccount(Authentication authentication) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);

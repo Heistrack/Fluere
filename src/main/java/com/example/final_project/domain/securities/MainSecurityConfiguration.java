@@ -31,13 +31,9 @@ class MainSecurityConfiguration {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.authorizeHttpRequests(request -> request
-                           //TODO configure endpoints security properly
-                           //TODO remember about admin path
-                           .requestMatchers("/budgets/**").authenticated()
-                           .requestMatchers("/admin/**").authenticated()
-                           .requestMatchers("/expenses/**").authenticated()
-                           .requestMatchers("/users/auth").permitAll()
-                           .requestMatchers("/**").permitAll()
+                           .requestMatchers("/api/users/auth").permitAll()
+                           .requestMatchers("/api/users/new-user").permitAll()
+                           .requestMatchers("/api/x/**").hasAuthority("ROLE_ADMIN")
                            .anyRequest().authenticated()
                    )
                    .csrf(AbstractHttpConfigurer::disable)

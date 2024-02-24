@@ -26,7 +26,7 @@ public class AdditionalConfiguration {
     @Bean
     UserDetailsService userDetailsService() {
         return id -> repository.findById(UserIdWrapper.newFromString(id))
-                               .orElseThrow(() -> new BadCredentialsException("Wrong user or newPassword."));
+                               .orElseThrow(() -> new BadCredentialsException("Wrong user or password."));
     }
 
     @Bean

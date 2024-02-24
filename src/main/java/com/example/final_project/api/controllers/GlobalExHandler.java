@@ -76,7 +76,7 @@ public class GlobalExHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorDTO> handleBadCredentialsExceptionExceptions(BadCredentialsException ex) {
         String properResponse = ex.getMessage();
-        if (ex.getMessage().equals("Bad credentials")) properResponse = "Invalid login or newPassword";
+        if (ex.getMessage().equals("Bad credentials")) properResponse = "Invalid login or password";
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                              .body(ErrorDTO.newOf(
                                      properResponse,

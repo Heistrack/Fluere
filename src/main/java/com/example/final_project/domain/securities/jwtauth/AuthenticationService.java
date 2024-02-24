@@ -49,7 +49,7 @@ public class AuthenticationService {
 
     public AuthResponseDTO authenticate(AuthenticationRequest request) {
         AppUser user = repository.findByLogin(request.login())
-                                 .orElseThrow(() -> new BadCredentialsException("Invalid login or newPassword"));
+                                 .orElseThrow(() -> new BadCredentialsException("Invalid login or password"));
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(

@@ -114,7 +114,7 @@ public class DefaultUserService implements UserService {
         String currentRequestUserId = userIdFromAuth.id().toString();
 
         if (!userIdFromRequest.equals(currentRequestUserId))
-            throw new BadCredentialsException("Invalid login or newPassword");
+            throw new BadCredentialsException("Invalid login or password");
 
         return userRepository.findById(userIdFromAuth).orElseThrow(
                 () -> new NoSuchElementException("There is no such user"));

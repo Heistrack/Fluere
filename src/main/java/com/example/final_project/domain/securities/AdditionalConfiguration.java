@@ -1,12 +1,13 @@
 package com.example.final_project.domain.securities;
 
+import com.example.final_project.domain.securities.jwt.KeySupplier;
 import com.example.final_project.domain.users.appusers.UserIdWrapper;
 import com.example.final_project.infrastructure.appuserrepo.AppUserRepository;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import lombok.RequiredArgsConstructor;
+import io.jsonwebtoken.Jwts;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,10 +21,22 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.security.KeyPair;
+
 @Configuration
-@RequiredArgsConstructor
 public class AdditionalConfiguration {
     private final AppUserRepository repository;
+    private final KeyPair SECRET_KEYS;
+
+    public AdditionalConfiguration(AppUserRepository repository) {
+        this.repository = repository;
+        this.SECRET_KEYS = Jwts.SIG.RS256.keyPair().build();
+    }
+
+    @Bean
+    public KeySupplier jwtKeySupplier() {
+        return () -> SECRET_KEYS;
+    }
 
     @Bean
     UserDetailsService userDetailsService() {
@@ -56,8 +69,6 @@ public class AdditionalConfiguration {
                          .findAndAddModules()
                          .build();
     }
-
-
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {

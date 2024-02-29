@@ -4,24 +4,21 @@ import com.example.final_project.domain.users.appusers.AppUser;
 import com.example.final_project.domain.users.appusers.UserIdWrapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
     private static final int TOKEN_EXPIRATION_TIME_IN_MILI = 1000 * 60 * 60 * 24;
-    @Value("${jwt.key}")
-    private String SECRET_KEY;
+    private final KeySupplier keySupplier;
 
     public String generateToken(
             Map<String, Object> extraClaims,
@@ -32,7 +29,7 @@ public class JwtService {
                    .subject(userDetails.getUsername())
                    .issuedAt(new Date(System.currentTimeMillis()))
                    .expiration(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION_TIME_IN_MILI))
-                   .signWith(getSignInKey(), Jwts.SIG.HS256)
+                   .signWith(keySupplier.getKeys().getPrivate())
                    .header()
                    .add("typ", "JWT")
                    .and()
@@ -66,15 +63,10 @@ public class JwtService {
 
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
-                   .verifyWith(getSignInKey())
+                   .verifyWith(keySupplier.getKeys().getPublic())
                    .build()
                    .parseSignedClaims(token)
                    .getPayload();
-    }
-
-    private SecretKey getSignInKey() {
-        byte[] decodedKeyArray = Decoders.BASE64.decode(SECRET_KEY);
-        return Keys.hmacShaKeyFor(decodedKeyArray);
     }
 
     private boolean isTokenExpired(String token) {

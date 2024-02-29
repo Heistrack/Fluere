@@ -3,17 +3,20 @@ package com.example.final_project.api.controllers;
 import com.example.final_project.api.responses.ErrorDTO;
 import com.example.final_project.domain.expenses.exceptions.ExpenseTooBigException;
 import com.example.final_project.domain.users.appusers.exceptions.UnableToCreateException;
+import com.fasterxml.jackson.core.JsonParseException;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.nio.file.AccessDeniedException;
@@ -90,17 +93,57 @@ public class GlobalExHandler {
                              ));
     }
 
-    @ExceptionHandler(InvalidBearerTokenException.class)
+    @ExceptionHandler({InvalidBearerTokenException.class})
     ResponseEntity<ErrorDTO> handleInvalidBearerTokenException(InvalidBearerTokenException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                             .body(ErrorDTO.newOf("The token is expired, revoked, malformed, or invalid." + " " + ex.getMessage(),
-                                                  HttpStatus.UNAUTHORIZED,
+                             .body(ErrorDTO.newOf(
+                                     "The token is expired, revoked, malformed, or invalid.",
+                                     HttpStatus.UNAUTHORIZED,
+                                     LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
+                             ));
+    }
+
+    @ExceptionHandler({SignatureException.class})
+    ResponseEntity<ErrorDTO> handleSignatureExceptionException(SignatureException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                             .body(ErrorDTO.newOf(
+                                     "The token is expired, revoked, malformed, or invalid.",
+                                     HttpStatus.UNAUTHORIZED,
+                                     LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
+                             ));
+    }
+
+    @ExceptionHandler({JsonParseException.class})
+    ResponseEntity<ErrorDTO> handleJsonParseExceptionException(JsonParseException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                             .body(ErrorDTO.newOf(
+                                     "The token is expired, revoked, malformed, or invalid.",
+                                     HttpStatus.UNAUTHORIZED,
+                                     LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
+                             ));
+    }
+
+    @ExceptionHandler({MalformedJwtException.class})
+    ResponseEntity<ErrorDTO> handleMalformedJwtExceptionException(MalformedJwtException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                             .body(ErrorDTO.newOf(
+                                     "The token is expired, revoked, malformed, or invalid.",
+                                     HttpStatus.UNAUTHORIZED,
+                                     LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
+                             ));
+    }
+
+    @ExceptionHandler({AccessDeniedException.class})
+    ResponseEntity<ErrorDTO> handleAccessDeniedException(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                             .body(ErrorDTO.newOf("Access forbidden", HttpStatus.FORBIDDEN,
                                                   LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
                              ));
     }
 
-    @ExceptionHandler(AccessDeniedException.class)
-    ResponseEntity<ErrorDTO> handleAccessDeniedException(AccessDeniedException ex) {
+    @ExceptionHandler({InsufficientAuthenticationException.class})
+    ResponseEntity<ErrorDTO> handleInsufficientAuthenticationExceptionException(InsufficientAuthenticationException ex
+    ) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                              .body(ErrorDTO.newOf("Access forbidden", HttpStatus.FORBIDDEN,
                                                   LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
@@ -118,8 +161,10 @@ public class GlobalExHandler {
     @ExceptionHandler(Exception.class)
     ResponseEntity<ErrorDTO> handleOtherException(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                             .body(ErrorDTO.newOf(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR,
-                                                  LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
+                             .body(ErrorDTO.newOf(
+                                     "ex.getMessage()" + ex.getMessage() + ex.getClass(),
+                                     HttpStatus.INTERNAL_SERVER_ERROR,
+                                     LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
                              ));
     }
 }

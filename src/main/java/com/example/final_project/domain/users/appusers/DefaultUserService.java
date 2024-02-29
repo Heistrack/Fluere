@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +45,8 @@ public class DefaultUserService implements UserService {
     @Override
     public void removeOwnAccount(Authentication authentication) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-        if (userRepository.findById(userId).map(AppUser::userId).isPresent()) {
+        Optional<AppUser> user = userRepository.findById(userId);
+        if (user.isPresent() && !user.get().login().equals("admin")) {
             userRemoveProcedure(authentication);
         }
     }

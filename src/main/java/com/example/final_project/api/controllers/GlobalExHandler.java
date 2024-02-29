@@ -93,7 +93,7 @@ public class GlobalExHandler {
     @ExceptionHandler(InvalidBearerTokenException.class)
     ResponseEntity<ErrorDTO> handleInvalidBearerTokenException(InvalidBearerTokenException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                             .body(ErrorDTO.newOf("The token is expired, revoked, malformed, or invalid.",
+                             .body(ErrorDTO.newOf("The token is expired, revoked, malformed, or invalid." + " " + ex.getMessage(),
                                                   HttpStatus.UNAUTHORIZED,
                                                   LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
                              ));

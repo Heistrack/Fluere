@@ -57,6 +57,8 @@ public class AdditionalConfiguration {
                          .build();
     }
 
+
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {

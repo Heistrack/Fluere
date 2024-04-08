@@ -1,6 +1,5 @@
 package com.example.final_project.domain.users.appusers;
 
-import com.example.final_project.api.requests.users.appusers.AuthenticationRequest;
 import com.example.final_project.api.requests.users.appusers.EmailChangeRequest;
 import com.example.final_project.api.requests.users.appusers.PasswordChangeRequest;
 import com.example.final_project.api.requests.users.appusers.RegisterUserRequest;
@@ -53,8 +52,7 @@ public class DefaultUserService implements UserService {
 
     @Override
     public AppUser patchEmail(EmailChangeRequest request, Authentication authentication) {
-        UserIdWrapper userIdFromAuth = jwtService.extractUserIdFromRequestAuth(authentication);
-        AppUser currentUser = userCheckBeforeModifyProperties(request.auth(), userIdFromAuth);
+        AppUser currentUser = userCheckBeforeModifyProperties(request.password(), authentication);
 
         if (userRepository.findByEmail(request.newEmail()).isPresent()) {
             throw new UnableToCreateException("Such email is occupied.");
@@ -72,8 +70,7 @@ public class DefaultUserService implements UserService {
 
     @Override
     public AppUser patchPassword(PasswordChangeRequest request, Authentication authentication) {
-        UserIdWrapper userIdFromAuth = jwtService.extractUserIdFromRequestAuth(authentication);
-        AppUser currentUser = userCheckBeforeModifyProperties(request.auth(), userIdFromAuth);
+        AppUser currentUser = userCheckBeforeModifyProperties(request.oldPassword(), authentication);
 
         if (!request.firstPasswordAttempt().equals(request.secondPasswordAttempt()))
             throw new BadCredentialsException("Passwords are not the same");
@@ -110,14 +107,13 @@ public class DefaultUserService implements UserService {
         }
     }
 
-    private AppUser userCheckBeforeModifyProperties(AuthenticationRequest request, UserIdWrapper userIdFromAuth) {
-        String userIdFromRequest = jwtService.extractUserId(authenticationService.authenticate(request).token());
-        String currentRequestUserId = userIdFromAuth.id().toString();
+    private AppUser userCheckBeforeModifyProperties(String password, Authentication authentication) {
+        AppUser userFromAuth = (AppUser) authentication.getPrincipal();
 
-        if (!userIdFromRequest.equals(currentRequestUserId))
+        if (!passwordEncoder.matches(password, userFromAuth.password()))
             throw new BadCredentialsException("Invalid login or password");
 
-        return userRepository.findById(userIdFromAuth).orElseThrow(
+        return userRepository.findById(userFromAuth.userId()).orElseThrow(
                 () -> new NoSuchElementException("There is no such user"));
     }
 }

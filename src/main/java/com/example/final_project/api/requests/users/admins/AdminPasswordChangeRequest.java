@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.Length;
 
 public record AdminPasswordChangeRequest(
+        @NotBlank(message = "Login can not be blank.")
         String login,
         @NotBlank(message = "Password can not be blank.")
         //TODO CHANGE PASSWORD SIZE - during dev make it small

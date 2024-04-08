@@ -10,7 +10,6 @@ import com.example.final_project.domain.users.appusers.Role;
 import com.example.final_project.domain.users.appusers.UserIdWrapper;
 import com.example.final_project.infrastructure.appuserrepo.AppUserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

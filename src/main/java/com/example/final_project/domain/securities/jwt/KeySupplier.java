@@ -1,8 +1,10 @@
 package com.example.final_project.domain.securities.jwt;
 
-import java.security.KeyPair;
+import javax.crypto.SecretKey;
 
+//TODO change keyInterface supplier to Key pair, remove get Keys
 public interface KeySupplier {
 
-    KeyPair getKeys();
+    //    KeyPair getKeys();
+    SecretKey getKey();
 }

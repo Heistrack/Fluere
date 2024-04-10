@@ -12,7 +12,8 @@ public record ExpenseResponseDto(
         String expenseId,
         BigDecimal amount,
         TreeMap<Integer, LocalDateTime> historyOfChanges,
-        ExpenseType expenseType
+        ExpenseType expenseType,
+        String description
 ) {
     public static ExpenseResponseDto fromDomain(Expense expense) {
         return new ExpenseResponseDto(
@@ -20,7 +21,8 @@ public record ExpenseResponseDto(
                 expense.expenseId().id().toString(),
                 expense.expenseDetails().amount(),
                 expense.expenseDetails().historyOfChanges(),
-                expense.expenseDetails().expenseType()
+                expense.expenseDetails().expenseType(),
+                expense.expenseDetails().description()
         );
     }
 }

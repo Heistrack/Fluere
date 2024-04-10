@@ -57,6 +57,7 @@ public class DefaultUserService implements UserService {
         if (userRepository.findByEmail(request.newEmail()).isPresent()) {
             throw new UnableToCreateException("Such email is occupied.");
         }
+
         return userRepository.save(AppUser.builder()
                                           .userId(currentUser.userId())
                                           .login(currentUser.login())

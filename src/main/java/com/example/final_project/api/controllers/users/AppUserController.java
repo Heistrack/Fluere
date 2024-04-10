@@ -40,7 +40,7 @@ public class AppUserController {
         return ResponseEntity.ok(authenticationService.authenticate(request));
     }
 
-    @PostMapping("/login-change")
+    @PostMapping("/password-change")
     ResponseEntity<UserDetailsResponse> passwordChange(
             @RequestBody @Valid PasswordChangeRequest request,
             Authentication authentication

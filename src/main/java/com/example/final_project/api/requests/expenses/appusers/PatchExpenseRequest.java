@@ -6,6 +6,7 @@ import com.mongodb.lang.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import org.hibernate.validator.constraints.Length;
 
 import java.math.BigDecimal;
 
@@ -18,6 +19,8 @@ public record PatchExpenseRequest(
         @NotBlank(message = "Expense's ID can not be null or blank.")
         String expenseId,
         @Nullable
-        ExpenseType expenseType
+        ExpenseType expenseType,
+        @Size(max = 8000, message = "The description can not be more 8.000 characters.")
+        String description
 ) {
 }

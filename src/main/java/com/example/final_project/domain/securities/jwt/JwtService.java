@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,8 +18,10 @@ import java.util.function.Function;
 @Service
 @RequiredArgsConstructor
 public class JwtService {
-    private static final int TOKEN_EXPIRATION_TIME_IN_MILI = 1000 * 60 * 60 * 24;
-    private final KeySupplier keySupplier;
+    private static final int TOKEN_EXPIRATION_TIME_IN_MILI = 1000 * 60 * 60;
+    //TODO replace key to keySupplier
+//    private final KeySupplier keySupplier;
+    private final SecretKey keySupplier;
 
     public String generateToken(
             Map<String, Object> extraClaims,
@@ -29,7 +32,9 @@ public class JwtService {
                    .subject(userDetails.getUsername())
                    .issuedAt(new Date(System.currentTimeMillis()))
                    .expiration(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION_TIME_IN_MILI))
-                   .signWith(keySupplier.getKeys().getPrivate())
+                   //TODO key is hardcoded for development - remove it after
+//                   .signWith(keySupplier.getKeys().getPrivate())
+                   .signWith(keySupplier)
                    .header()
                    .add("typ", "JWT")
                    .and()
@@ -63,7 +68,9 @@ public class JwtService {
 
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
-                   .verifyWith(keySupplier.getKeys().getPublic())
+                   //TODO key is hardcoded for development - remove it after
+//                   .verifyWith(keySupplier.getKeys().getPublic())
+                   .verifyWith(keySupplier)
                    .build()
                    .parseSignedClaims(token)
                    .getPayload();

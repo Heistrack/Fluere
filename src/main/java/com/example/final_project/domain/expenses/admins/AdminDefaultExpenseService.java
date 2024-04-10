@@ -29,8 +29,8 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
     private final BudgetRepository budgetRepository;
 
     @Override
-    public Expense registerNewExpense(String title, BigDecimal amount, BudgetIdWrapper budgetId,
-                                      ExpenseType expenseType, UserIdWrapper userId
+    public Expense registerNewExpense(BudgetIdWrapper budgetId, UserIdWrapper userId, String title,
+                                      BigDecimal amount, ExpenseType expenseType, String description
     ) {
         String checkedTitle = duplicateExpenseTitleCheck(title, budgetId);
         validationExpenseAmount(amount, budgetId);
@@ -42,7 +42,8 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
         Expense expense = Expense.newOf(
                 expenseIdSupplier.get(), budgetId, userId, ExpenseDetails.newOf(checkedTitle, amount,
                                                                                 historyOfChange,
-                                                                                expenseType
+                                                                                expenseType,
+                                                                                description == null ? "" : description
                 ));
         return expenseRepository.save(expense);
     }
@@ -73,12 +74,13 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
             ExpenseIdWrapper expenseId,
             String title,
             BigDecimal amount,
-            Optional<ExpenseType> expenseType
+            Optional<ExpenseType> expenseType,
+            Optional<String> description
     ) {
         Expense oldExpense = expenseRepository.findById(expenseId).orElseThrow(
                 () -> new NoSuchElementException("Expense doesn't exist."));
 
-        if (noParamChangeCheck(oldExpense, Optional.of(title), Optional.of(amount), expenseType)) {
+        if (noParamChangeCheck(oldExpense, Optional.of(title), Optional.of(amount), expenseType, description)) {
             return oldExpense;
         }
 
@@ -92,7 +94,8 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
                         (String) validatedValues.get("checkedTitle"),
                         amount,
                         oldExpense.expenseDetails().historyOfChanges(),
-                        expenseType.orElse(ExpenseType.NO_CATEGORY)
+                        expenseType.orElse(ExpenseType.NO_CATEGORY),
+                        description.orElse("")
                 )
         ));
     }
@@ -102,13 +105,14 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
             ExpenseIdWrapper expenseId,
             Optional<String> title,
             Optional<BigDecimal> amount,
-            Optional<ExpenseType> expenseType
+            Optional<ExpenseType> expenseType,
+            Optional<String> description
     ) {
         Expense oldExpense = expenseRepository.findById(expenseId)
                                               .orElseThrow(() -> new NoSuchElementException(
                                                       "There's no such expense."));
 
-        if (noParamChangeCheck(oldExpense, title, amount, expenseType)) {
+        if (noParamChangeCheck(oldExpense, title, amount, expenseType, description)) {
             return oldExpense;
         }
 
@@ -129,7 +133,8 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
                                 checkedTitle.orElseGet(() -> expenseFromRepository.expenseDetails().title()),
                                 amount.orElseGet(() -> expenseFromRepository.expenseDetails().amount()),
                                 oldExpense.expenseDetails().historyOfChanges(),
-                                expenseType.orElseGet(() -> expenseFromRepository.expenseDetails().expenseType())
+                                expenseType.orElseGet(() -> expenseFromRepository.expenseDetails().expenseType()),
+                                description.orElseGet(() -> expenseFromRepository.expenseDetails().description())
                         )
                 )
         ).orElseThrow(IllegalArgumentException::new));
@@ -165,17 +170,17 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
         return returnMap;
     }
 
-    private boolean noParamChangeCheck(Expense oldExpense, Optional<String> title,
-                                       Optional<BigDecimal> amount,
-                                       Optional<ExpenseType> expenseType
+    private boolean noParamChangeCheck(Expense oldExpense, Optional<String> newTitle,
+                                       Optional<BigDecimal> newAmount,
+                                       Optional<ExpenseType> newExpenseType,
+                                       Optional<String> newDescription
     ) {
-        ExpenseType newExpenseType = expenseType.orElse(oldExpense.expenseDetails().expenseType());
-        String newTitle = title.orElse(oldExpense.expenseDetails().title());
-        BigDecimal newAmount = amount.orElse(oldExpense.expenseDetails().amount());
+        if(newTitle.isPresent() && !oldExpense.expenseDetails().title().equals(newTitle.get())) return false;
+        if(newAmount.isPresent() && !oldExpense.expenseDetails().amount().equals(newAmount.get())) return false;
+        if(newExpenseType.isPresent() && !oldExpense.expenseDetails().expenseType().equals(newExpenseType.get())) return false;
+        if(newDescription.isPresent() && !oldExpense.expenseDetails().description().equals(newDescription.get())) return false;
 
-        return Objects.equals(oldExpense.expenseDetails().title(), newTitle) &&
-                Objects.equals(oldExpense.expenseDetails().expenseType(), newExpenseType) &&
-                Objects.equals(oldExpense.expenseDetails().amount(), newAmount);
+        return true;
     }
 
     private void validationExpenseAmount(BigDecimal amount, BudgetIdWrapper budgetId) {

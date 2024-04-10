@@ -34,15 +34,19 @@ public class AdminExpenseController {
     ResponseEntity<AdminExpenseResponseDto> registerNewExpense(
             @RequestBody @Valid AdminRegisterExpenseRequest request
     ) {
-        Expense newExpense = adminExpenseService.registerNewExpense(request.title(), request.amount(),
-                                                                    BudgetIdWrapper.newFromString(request.budgetId()),
-                                                                    request.expenseType(),
-                                                                    UserIdWrapper.newFromString(request.userId())
+        Expense newExpense = adminExpenseService.registerNewExpense(
+                BudgetIdWrapper.newFromString(request.budgetId()),
+                UserIdWrapper.newFromString(request.userId()),
+                request.title(),
+                request.amount(),
+                request.expenseType(),
+                request.description()
         );
         AdminExpenseResponseDto response = AdminExpenseResponseDto.fromDomain(newExpense);
         return ResponseEntity.created(URI.create("/expenses/" + response.expenseId()))
                              .body(response);
     }
+
 
     @GetMapping("/{rawexpenseid}")
     ResponseEntity<AdminExpenseResponseDto> getSingleExpense(
@@ -107,20 +111,22 @@ public class AdminExpenseController {
                 ExpenseIdWrapper.newOf(UUID.fromString(request.expenseId())),
                 request.title(),
                 request.amount(),
-                Optional.ofNullable(request.expenseType())
+                Optional.ofNullable(request.expenseType()),
+                Optional.ofNullable(request.description())
         );
         return ResponseEntity.ok(AdminExpenseResponseDto.fromDomain(updatedExpense));
     }
 
     @PatchMapping()
-    ResponseEntity<AdminExpenseResponseDto> updateExpenseField(
+    ResponseEntity<AdminExpenseResponseDto> patchExpenseField(
             @RequestBody @Valid PatchExpenseRequest request
     ) {
         return ResponseEntity.ok(AdminExpenseResponseDto.fromDomain(adminExpenseService.patchExpenseContent(
                 ExpenseIdWrapper.newOf(UUID.fromString(request.expenseId())),
                 Optional.ofNullable(request.title()),
                 Optional.ofNullable(request.amount()),
-                Optional.ofNullable(request.expenseType())
+                Optional.ofNullable(request.expenseType()),
+                Optional.ofNullable(request.description())
         )));
     }
 

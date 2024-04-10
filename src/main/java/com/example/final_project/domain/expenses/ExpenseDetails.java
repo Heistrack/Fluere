@@ -8,12 +8,14 @@ public record ExpenseDetails(
         String title,
         BigDecimal amount,
         TreeMap<Integer, LocalDateTime> historyOfChanges,
-        ExpenseType expenseType
+        ExpenseType expenseType,
+        String description
 ) {
     public static ExpenseDetails newOf(String title, BigDecimal amount,
                                        TreeMap<Integer, LocalDateTime> historyOfChanges,
-                                       ExpenseType expenseType
+                                       ExpenseType expenseType,
+                                       String description
     ) {
-        return new ExpenseDetails(title, amount, historyOfChanges, expenseType);
+        return new ExpenseDetails(title, amount, historyOfChanges, expenseType, description);
     }
 }

@@ -9,8 +9,12 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 public interface ExpensesService {
-    Expense registerNewExpense(String title, BigDecimal amount, BudgetIdWrapper budgetId, Authentication authentication,
-                               ExpenseType expenseType
+    Expense registerNewExpense(String title,
+                               BigDecimal amount,
+                               BudgetIdWrapper budgetId,
+                               Authentication authentication,
+                               ExpenseType expenseType,
+                               String description
     );
 
     Expense getExpenseById(ExpenseIdWrapper expenseId, Authentication authentication);
@@ -19,16 +23,20 @@ public interface ExpensesService {
 
     Page<Expense> getAllByPage(Authentication authentication, Pageable pageable);
 
-    Expense updateExpenseById(ExpenseIdWrapper expenseId, String title, BigDecimal amount,
+    Expense updateExpenseById(ExpenseIdWrapper expenseId,
+                              String title,
+                              BigDecimal amount,
                               Authentication authentication,
-                              Optional<ExpenseType> typeOfExpense
+                              Optional<ExpenseType> typeOfExpense,
+                              Optional<String> description
     );
 
     Expense patchExpenseContent(ExpenseIdWrapper expenseId,
                                 Optional<String> title,
                                 Optional<BigDecimal> amount,
                                 Authentication authentication,
-                                Optional<ExpenseType> typeOfExpense
+                                Optional<ExpenseType> typeOfExpense,
+                                Optional<String> description
     );
 
     void deleteExpenseById(ExpenseIdWrapper expenseId, Authentication authentication);

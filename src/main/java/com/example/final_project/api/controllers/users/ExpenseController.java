@@ -38,7 +38,8 @@ public class ExpenseController {
         Expense newExpense = expensesService.registerNewExpense(request.title(), request.amount(),
                                                                 BudgetIdWrapper.newFromString(request.budgetId()),
                                                                 authentication,
-                                                                request.expenseType()
+                                                                request.expenseType(),
+                                                                request.description()
         );
         ExpenseResponseDto response = ExpenseResponseDto.fromDomain(newExpense);
         return ResponseEntity.created(URI.create("/expenses/" + response.expenseId()))
@@ -89,7 +90,7 @@ public class ExpenseController {
     }
 
     @PatchMapping()
-    ResponseEntity<ExpenseResponseDto> updateExpenseField(
+    ResponseEntity<ExpenseResponseDto> patchExpenseField(
             @RequestBody @Valid PatchExpenseRequest request,
             Authentication authentication
     ) {
@@ -98,7 +99,8 @@ public class ExpenseController {
                 Optional.ofNullable(request.title()),
                 Optional.ofNullable(request.amount()),
                 authentication,
-                Optional.ofNullable(request.expenseType())
+                Optional.ofNullable(request.expenseType()),
+                Optional.ofNullable(request.description())
         )));
     }
 
@@ -112,7 +114,8 @@ public class ExpenseController {
                 request.title(),
                 request.amount(),
                 authentication,
-                Optional.ofNullable(request.expenseType())
+                Optional.ofNullable(request.expenseType()),
+                Optional.ofNullable(request.description())
         );
         return ResponseEntity.ok(ExpenseResponseDto.fromDomain(updatedExpense));
     }

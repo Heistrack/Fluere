@@ -19,6 +19,8 @@ public record RegisterBudgetRequest(
         BudgetType budgetType,
         @NotNull(message = "Budget's max single expense can not be null.")
         @Positive(message = "Budget's max single expense can not be negative or zero.")
-        BigDecimal maxSingleExpense
+        BigDecimal maxSingleExpense,
+        @Size(max = 8000, message = "The budget's description can not be more 8.000 characters.")
+        String description
 ) {
 }

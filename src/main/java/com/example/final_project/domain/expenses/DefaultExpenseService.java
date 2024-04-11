@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.TreeMap;
 import java.util.function.Supplier;
 
 @Service
@@ -86,15 +88,21 @@ public class DefaultExpenseService implements ExpensesService {
         if (noParamChangeCheck(oldExpense, Optional.of(title), Optional.of(amount), expenseType, description)) {
             return oldExpense;
         }
+        if (!title.equals(oldExpense.expenseDetails().title())) {
+            title = duplicateExpenseTitleCheck(title, oldExpense.budgetId());
+        }
+        if (!amount.equals(oldExpense.expenseDetails().amount())) {
+            validationExpenseAmount(amount, oldExpense.budgetId());
+        }
 
-        Map<String, Object> validatedValues = validationForNewExpense(oldExpense, title, amount);
+        updateHistoryChange(oldExpense);
 
         return expenseRepository.save(Expense.newOf(
                 expenseId,
                 oldExpense.budgetId(),
                 userId,
                 ExpenseDetails.newOf(
-                        (String) validatedValues.get("checkedTitle"),
+                        title,
                         amount,
                         oldExpense.expenseDetails().historyOfChanges(),
                         expenseType.orElse(ExpenseType.NO_CATEGORY),
@@ -120,14 +128,15 @@ public class DefaultExpenseService implements ExpensesService {
         if (noParamChangeCheck(oldExpense, title, amount, expenseType, description)) {
             return oldExpense;
         }
+        if (title.isPresent() && !title.get().equals(oldExpense.expenseDetails().title())) {
+            title = Optional.of(duplicateExpenseTitleCheck(title.get(), oldExpense.budgetId()));
+        }
+        if (amount.isPresent() && !amount.get().equals(oldExpense.expenseDetails().amount())) {
+            validationExpenseAmount(amount.get(), oldExpense.budgetId());
+        }
 
-        Map<String, Object> stringObjectMap = validationForNewExpense(
-                oldExpense,
-                title.orElse(oldExpense.expenseDetails().title()),
-                amount.orElse(oldExpense.expenseDetails().amount())
-        );
-
-        Optional<String> checkedTitle = Optional.ofNullable((String) stringObjectMap.get("checkedTitle"));
+        updateHistoryChange(oldExpense);
+        Optional<String> checkedTitle = title;
 
         return expenseRepository.save(expenseRepository.findByExpenseIdAndUserId(expenseId, userId).map(
                 expenseFromRepository -> Expense.newOf(
@@ -145,46 +154,35 @@ public class DefaultExpenseService implements ExpensesService {
         ).orElseThrow(IllegalArgumentException::new));
     }
 
+
     @Override
     public void deleteExpenseById(ExpenseIdWrapper expenseId, Authentication authentication) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
         expenseRepository.deleteByExpenseIdAndUserId(expenseId, userId);
     }
 
-    private Map<String, Object> validationForNewExpense(Expense oldExpense,
-                                                        String title,
-                                                        BigDecimal amount
-    ) {
-        ExpenseDetails oldExpenseDetails = oldExpense.expenseDetails();
-        BudgetIdWrapper budgetId = oldExpense.budgetId();
 
-        if (!amount.equals(oldExpense.expenseDetails().amount())) {
-            validationExpenseAmount(amount, budgetId);
-        }
+    //TODO poprawić service wyydatków zwykły i admina + poprawić serwis budzetowy zwykly i admina
 
-        HashMap<String, Object> returnMap = new HashMap<>();
-
-        if (!title.equals(oldExpenseDetails.title())) {
-            returnMap.put("checkedTitle", duplicateExpenseTitleCheck(title, budgetId));
-        } else {
-            returnMap.put("checkedTitle", title);
-        }
-
-        Integer newRecordNumber = oldExpenseDetails.historyOfChanges().lastEntry().getKey() + 1;
-        oldExpenseDetails.historyOfChanges().put(newRecordNumber, LocalDateTime.now());
-
-        return returnMap;
+    private void updateHistoryChange(Expense oldExpense) {
+        TreeMap<Integer, LocalDateTime> history = oldExpense.expenseDetails().historyOfChanges();
+        Integer newRecordNumber = history.lastEntry().getKey() + 1;
+        history.put(newRecordNumber, LocalDateTime.now());
     }
 
-    private boolean noParamChangeCheck(Expense oldExpense, Optional<String> newTitle,
+
+    private boolean noParamChangeCheck(Expense oldExpense,
+                                       Optional<String> newTitle,
                                        Optional<BigDecimal> newAmount,
                                        Optional<ExpenseType> newExpenseType,
                                        Optional<String> newDescription
     ) {
-        if(newTitle.isPresent() && !oldExpense.expenseDetails().title().equals(newTitle.get())) return false;
-        if(newAmount.isPresent() && !oldExpense.expenseDetails().amount().equals(newAmount.get())) return false;
-        if(newExpenseType.isPresent() && !oldExpense.expenseDetails().expenseType().equals(newExpenseType.get())) return false;
-        if(newDescription.isPresent() && !oldExpense.expenseDetails().description().equals(newDescription.get())) return false;
+        if (newTitle.isPresent() && !oldExpense.expenseDetails().title().equals(newTitle.get())) return false;
+        if (newAmount.isPresent() && !oldExpense.expenseDetails().amount().equals(newAmount.get())) return false;
+        if (newExpenseType.isPresent() && !oldExpense.expenseDetails().expenseType().equals(newExpenseType.get()))
+            return false;
+        if (newDescription.isPresent() && !oldExpense.expenseDetails().description().equals(newDescription.get()))
+            return false;
 
         return true;
     }

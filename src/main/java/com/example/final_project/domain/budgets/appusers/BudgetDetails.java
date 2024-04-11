@@ -11,7 +11,8 @@ public record BudgetDetails(
         BigDecimal limit,
         BudgetType budgetType,
         BigDecimal maxSingleExpense,
-        TreeMap<Integer, LocalDateTime> historyOfChanges
+        TreeMap<Integer, LocalDateTime> historyOfChanges,
+        String description
 ) {
     @Builder
     public BudgetDetails {
@@ -20,8 +21,9 @@ public record BudgetDetails(
     public static BudgetDetails newOf(String title, BigDecimal limit,
                                       BudgetType budgetType,
                                       BigDecimal maxSingleExpense,
-                                      TreeMap<Integer, LocalDateTime> historyOfChanges
+                                      TreeMap<Integer, LocalDateTime> historyOfChanges,
+                                      String description
     ) {
-        return new BudgetDetails(title, limit, budgetType, maxSingleExpense, historyOfChanges);
+        return new BudgetDetails(title, limit, budgetType, maxSingleExpense, historyOfChanges, description);
     }
 }

@@ -14,7 +14,8 @@ public record BudgetResponseDto(
         BigDecimal limit,
         BudgetType budgetType,
         BigDecimal maxSingleExpense,
-        TreeMap<Integer, LocalDateTime> historyOfChanges
+        TreeMap<Integer, LocalDateTime> historyOfChanges,
+        String description
 ) {
 
     public static BudgetResponseDto fromDomain(Budget budget) {
@@ -24,7 +25,8 @@ public record BudgetResponseDto(
                 budget.budgetDetails().limit(),
                 budget.budgetDetails().budgetType(),
                 budget.budgetDetails().maxSingleExpense(),
-                budget.budgetDetails().historyOfChanges()
+                budget.budgetDetails().historyOfChanges(),
+                budget.budgetDetails().description()
         );
     }
 }

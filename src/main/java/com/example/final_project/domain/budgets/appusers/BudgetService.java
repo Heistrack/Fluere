@@ -1,7 +1,6 @@
 package com.example.final_project.domain.budgets.appusers;
 
 import com.example.final_project.api.responses.budgets.BudgetStatusDTO;
-import com.example.final_project.domain.users.appusers.UserIdWrapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -12,7 +11,11 @@ import java.util.Optional;
 
 public interface BudgetService {
 
-    Budget registerNewBudget(String title, BigDecimal limit, BudgetType budgetType, BigDecimal maxSingleExpense,
+    Budget registerNewBudget(String title,
+                             BigDecimal limit,
+                             BudgetType budgetType,
+                             BigDecimal maxSingleExpense,
+                             String description,
                              Authentication authentication
     );
 
@@ -24,12 +27,21 @@ public interface BudgetService {
 
     List<Budget> getAllBudgetsByUserId(Authentication authentication);
 
-    Budget updateBudgetById(BudgetIdWrapper budgetId, String title, BigDecimal limit, BudgetType budgetType,
-                            BigDecimal maxSingleExpense, Authentication authentication
+    Budget updateBudgetById(BudgetIdWrapper budgetId,
+                            String title,
+                            BigDecimal limit,
+                            BudgetType budgetType,
+                            BigDecimal maxSingleExpense,
+                            Optional<String> description,
+                            Authentication authentication
     );
 
-    Budget patchBudgetContent(BudgetIdWrapper budgetId, Optional<String> title, Optional<BigDecimal> limit,
-                              Optional<BudgetType> typeOfBudget, Optional<BigDecimal> maxSingleExpense,
+    Budget patchBudgetContent(BudgetIdWrapper budgetId,
+                              Optional<String> title,
+                              Optional<BigDecimal> limit,
+                              Optional<BudgetType> budgetType,
+                              Optional<BigDecimal> maxSingleExpense,
+                              Optional<String> description,
                               Authentication authentication
     );
 

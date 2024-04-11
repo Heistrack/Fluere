@@ -20,7 +20,7 @@ public record PatchExpenseRequest(
         String expenseId,
         @Nullable
         ExpenseType expenseType,
-        @Size(max = 8000, message = "The description can not be more 8.000 characters.")
+        @Size(max = 8000, message = "The expense's description can not be more 8.000 characters.")
         String description
 ) {
 }

@@ -36,6 +36,7 @@ public class BudgetController {
     ) {
         Budget newBudget = budgetService.registerNewBudget(request.title(), request.limit(),
                                                            request.budgetType(), request.maxSingleExpense(),
+                                                           request.description(),
                                                            authentication
         );
 
@@ -90,6 +91,7 @@ public class BudgetController {
                 request.limit(),
                 request.budgetType(),
                 request.maxSingleExpense(),
+                Optional.ofNullable(request.description()),
                 authentication
         )));
     }
@@ -105,6 +107,7 @@ public class BudgetController {
                 Optional.ofNullable(request.limit()),
                 Optional.ofNullable(request.budgetType()),
                 Optional.ofNullable(request.maxSingleExpense()),
+                Optional.ofNullable(request.description()),
                 authentication
         )));
     }

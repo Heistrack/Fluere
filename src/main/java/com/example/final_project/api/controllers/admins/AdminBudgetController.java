@@ -11,7 +11,6 @@ import com.example.final_project.domain.budgets.appusers.BudgetIdWrapper;
 import com.example.final_project.domain.users.appusers.UserIdWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -35,9 +34,10 @@ public class AdminBudgetController {
     ResponseEntity<BudgetResponseDto> registerNewBudget(
             @RequestBody @Valid AdminRegisterBudgetRequest request
     ) {
-        Budget newBudget = adminBudgetService.registerNewBudget(request.title(), request.limit(),
+        Budget newBudget = adminBudgetService.registerNewBudget(UserIdWrapper.newFromString(request.userId()),
+                                                                request.title(), request.limit(),
                                                                 request.budgetType(), request.maxSingleExpense(),
-                                                                UserIdWrapper.newFromString(request.userId())
+                                                                request.description()
         );
         BudgetResponseDto budgetResponseDto = BudgetResponseDto.fromDomain(newBudget);
         return ResponseEntity.created(URI.create("/expenses/" + budgetResponseDto.budgetId().toString()))
@@ -107,7 +107,8 @@ public class AdminBudgetController {
                 request.title(),
                 request.limit(),
                 request.budgetType(),
-                request.maxSingleExpense()
+                request.maxSingleExpense(),
+                Optional.ofNullable(request.description())
         )));
     }
 
@@ -120,7 +121,8 @@ public class AdminBudgetController {
                 Optional.ofNullable(request.title()),
                 Optional.ofNullable(request.limit()),
                 Optional.ofNullable(request.budgetType()),
-                Optional.ofNullable(request.maxSingleExpense())
+                Optional.ofNullable(request.maxSingleExpense()),
+                Optional.ofNullable(request.description())
         )));
     }
 

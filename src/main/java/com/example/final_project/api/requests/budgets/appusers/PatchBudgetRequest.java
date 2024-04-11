@@ -9,6 +9,8 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 public record PatchBudgetRequest(
+        @NotBlank(message = "Budget's ID can not be null or empty.")
+        String budgetId,
         @Size(min = 3, message = "Title can not be shorter than 3 characters")
         @Size(max = 200, message = "Title can not be longer than 200 characters")
         String title,
@@ -18,7 +20,7 @@ public record PatchBudgetRequest(
         BudgetType budgetType,
         @Positive(message = "Budget's max single expense can not be negative or zero.")
         BigDecimal maxSingleExpense,
-        @NotBlank(message = "Budget's ID can not be null or empty.")
-        String budgetId
+        @Size(max = 8000, message = "The budget's description can not be more 8.000 characters.")
+        String description
 ) {
 }

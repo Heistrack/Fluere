@@ -161,9 +161,6 @@ public class DefaultExpenseService implements ExpensesService {
         expenseRepository.deleteByExpenseIdAndUserId(expenseId, userId);
     }
 
-
-    //TODO poprawić service wyydatków zwykły i admina + poprawić serwis budzetowy zwykly i admina
-
     private void updateHistoryChange(Expense oldExpense) {
         TreeMap<Integer, LocalDateTime> history = oldExpense.expenseDetails().historyOfChanges();
         Integer newRecordNumber = history.lastEntry().getKey() + 1;

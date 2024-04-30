@@ -2,9 +2,6 @@ dev:
   username: "dev"
   password: "dev"
 ---
-jwt:
-  key: "${JWT_KEY}"
----
 logging:
   level:
     org:
@@ -17,3 +14,4 @@ logging:
 admin:
   key:
     value: "${ADMIN_KEY_VALUE}"
+---

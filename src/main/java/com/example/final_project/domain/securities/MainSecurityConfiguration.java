@@ -45,7 +45,6 @@ class MainSecurityConfiguration {
                    .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                    .addFilterBefore(securityExceptionHandler, LogoutFilter.class)
                    .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
-                   //FIXME add redirection in form login to start page after successful login
                    .build();
     }
 }

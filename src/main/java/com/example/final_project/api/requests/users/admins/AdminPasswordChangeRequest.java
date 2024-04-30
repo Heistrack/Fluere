@@ -11,4 +11,5 @@ public record AdminPasswordChangeRequest(
         @Size(min = 1, max = 64, message = "Password can not be shorter than 8 and longer than 64 characters.")
         String newPassword
 ) {
+
 }

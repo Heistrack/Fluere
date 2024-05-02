@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -37,8 +38,10 @@ public class AdminBudgetController {
         Budget newBudget = adminBudgetService.registerNewBudget(UserIdWrapper.newFromString(request.userId()),
                                                                 request.title(), request.limit(),
                                                                 request.budgetType(), request.maxSingleExpense(),
+                                                                request.budgetStart(), request.budgetEnd(),
                                                                 request.description()
         );
+
         BudgetResponseDto budgetResponseDto = BudgetResponseDto.fromDomain(newBudget);
         return ResponseEntity.created(URI.create("/expenses/" + budgetResponseDto.budgetId().toString()))
                              .body(budgetResponseDto);
@@ -108,7 +111,9 @@ public class AdminBudgetController {
                 request.limit(),
                 request.budgetType(),
                 request.maxSingleExpense(),
-                Optional.ofNullable(request.description())
+                request.budgetStart(),
+                request.budgetEnd(),
+                request.description()
         )));
     }
 
@@ -122,6 +127,8 @@ public class AdminBudgetController {
                 Optional.ofNullable(request.limit()),
                 Optional.ofNullable(request.budgetType()),
                 Optional.ofNullable(request.maxSingleExpense()),
+                Optional.ofNullable(request.budgetStart()),
+                Optional.ofNullable(request.budgetEnd()),
                 Optional.ofNullable(request.description())
         )));
     }

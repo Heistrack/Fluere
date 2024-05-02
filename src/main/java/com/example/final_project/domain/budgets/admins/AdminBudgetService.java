@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,6 +21,8 @@ public interface AdminBudgetService {
                              BigDecimal limit,
                              BudgetType budgetType,
                              BigDecimal maxSingleExpense,
+                             LocalDate budgetStart,
+                             LocalDate budgetEnd,
                              String description
 
     );
@@ -34,21 +37,24 @@ public interface AdminBudgetService {
 
     List<Budget> getAllBudgetsByUserId(UserIdWrapper userId);
 
-    Budget patchBudgetContent(BudgetIdWrapper budgetId,
-                              Optional<String> title,
-                              Optional<BigDecimal> limit,
-                              Optional<BudgetType> budgetType,
-                              Optional<BigDecimal> maxSingleExpense,
-                              Optional<String> description
-
-    );
-
     Budget updateBudgetById(BudgetIdWrapper budgetId,
                             String title,
                             BigDecimal limit,
                             BudgetType budgetType,
                             BigDecimal maxSingleExpense,
-                            Optional<String> description
+                            LocalDate budgetStart,
+                            LocalDate budgetEnd,
+                            String description
+    );
+
+    Budget patchBudgetContent(BudgetIdWrapper budgetId,
+                              Optional<String> title,
+                              Optional<BigDecimal> limit,
+                              Optional<BudgetType> budgetType,
+                              Optional<BigDecimal> maxSingleExpense,
+                              Optional<LocalDate> budgetStart,
+                              Optional<LocalDate> budgetEnd,
+                              Optional<String> description
     );
 
     void deleteBudgetByBudgetId(BudgetIdWrapper budgetId);

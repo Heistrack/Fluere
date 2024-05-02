@@ -6,7 +6,7 @@ import com.example.final_project.api.requests.users.appusers.PasswordChangeReque
 import com.example.final_project.api.requests.users.appusers.RegisterUserRequest;
 import com.example.final_project.api.responses.authentications.RegisterResponseDTO;
 import com.example.final_project.domain.budgets.appusers.Budget;
-import com.example.final_project.domain.budgets.appusers.BudgetService;
+import com.example.final_project.domain.budgets.appusers.service.BudgetService;
 import com.example.final_project.domain.securities.jwt.JwtService;
 import com.example.final_project.domain.securities.jwtauth.AuthenticationService;
 import com.example.final_project.domain.users.appusers.exceptions.UnableToCreateException;

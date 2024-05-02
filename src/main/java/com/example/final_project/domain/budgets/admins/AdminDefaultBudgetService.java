@@ -1,10 +1,7 @@
 package com.example.final_project.domain.budgets.admins;
 
 import com.example.final_project.api.responses.budgets.BudgetStatusDTO;
-import com.example.final_project.domain.budgets.appusers.Budget;
-import com.example.final_project.domain.budgets.appusers.BudgetDetails;
-import com.example.final_project.domain.budgets.appusers.BudgetIdWrapper;
-import com.example.final_project.domain.budgets.appusers.BudgetType;
+import com.example.final_project.domain.budgets.appusers.*;
 import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.expenses.ExpenseDetails;
 import com.example.final_project.domain.users.appusers.UserIdWrapper;
@@ -17,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Supplier;
@@ -30,9 +28,13 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
 
     @Override
     public Budget registerNewBudget(UserIdWrapper userId, String title, BigDecimal limit,
-                                    BudgetType budgetType, BigDecimal maxSingleExpense, String description
+                                    BudgetType budgetType, BigDecimal maxSingleExpense,
+                                    LocalDate budgetStart,
+                                    LocalDate budgetEnd,
+                                    String description
     ) {
         String checkedTitle = duplicateBudgetTitleCheck(title, userId);
+        BudgetPeriod budgetPeriod = getBudgetPeriod(budgetStart, budgetEnd);
 
         TreeMap<Integer, LocalDateTime> historyOfChange = new TreeMap<>();
         historyOfChange.put(1, LocalDateTime.now());
@@ -47,6 +49,7 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
                 budgetType,
                 maxSingleExpense,
                 historyOfChange,
+                budgetPeriod,
                 description == null ? "" : description
         ));
         return budgetRepository.save(budget);
@@ -102,6 +105,8 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
                                      Optional<BigDecimal> limit,
                                      Optional<BudgetType> budgetType,
                                      Optional<BigDecimal> maxSingleExpense,
+                                     Optional<LocalDate> budgetStart,
+                                     Optional<LocalDate> budgetEnd,
                                      Optional<String> description
     ) {
         Budget oldBudget = budgetRepository.findById(budgetId)
@@ -109,7 +114,12 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
                                                    "Can't update budget, because it doesn't exist"));
         UserIdWrapper userId = oldBudget.userId();
 
-        if (noParamChangeCheck(oldBudget, title, limit, budgetType, maxSingleExpense, description)) {
+        BudgetPeriod budgetPeriod = getBudgetPeriod(budgetStart.orElse(oldBudget.budgetDetails().budgetPeriod()
+                                                                                .getStartTime()),
+                                                    budgetEnd.orElse(oldBudget.budgetDetails().budgetPeriod()
+                                                                              .getEndTime()));
+
+        if (noParamChangeCheck(oldBudget, title, limit, budgetType, maxSingleExpense, budgetPeriod, description)) {
             return oldBudget;
         }
         if (title.isPresent() && !title.get().equals(oldBudget.budgetDetails().title())) {
@@ -136,6 +146,7 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
                                 checkedMaxSingleExpense.orElseGet(
                                         () -> budgetFromRepository.budgetDetails().maxSingleExpense()),
                                 oldBudget.budgetDetails().historyOfChanges(),
+                                budgetPeriod,
                                 description.orElseGet(() -> budgetFromRepository.budgetDetails().description())
 
                         )
@@ -144,15 +155,17 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
 
     @Override
     public Budget updateBudgetById(BudgetIdWrapper budgetId, String title, BigDecimal limit, BudgetType budgetType,
-                                   BigDecimal maxSingleExpense, Optional<String> description
+                                   BigDecimal maxSingleExpense, LocalDate budgetStart,
+                                   LocalDate budgetEnd, String description
     ) {
         Budget oldBudget = budgetRepository.findById(budgetId)
                                            .orElseThrow(() -> new NoSuchElementException(
                                                    "Can't update budget, because it doesn't exist"));
         UserIdWrapper userId = oldBudget.userId();
 
+        BudgetPeriod budgetPeriod = getBudgetPeriod(budgetStart, budgetEnd);
         if (noParamChangeCheck(oldBudget, Optional.of(title), Optional.of(limit), Optional.of(budgetType),
-                               Optional.of(maxSingleExpense), description
+                               Optional.of(maxSingleExpense), budgetPeriod, Optional.ofNullable(description)
         )) {
             return oldBudget;
         }
@@ -174,7 +187,8 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
                         budgetType,
                         maxSingleExpense,
                         oldBudget.budgetDetails().historyOfChanges(),
-                        description.orElse("")
+                        budgetPeriod,
+                        description == null ? "" : description
                 )
         ));
     }
@@ -196,15 +210,19 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
                                        Optional<BigDecimal> newLimit,
                                        Optional<BudgetType> newBudgetType,
                                        Optional<BigDecimal> newMaxSingleExpense,
+                                       BudgetPeriod newBudgetPeriod,
                                        Optional<String> newDescription
     ) {
-        if (newTitle.isPresent() && !oldBudget.budgetDetails().title().equals(newTitle.get())) return false;
-        if (newLimit.isPresent() && !oldBudget.budgetDetails().limit().equals(newLimit.get())) return false;
-        if (newBudgetType.isPresent() && !oldBudget.budgetDetails().budgetType().equals(newBudgetType.get()))
+        BudgetDetails oldBudgetDetails = oldBudget.budgetDetails();
+        if (newTitle.isPresent() && !oldBudgetDetails.title().equals(newTitle.get())) return false;
+        if (newLimit.isPresent() && !oldBudgetDetails.limit().equals(newLimit.get())) return false;
+        if (newBudgetType.isPresent() && !oldBudgetDetails.budgetType().equals(newBudgetType.get()))
             return false;
-        if (newMaxSingleExpense.isPresent() && !oldBudget.budgetDetails().maxSingleExpense()
-                                                         .equals(newMaxSingleExpense.get())) return false;
-        if (newDescription.isPresent() && !oldBudget.budgetDetails().description().equals(newDescription.get()))
+        if (newMaxSingleExpense.isPresent() && !oldBudgetDetails.maxSingleExpense().equals(newMaxSingleExpense.get()))
+            return false;
+        if (newDescription.isPresent() && !oldBudgetDetails.description().equals(newDescription.get()))
+            return false;
+        if (!oldBudgetDetails.budgetPeriod().equals(newBudgetPeriod))
             return false;
 
         return true;
@@ -222,6 +240,19 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
             return stringBuilder.toString();
         }
         return title;
+    }
+
+    private BudgetPeriod getBudgetPeriod(LocalDate startTime, LocalDate endTime) {
+        if (startTime == null) {
+            LocalDate now = LocalDate.now();
+            startTime = LocalDate.of(now.getYear(), now.getMonth().getValue(), 1);
+        }
+        if (endTime == null) {
+            LocalDate now = LocalDate.now();
+            endTime = LocalDate.of(now.getYear(), now.getMonth().getValue(), now.lengthOfMonth());
+        }
+
+        return BudgetPeriod.newOf(startTime, endTime);
     }
 
     private BigDecimal totalExpensesValueSum(Budget budget) {

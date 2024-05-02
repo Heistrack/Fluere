@@ -1,11 +1,16 @@
-package com.example.final_project.domain.budgets.appusers;
+package com.example.final_project.domain.budgets.appusers.service;
 
 import com.example.final_project.api.responses.budgets.BudgetStatusDTO;
+import com.example.final_project.domain.budgets.appusers.Budget;
+import com.example.final_project.domain.budgets.appusers.BudgetIdWrapper;
+import com.example.final_project.domain.budgets.appusers.BudgetType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,13 +20,15 @@ public interface BudgetService {
                              BigDecimal limit,
                              BudgetType budgetType,
                              BigDecimal maxSingleExpense,
+                             LocalDate budgetStart,
+                             LocalDate budgetEnd,
                              String description,
                              Authentication authentication
     );
 
     Budget getBudgetById(BudgetIdWrapper budgetId, Authentication authentication);
 
-    Page<Budget> getAllByPage( Pageable pageable, Authentication authentication);
+    Page<Budget> getAllByPage(Pageable pageable, Authentication authentication);
 
     BudgetStatusDTO getBudgetStatus(BudgetIdWrapper budgetId, Authentication authentication);
 
@@ -32,7 +39,9 @@ public interface BudgetService {
                             BigDecimal limit,
                             BudgetType budgetType,
                             BigDecimal maxSingleExpense,
-                            Optional<String> description,
+                            LocalDate budgetStart,
+                            LocalDate budgetEnd,
+                            String description,
                             Authentication authentication
     );
 
@@ -41,6 +50,8 @@ public interface BudgetService {
                               Optional<BigDecimal> limit,
                               Optional<BudgetType> budgetType,
                               Optional<BigDecimal> maxSingleExpense,
+                              Optional<LocalDate> budgetStart,
+                              Optional<LocalDate> budgetEnd,
                               Optional<String> description,
                               Authentication authentication
     );

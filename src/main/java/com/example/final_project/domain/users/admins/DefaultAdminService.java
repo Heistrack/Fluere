@@ -107,7 +107,7 @@ public class DefaultAdminService implements AdminService {
 
         if (!(passwordEncoder.matches(confirmation.password(), admin.password()) &&
                 confirmation.login().equals(admin.login()))) {
-            throw new BadCredentialsException("Login or password are incorrect");
+            throw new BadCredentialsException("Incorrect login or password");
         }
 
         List<UUID> allUsers = new ArrayList<>(
@@ -123,9 +123,11 @@ public class DefaultAdminService implements AdminService {
         AppUser admin = userRepository.findByLogin("admin").orElseThrow();
         if (!(passwordEncoder.matches(confirmation.password(), admin.password()) &&
                 confirmation.login().equals(admin.login()))) {
-            throw new BadCredentialsException("Login or password are incorrect");
+            throw new BadCredentialsException("Incorrect login or password");
         }
         userRepository.findAll().stream().map(AppUser::userId).forEach(this::userRemoveProcedure);
+        userRepository.deleteById(admin.userId());
+        registerAdminUser();
     }
 
     @Override

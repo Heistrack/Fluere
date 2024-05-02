@@ -5,8 +5,10 @@ import com.mongodb.lang.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public record PatchBudgetRequest(
         @NotBlank(message = "Budget's ID can not be null or empty.")
@@ -20,6 +22,12 @@ public record PatchBudgetRequest(
         BudgetType budgetType,
         @Positive(message = "Budget's max single expense can not be negative or zero.")
         BigDecimal maxSingleExpense,
+        @Nullable
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate budgetStart,
+        @Nullable
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate budgetEnd,
         @Size(max = 8000, message = "The budget's description can not be more than 8.000 characters.")
         String description
 ) {

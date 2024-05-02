@@ -2,6 +2,7 @@ package com.example.final_project.api.responses.budgets;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.TreeMap;
 import java.util.UUID;
 
 public record BudgetStatusDTO(
@@ -11,9 +12,9 @@ public record BudgetStatusDTO(
         BigDecimal amountLeft,
         BigDecimal budgetFullFillPercent,
         String typeOfBudget,
-        BigDecimal limit,
+        String limit,
         BigDecimal maxSingleExpense,
-        LocalDateTime timestamp
+        TreeMap<Integer,LocalDateTime> historyOfChanges
 ) {
     public static BudgetStatusDTO newOf(UUID budgetId,
                                         Integer totalExpensesNumber,
@@ -21,9 +22,9 @@ public record BudgetStatusDTO(
                                         BigDecimal amountLeft,
                                         BigDecimal budgetFullFillPercent,
                                         String typeOfBudget,
-                                        BigDecimal limit,
+                                        String limit,
                                         BigDecimal maxSingleExpense,
-                                        LocalDateTime timestamp
+                                        TreeMap<Integer,LocalDateTime> timestamp
     ) {
         return new BudgetStatusDTO(
                 budgetId,

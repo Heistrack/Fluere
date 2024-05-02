@@ -1,7 +1,7 @@
 package com.example.final_project.api.responses.budgets;
 
-import com.example.final_project.domain.budgets.Budget;
-import com.example.final_project.domain.budgets.BudgetType;
+import com.example.final_project.domain.budgets.appusers.Budget;
+import com.example.final_project.domain.budgets.appusers.BudgetType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,7 +14,8 @@ public record BudgetResponseDto(
         BigDecimal limit,
         BudgetType budgetType,
         BigDecimal maxSingleExpense,
-        TreeMap<Integer, LocalDateTime> historyOfChanges
+        TreeMap<Integer, LocalDateTime> historyOfChanges,
+        String description
 ) {
 
     public static BudgetResponseDto fromDomain(Budget budget) {
@@ -24,7 +25,8 @@ public record BudgetResponseDto(
                 budget.budgetDetails().limit(),
                 budget.budgetDetails().budgetType(),
                 budget.budgetDetails().maxSingleExpense(),
-                budget.budgetDetails().historyOfChanges()
+                budget.budgetDetails().historyOfChanges(),
+                budget.budgetDetails().description()
         );
     }
 }

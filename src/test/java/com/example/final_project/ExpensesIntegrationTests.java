@@ -1,8 +1,8 @@
 //package com.example.final_project;
 //
-//import com.example.final_project.api.requests.expenses.RegisterExpenseRequest;
-//import com.example.final_project.api.requests.expenses.UpdateExpenseRequest;
-//import com.example.final_project.api.responses.expenses.ExpenseResponseDto;
+//import com.example.final_project.api.requests.expenses.appusers.RegisterExpenseRequest;
+//import com.example.final_project.api.requests.expenses.appusers.UpdateExpenseRequest;
+//import com.example.final_project.api.responses.expenses.appusers.ExpenseResponseDto;
 //import com.example.final_project.domain.expenses.ExpenseId;
 //import com.example.final_project.domain.expenses.ExpensesService;
 //import com.example.final_project.infrastructure.exprepo.ExpenseRepository;

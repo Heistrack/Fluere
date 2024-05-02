@@ -1,9 +1,9 @@
 package com.example.final_project.infrastructure.exprepo;
 
-import com.example.final_project.domain.budgets.BudgetIdWrapper;
+import com.example.final_project.domain.budgets.appusers.BudgetIdWrapper;
 import com.example.final_project.domain.expenses.Expense;
 import com.example.final_project.domain.expenses.ExpenseIdWrapper;
-import com.example.final_project.domain.users.UserIdWrapper;
+import com.example.final_project.domain.users.appusers.UserIdWrapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -25,6 +25,8 @@ public interface ExpenseRepository extends MongoRepository<Expense, ExpenseIdWra
     List<Expense> findAllByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId);
 
     Page<Expense> findAllByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId, Pageable pageable);
+
+    Page<Expense> findAllByBudgetId(BudgetIdWrapper budgetId, Pageable pageable);
 
     void deleteAllByBudgetId(BudgetIdWrapper budgetId);
 

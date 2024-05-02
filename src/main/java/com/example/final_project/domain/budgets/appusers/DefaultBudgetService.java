@@ -84,7 +84,7 @@ public class DefaultBudgetService implements BudgetService {
     }
 
     @Override
-    public Page<Budget> getAllByPage(Authentication authentication, Pageable pageable) {
+    public Page<Budget> getAllByPage(Pageable pageable, Authentication authentication) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
         Page<Budget> allByUserId = budgetRepository.findAllByUserId(userId, pageable);
 

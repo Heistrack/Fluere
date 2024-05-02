@@ -69,14 +69,14 @@ public class BudgetController {
             Authentication authentication
     ) {
         return ResponseEntity.ok(budgetService
-                                         .getAllByPage(authentication, PageRequest.of(
+                                         .getAllByPage(PageRequest.of(
                                                  page,
                                                  size,
                                                  Sort.by(
                                                          sortDirection,
                                                          sortBy
                                                  )
-                                         ))
+                                         ), authentication)
                                          .map(BudgetResponseDto::fromDomain));
     }
 

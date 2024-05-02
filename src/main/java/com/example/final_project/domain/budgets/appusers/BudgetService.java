@@ -21,7 +21,7 @@ public interface BudgetService {
 
     Budget getBudgetById(BudgetIdWrapper budgetId, Authentication authentication);
 
-    Page<Budget> getAllByPage(Authentication authentication, Pageable pageable);
+    Page<Budget> getAllByPage( Pageable pageable, Authentication authentication);
 
     BudgetStatusDTO getBudgetStatus(BudgetIdWrapper budgetId, Authentication authentication);
 

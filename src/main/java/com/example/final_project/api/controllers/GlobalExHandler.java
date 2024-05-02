@@ -162,7 +162,7 @@ public class GlobalExHandler {
     ResponseEntity<ErrorDTO> handleOtherException(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                              .body(ErrorDTO.newOf(
-                                     "ex.getMessage()" + ex.getMessage() + ex.getClass(),
+                                     ex.getMessage() + ex.getClass(),
                                      HttpStatus.INTERNAL_SERVER_ERROR,
                                      LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
                              ));

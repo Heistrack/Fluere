@@ -109,7 +109,7 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
                                                    "Can't update budget, because it doesn't exist"));
         UserIdWrapper userId = oldBudget.userId();
 
-        if (noParamChangeCheck(oldBudget, title, limit, budgetType, maxSingleExpense)) {
+        if (noParamChangeCheck(oldBudget, title, limit, budgetType, maxSingleExpense, description)) {
             return oldBudget;
         }
         if (title.isPresent() && !title.get().equals(oldBudget.budgetDetails().title())) {
@@ -152,7 +152,7 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
         UserIdWrapper userId = oldBudget.userId();
 
         if (noParamChangeCheck(oldBudget, Optional.of(title), Optional.of(limit), Optional.of(budgetType),
-                               Optional.of(maxSingleExpense)
+                               Optional.of(maxSingleExpense), description
         )) {
             return oldBudget;
         }
@@ -191,20 +191,23 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
         history.put(newRecordNumber, LocalDateTime.now());
     }
 
-    private boolean noParamChangeCheck(Budget oldBudget, Optional<String> title,
-                                       Optional<BigDecimal> limit,
-                                       Optional<BudgetType> budgetType,
-                                       Optional<BigDecimal> maxSingleExpense
+    private boolean noParamChangeCheck(Budget oldBudget,
+                                       Optional<String> newTitle,
+                                       Optional<BigDecimal> newLimit,
+                                       Optional<BudgetType> newBudgetType,
+                                       Optional<BigDecimal> newMaxSingleExpense,
+                                       Optional<String> newDescription
     ) {
-        String newTitle = title.orElse(oldBudget.budgetDetails().title());
-        BigDecimal newLimit = limit.orElse(oldBudget.budgetDetails().limit());
-        BudgetType newBudgetType = budgetType.orElse(oldBudget.budgetDetails().budgetType());
-        BigDecimal newMaxSingleExpense = maxSingleExpense.orElse(oldBudget.budgetDetails().maxSingleExpense());
+        if (newTitle.isPresent() && !oldBudget.budgetDetails().title().equals(newTitle.get())) return false;
+        if (newLimit.isPresent() && !oldBudget.budgetDetails().limit().equals(newLimit.get())) return false;
+        if (newBudgetType.isPresent() && !oldBudget.budgetDetails().budgetType().equals(newBudgetType.get()))
+            return false;
+        if (newMaxSingleExpense.isPresent() && !oldBudget.budgetDetails().maxSingleExpense()
+                                                         .equals(newMaxSingleExpense.get())) return false;
+        if (newDescription.isPresent() && !oldBudget.budgetDetails().description().equals(newDescription.get()))
+            return false;
 
-        return Objects.equals(oldBudget.budgetDetails().title(), newTitle) &&
-                Objects.equals(oldBudget.budgetDetails().limit(), newLimit) &&
-                Objects.equals(oldBudget.budgetDetails().budgetType(), newBudgetType) &&
-                Objects.equals(oldBudget.budgetDetails().maxSingleExpense(), newMaxSingleExpense);
+        return true;
     }
 
     private String duplicateBudgetTitleCheck(String title, UserIdWrapper userId) {

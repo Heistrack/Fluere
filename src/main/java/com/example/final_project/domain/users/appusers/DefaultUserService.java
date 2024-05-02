@@ -1,5 +1,6 @@
 package com.example.final_project.domain.users.appusers;
 
+import com.example.final_project.api.requests.users.appusers.AuthenticationRequest;
 import com.example.final_project.api.requests.users.appusers.EmailChangeRequest;
 import com.example.final_project.api.requests.users.appusers.PasswordChangeRequest;
 import com.example.final_project.api.requests.users.appusers.RegisterUserRequest;
@@ -42,10 +43,18 @@ public class DefaultUserService implements UserService {
     }
 
     @Override
-    public void removeOwnAccount(Authentication authentication) {
+    public void removeOwnAccount(AuthenticationRequest confirmation,
+                                 Authentication authentication
+    ) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
         Optional<AppUser> user = userRepository.findById(userId);
-        if (user.isPresent() && !user.get().login().equals("admin")) {
+
+        if (!(user.isPresent() && passwordEncoder.matches(confirmation.password(), user.get().password()) &&
+                confirmation.login().equals(user.get().login()))) {
+            throw new BadCredentialsException("Login or password are incorrect");
+        }
+
+        if (!user.get().login().equals("admin")) {
             userRemoveProcedure(authentication);
         }
     }
@@ -74,7 +83,7 @@ public class DefaultUserService implements UserService {
         AppUser currentUser = userCheckBeforeModifyProperties(request.oldPassword(), authentication);
 
         if (!request.firstPasswordAttempt().equals(request.secondPasswordAttempt()))
-            throw new BadCredentialsException("Passwords are not the same");
+            throw new BadCredentialsException("Passwords are not the same.");
 
         return userRepository.save(AppUser.builder()
                                           .userId(currentUser.userId())

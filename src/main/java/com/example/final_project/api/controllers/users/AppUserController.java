@@ -66,9 +66,10 @@ public class AppUserController {
 
     @DeleteMapping()
     ResponseEntity<AppUser> removeOneselfAccount(
+            @RequestBody AuthenticationRequest confirmation,
             Authentication authentication
     ) {
-        userService.removeOwnAccount(authentication);
+        userService.removeOwnAccount(confirmation, authentication);
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,5 +1,6 @@
 package com.example.final_project.domain.users.appusers;
 
+import com.example.final_project.api.requests.users.appusers.AuthenticationRequest;
 import com.example.final_project.api.requests.users.appusers.EmailChangeRequest;
 import com.example.final_project.api.requests.users.appusers.PasswordChangeRequest;
 import com.example.final_project.api.requests.users.appusers.RegisterUserRequest;
@@ -11,7 +12,7 @@ public interface UserService {
 
     AppUser getUserDetailsFromToken(Authentication authentication);
 
-    void removeOwnAccount(Authentication authentication);
+    void removeOwnAccount(AuthenticationRequest confirmation, Authentication authentication);
 
     AppUser patchEmail(EmailChangeRequest request, Authentication authentication);
 

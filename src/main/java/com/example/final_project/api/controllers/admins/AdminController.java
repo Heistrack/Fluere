@@ -2,6 +2,7 @@ package com.example.final_project.api.controllers.admins;
 
 import com.example.final_project.api.requests.users.admins.AdminEmailChangeRequest;
 import com.example.final_project.api.requests.users.admins.AdminPasswordChangeRequest;
+import com.example.final_project.api.requests.users.appusers.AuthenticationRequest;
 import com.example.final_project.api.requests.users.appusers.RegisterUserRequest;
 import com.example.final_project.api.responses.users.admins.AdminOperationResponse;
 import com.example.final_project.api.responses.users.appusers.UserDetailsResponse;
@@ -108,14 +109,18 @@ public class AdminController {
     }
 
     @DeleteMapping("/purge-them")
-    ResponseEntity<UserDetailsResponse> removeAllExceptAdmin() {
-        adminService.removeAllUsers();
+    ResponseEntity<UserDetailsResponse> removeAllExceptAdmin(
+            @RequestBody AuthenticationRequest confirmation
+    ) {
+        adminService.removeAllUsers(confirmation);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/purge-them-all")
-    ResponseEntity<UserDetailsResponse> removeAll() {
-        adminService.databaseRestart();
+    ResponseEntity<UserDetailsResponse> removeAll(
+            @RequestBody AuthenticationRequest confirmation
+    ) {
+        adminService.databaseRestart(confirmation);
         return ResponseEntity.noContent().build();
     }
 }

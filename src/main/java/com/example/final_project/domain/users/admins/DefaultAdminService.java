@@ -2,6 +2,7 @@ package com.example.final_project.domain.users.admins;
 
 import com.example.final_project.api.requests.users.admins.AdminEmailChangeRequest;
 import com.example.final_project.api.requests.users.admins.AdminPasswordChangeRequest;
+import com.example.final_project.api.requests.users.appusers.AuthenticationRequest;
 import com.example.final_project.api.requests.users.appusers.RegisterUserRequest;
 import com.example.final_project.api.responses.users.admins.AdminOperationResponse;
 import com.example.final_project.domain.budgets.admins.AdminBudgetService;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -99,8 +101,14 @@ public class DefaultAdminService implements AdminService {
 
 
     @Override
-    public void removeAllUsers() {
-        UUID adminId = userRepository.findByLogin("admin").map(AppUser::userId).map(UserIdWrapper::id).orElseThrow();
+    public void removeAllUsers(AuthenticationRequest confirmation) {
+        AppUser admin = userRepository.findByLogin("admin").orElseThrow();
+        UUID adminId = admin.userId().id();
+
+        if (!(passwordEncoder.matches(confirmation.password(), admin.password()) &&
+                confirmation.login().equals(admin.login()))) {
+            throw new BadCredentialsException("Login or password are incorrect");
+        }
 
         List<UUID> allUsers = new ArrayList<>(
                 userRepository.findAll().stream().map(AppUser::userId).map(UserIdWrapper::id).toList());
@@ -111,7 +119,12 @@ public class DefaultAdminService implements AdminService {
     }
 
     @Override
-    public void databaseRestart() {
+    public void databaseRestart(AuthenticationRequest confirmation) {
+        AppUser admin = userRepository.findByLogin("admin").orElseThrow();
+        if (!(passwordEncoder.matches(confirmation.password(), admin.password()) &&
+                confirmation.login().equals(admin.login()))) {
+            throw new BadCredentialsException("Login or password are incorrect");
+        }
         userRepository.findAll().stream().map(AppUser::userId).forEach(this::userRemoveProcedure);
     }
 

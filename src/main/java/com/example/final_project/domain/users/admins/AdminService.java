@@ -2,6 +2,7 @@ package com.example.final_project.domain.users.admins;
 
 import com.example.final_project.api.requests.users.admins.AdminEmailChangeRequest;
 import com.example.final_project.api.requests.users.admins.AdminPasswordChangeRequest;
+import com.example.final_project.api.requests.users.appusers.AuthenticationRequest;
 import com.example.final_project.api.requests.users.appusers.RegisterUserRequest;
 import com.example.final_project.api.responses.users.admins.AdminOperationResponse;
 import com.example.final_project.domain.users.appusers.AppUser;
@@ -29,9 +30,9 @@ public interface AdminService {
 
     void removeUserByEmail(String email);
 
-    void removeAllUsers();
+    void removeAllUsers(AuthenticationRequest confirmation);
 
-    void databaseRestart();
+    void databaseRestart(AuthenticationRequest confirmation);
 
     AppUser patchUserEmail(AdminEmailChangeRequest request);
 

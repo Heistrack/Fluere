@@ -10,7 +10,6 @@ import org.springframework.security.core.Authentication;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,9 +29,11 @@ public interface BudgetService {
 
     Page<Budget> getAllByPage(Pageable pageable, Authentication authentication);
 
+    List<Budget> getAllBudgetsByUserId(Authentication authentication);
+
     BudgetStatusDTO getBudgetStatus(BudgetIdWrapper budgetId, Authentication authentication);
 
-    List<Budget> getAllBudgetsByUserId(Authentication authentication);
+    Page<BudgetStatusDTO> getBudgetsStatuses(Pageable pageable, Authentication authentication);
 
     Budget updateBudgetById(BudgetIdWrapper budgetId,
                             String title,

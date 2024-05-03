@@ -114,8 +114,8 @@
 ////        //given
 ////        ExpenseId expenseId = new ExpenseId("1");
 ////        String title = "first";
-////        BigDecimal amountNow = BigDecimal.valueOf(1);
-////        Expense expense = new Expense(expenseId, title, amountNow);
+////        BigDecimal totalMoneySpent = BigDecimal.valueOf(1);
+////        Expense expense = new Expense(expenseId, title, totalMoneySpent);
 ////
 ////        ResponseEntity<ExpenseResponseDto> response = testRestTemplate.exchange("/expenses{1}", HttpMethod.DELETE, null, )
 //

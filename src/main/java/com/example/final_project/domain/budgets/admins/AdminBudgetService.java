@@ -29,13 +29,15 @@ public interface AdminBudgetService {
 
     Budget getBudgetById(BudgetIdWrapper budgetId);
 
-    BudgetStatusDTO getBudgetStatus(BudgetIdWrapper budgetId);
+    Page<Budget> getAllBudgetsByPage(Pageable pageable);
 
     Page<Budget> getAllBudgetsByUserIdAndPage(UUID userId, Pageable pageable);
 
-    Page<Budget> getAllBudgetsByPage(Pageable pageable);
-
     List<Budget> getAllBudgetsByUserId(UserIdWrapper userId);
+
+    BudgetStatusDTO getBudgetStatus(BudgetIdWrapper budgetId);
+
+    Page<BudgetStatusDTO> getBudgetsStatuses(Pageable pageable, UserIdWrapper userId);
 
     Budget updateBudgetById(BudgetIdWrapper budgetId,
                             String title,

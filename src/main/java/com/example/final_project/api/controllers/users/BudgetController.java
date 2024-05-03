@@ -60,6 +60,24 @@ public class BudgetController {
         return ResponseEntity.ok(budgetService.getBudgetStatus(BudgetIdWrapper.newOf(rawBudgetId), authentication));
     }
 
+    @GetMapping("/statuses")
+    ResponseEntity<Page<BudgetStatusDTO>> getBudgetsStatusByPage(
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "25") Integer size,
+            @RequestParam(required = false, defaultValue = "budgetId") String sortBy,
+            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(budgetService.getBudgetsStatuses(PageRequest.of(
+                page,
+                size,
+                Sort.by(
+                        sortDirection,
+                        sortBy
+                )
+        ), authentication));
+    }
+
     @GetMapping
     ResponseEntity<Page<BudgetResponseDto>> getBudgetsByPage(
             @RequestParam(required = false, defaultValue = "0") Integer page,

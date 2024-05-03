@@ -31,7 +31,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/Heistrack/Fluere">
-    <img src="images/FLUERE.png" alt="Logo" width="400" height="400">
+    <img src="resources/images/FLUERE.png" alt="Logo" width="400" height="400">
   </a>
 
 <h3 align="center">Fluere</h3>
@@ -95,7 +95,7 @@ which include maximum one-off expense and total maximum value to spend. The app 
 
 ### Built With
 
-* <a href="https://www.java.com"> <img src="images/JAVA-CA3132.svg" alt="Logo" width="77" height="28">
+* <a href="https://www.java.com"> <img src="resources/images/JAVA-CA3132.svg" alt="Logo" width="77" height="28">
 * [![Maven][Maven.js]][Maven-url]
 * [![Spring][Spring.js]][Spring-url]
 * [![Mongo][Mongo.js]][Mongo-url]
@@ -161,7 +161,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 [github-url-jg]: https://github.com/Heistrack
 [postman-shield]: https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=Postman&logoColor=white  
 [postman-url]:  https://www.postman.com/grey-escape-417892/workspace/fluere/collection/26441753-0b973e4a-1882-457d-9497-5dab2a271168?action=share&creator=26441753
-[product-screenshot]: images/screenshot.png
+[product-screenshot]: resources/images/screenshot.png
 [Swagger.js]: https://img.shields.io/badge/swagger-%2385EA2D.svg?&style=for-the-badge&logo=swagger&logoColor=black
 [Swagger-url]: https://validator.swagger.io/
 [Maven.js]: https://img.shields.io/badge/Maven-ECE7ED?style=for-the-badge&logo=apachemaven&logoColor=CB2136

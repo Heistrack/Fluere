@@ -37,8 +37,10 @@ public class AdminBudgetController {
         Budget newBudget = adminBudgetService.registerNewBudget(UserIdWrapper.newFromString(request.userId()),
                                                                 request.title(), request.limit(),
                                                                 request.budgetType(), request.maxSingleExpense(),
+                                                                request.budgetStart(), request.budgetEnd(),
                                                                 request.description()
         );
+
         BudgetResponseDto budgetResponseDto = BudgetResponseDto.fromDomain(newBudget);
         return ResponseEntity.created(URI.create("/expenses/" + budgetResponseDto.budgetId().toString()))
                              .body(budgetResponseDto);
@@ -57,6 +59,24 @@ public class AdminBudgetController {
     ) {
         return ResponseEntity.ok(
                 adminBudgetService.getBudgetStatus(BudgetIdWrapper.newOf(rawBudgetId)));
+    }
+
+    @GetMapping("/statuses/{rawuserid}")
+    ResponseEntity<Page<BudgetStatusDTO>> getBudgetsStatusByPage(
+            @PathVariable(name = "rawuserid") UUID rawUserId,
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "25") Integer size,
+            @RequestParam(required = false, defaultValue = "budgetId") String sortBy,
+            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
+    ) {
+        return ResponseEntity.ok(adminBudgetService.getBudgetsStatuses(PageRequest.of(
+                page,
+                size,
+                Sort.by(
+                        sortDirection,
+                        sortBy
+                )
+        ), UserIdWrapper.newOf(rawUserId)));
     }
 
     @GetMapping("/users/{rawuserid}")
@@ -108,7 +128,9 @@ public class AdminBudgetController {
                 request.limit(),
                 request.budgetType(),
                 request.maxSingleExpense(),
-                Optional.ofNullable(request.description())
+                request.budgetStart(),
+                request.budgetEnd(),
+                request.description()
         )));
     }
 
@@ -122,6 +144,8 @@ public class AdminBudgetController {
                 Optional.ofNullable(request.limit()),
                 Optional.ofNullable(request.budgetType()),
                 Optional.ofNullable(request.maxSingleExpense()),
+                Optional.ofNullable(request.budgetStart()),
+                Optional.ofNullable(request.budgetEnd()),
                 Optional.ofNullable(request.description())
         )));
     }

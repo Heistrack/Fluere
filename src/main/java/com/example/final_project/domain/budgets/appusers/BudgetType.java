@@ -4,10 +4,11 @@ import lombok.Getter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+
 @Getter
 @ToString
 public enum BudgetType {
-    HALF("Budget can be exceeded to half of total id", BigDecimal.valueOf(1.5)),
+    HALF("Budget can be exceeded by half of total limit", BigDecimal.valueOf(1.5)),
     FULL("Budget can be exceeded with no limit", BigDecimal.valueOf(-1)),
     STRICT("Budget can't be exceeded", BigDecimal.valueOf(1));
 

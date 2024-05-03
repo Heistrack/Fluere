@@ -7,7 +7,7 @@ import com.example.final_project.api.responses.budgets.BudgetResponseDto;
 import com.example.final_project.api.responses.budgets.BudgetStatusDTO;
 import com.example.final_project.domain.budgets.appusers.Budget;
 import com.example.final_project.domain.budgets.appusers.BudgetIdWrapper;
-import com.example.final_project.domain.budgets.appusers.BudgetService;
+import com.example.final_project.domain.budgets.appusers.service.BudgetService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,8 +36,8 @@ public class BudgetController {
     ) {
         Budget newBudget = budgetService.registerNewBudget(request.title(), request.limit(),
                                                            request.budgetType(), request.maxSingleExpense(),
-                                                           request.description(),
-                                                           authentication
+                                                           request.budgetStart(), request.budgetEnd(),
+                                                           request.description(), authentication
         );
 
         BudgetResponseDto budgetResponseDto = BudgetResponseDto.fromDomain(newBudget);
@@ -58,6 +58,24 @@ public class BudgetController {
                                                     Authentication authentication
     ) {
         return ResponseEntity.ok(budgetService.getBudgetStatus(BudgetIdWrapper.newOf(rawBudgetId), authentication));
+    }
+
+    @GetMapping("/statuses")
+    ResponseEntity<Page<BudgetStatusDTO>> getBudgetsStatusByPage(
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "25") Integer size,
+            @RequestParam(required = false, defaultValue = "budgetId") String sortBy,
+            @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(budgetService.getBudgetsStatuses(PageRequest.of(
+                page,
+                size,
+                Sort.by(
+                        sortDirection,
+                        sortBy
+                )
+        ), authentication));
     }
 
     @GetMapping
@@ -91,7 +109,9 @@ public class BudgetController {
                 request.limit(),
                 request.budgetType(),
                 request.maxSingleExpense(),
-                Optional.ofNullable(request.description()),
+                request.budgetStart(),
+                request.budgetEnd(),
+                request.description(),
                 authentication
         )));
     }
@@ -107,6 +127,8 @@ public class BudgetController {
                 Optional.ofNullable(request.limit()),
                 Optional.ofNullable(request.budgetType()),
                 Optional.ofNullable(request.maxSingleExpense()),
+                Optional.ofNullable(request.budgetStart()),
+                Optional.ofNullable(request.budgetEnd()),
                 Optional.ofNullable(request.description()),
                 authentication
         )));

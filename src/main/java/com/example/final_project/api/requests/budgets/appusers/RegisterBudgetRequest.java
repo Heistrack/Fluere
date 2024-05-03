@@ -1,13 +1,15 @@
 package com.example.final_project.api.requests.budgets.appusers;
 
 import com.example.final_project.domain.budgets.appusers.BudgetType;
-import com.example.final_project.domain.users.appusers.UserIdWrapper;
+import com.mongodb.lang.Nullable;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-import org.hibernate.validator.constraints.Length;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record RegisterBudgetRequest(
         @Size(min = 3, max = 200, message = "Title can not be shorter than 3 and longer than 200 characters.")
@@ -20,6 +22,12 @@ public record RegisterBudgetRequest(
         @NotNull(message = "Budget's max single expense can not be null.")
         @Positive(message = "Budget's max single expense can not be negative or zero.")
         BigDecimal maxSingleExpense,
+        @Nullable
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate budgetStart,
+        @Nullable
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate budgetEnd,
         @Size(max = 8000, message = "The budget's description can not be more than 8.000 characters.")
         String description
 ) {

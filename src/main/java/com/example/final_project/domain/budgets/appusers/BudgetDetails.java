@@ -4,6 +4,7 @@ import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.TreeMap;
 
 public record BudgetDetails(
@@ -12,6 +13,7 @@ public record BudgetDetails(
         BudgetType budgetType,
         BigDecimal maxSingleExpense,
         TreeMap<Integer, LocalDateTime> historyOfChanges,
+        BudgetPeriod budgetPeriod,
         String description
 ) {
     @Builder
@@ -22,8 +24,9 @@ public record BudgetDetails(
                                       BudgetType budgetType,
                                       BigDecimal maxSingleExpense,
                                       TreeMap<Integer, LocalDateTime> historyOfChanges,
+                                      BudgetPeriod budgetPeriod,
                                       String description
     ) {
-        return new BudgetDetails(title, limit, budgetType, maxSingleExpense, historyOfChanges, description);
+        return new BudgetDetails(title, limit, budgetType, maxSingleExpense, historyOfChanges, budgetPeriod, description);
     }
 }

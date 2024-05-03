@@ -1,6 +1,6 @@
 package com.example.final_project;
 
-import com.example.final_project.domain.securities.jwtauth.MongoService;
+import com.example.final_project.security.service.MongoService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;

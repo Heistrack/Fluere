@@ -1,13 +1,14 @@
 package com.example.final_project.budget.service.user;
 
-import com.example.final_project.budget.response.BudgetStatusDTO;
-import com.example.final_project.budget.service.*;
-import com.example.final_project.expense.service.Expense;
-import com.example.final_project.expense.service.ExpenseType;
-import com.example.final_project.security.service.JwtService;
-import com.example.final_project.userentity.service.UserIdWrapper;
+import com.example.final_project.budget.model.*;
 import com.example.final_project.budget.repository.BudgetRepository;
+import com.example.final_project.budget.response.BudgetStatusDTO;
+import com.example.final_project.expense.model.Expense;
+import com.example.final_project.expense.model.ExpenseType;
 import com.example.final_project.expense.repository.ExpenseRepository;
+import com.example.final_project.security.service.JwtService;
+import com.example.final_project.userentity.model.UserIdWrapper;
+import com.nimbusds.jose.util.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -28,12 +29,15 @@ public class DefaultBudgetService implements BudgetService {
     private final BudgetRepository budgetRepository;
     private final ExpenseRepository expenseRepository;
     private final Supplier<BudgetIdWrapper> budgetIdSupplier;
-    private final BudgetServiceInnerLogic budgetServiceLogic;
+    private final BudgetServiceLogic budgetServiceLogic;
     private final JwtService jwtService;
+    //TODO implement expenseMap for budgets to show how much money user saved already
 
     @Override
     public Budget registerNewBudget(String title, BigDecimal limit, BudgetType budgetType,
-                                    BigDecimal maxSingleExpense, LocalDate budgetStart,
+                                    BigDecimal maxSingleExpense,
+                                    MKTCurrency defaultCurrency,
+                                    LocalDate budgetStart,
                                     LocalDate budgetEnd,
                                     String description,
                                     Authentication authentication
@@ -45,7 +49,7 @@ public class DefaultBudgetService implements BudgetService {
 
         TreeMap<Integer, LocalDateTime> historyOfChange = new TreeMap<>();
         historyOfChange.put(1, LocalDateTime.now());
-
+        //TODO check how limit is made depending from TypeOfBudget
         if (maxSingleExpense.compareTo(limit) > 0) {
             maxSingleExpense = limit;
         }
@@ -54,6 +58,8 @@ public class DefaultBudgetService implements BudgetService {
                 budgetIdSupplier.get(), userId,
                 BudgetDetails.newOf(checkedTitle, limit,
                                     budgetType, maxSingleExpense,
+                                    defaultCurrency,
+                                    ExpenseSet.newOf(defaultCurrency),
                                     historyOfChange,
                                     budgetPeriod,
                                     description == null ? "" : description
@@ -115,6 +121,18 @@ public class DefaultBudgetService implements BudgetService {
     }
 
     @Override
+    public Pair<UUID, BigDecimal> getAllMoneySaved(Authentication authentication) {
+        //TODO add getAllMoneySaved in the next commit
+//        List<Budget> allBudgetsByUserId = getAllBudgetsByUserId(authentication);
+//        LocalDate now = LocalDate.now();
+//        allBudgetsByUserId.stream().filter(budget -> budget.budgetDetails()
+//                                                           .budgetPeriod()
+//                                                           .getEndTime()
+//                                                           .isBefore(now)).map(budget -> budget.budgetDetails().)
+        return null;
+    }
+
+    @Override
     public Page<Budget> getAllByPage(Pageable pageable, Authentication authentication) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
         Page<Budget> allByUserId = budgetRepository.findAllByUserId(userId, pageable);
@@ -130,66 +148,12 @@ public class DefaultBudgetService implements BudgetService {
     }
 
     @Override
-    public Budget patchBudgetContent(BudgetIdWrapper budgetId,
-                                     Optional<String> title,
-                                     Optional<BigDecimal> limit,
-                                     Optional<BudgetType> budgetType,
-                                     Optional<BigDecimal> maxSingleExpense,
-                                     Optional<LocalDate> budgetStart,
-                                     Optional<LocalDate> budgetEnd,
-                                     Optional<String> description,
-                                     Authentication authentication
-    ) {
-        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-        Budget oldBudget = budgetRepository.findByBudgetIdAndUserId(budgetId, userId)
-                                           .orElseThrow(() -> new NoSuchElementException(
-                                                   "Can't update budget, because it doesn't exist"));
-        BudgetPeriod budgetPeriod = budgetServiceLogic.getBudgetPeriod(
-                budgetStart.orElse(oldBudget.budgetDetails().budgetPeriod()
-                                            .getStartTime()),
-                budgetEnd.orElse(oldBudget.budgetDetails().budgetPeriod()
-                                          .getEndTime())
-        );
-        if (budgetServiceLogic.noParamChangeCheck(oldBudget, title, limit, budgetType,
-                                                  maxSingleExpense, budgetPeriod, description
-        )) {
-            return oldBudget;
-        }
-        if (title.isPresent() && !title.get().equals(oldBudget.budgetDetails().title())) {
-            title = Optional.of(budgetServiceLogic.duplicateBudgetTitleCheck(title.get(), userId));
-        }
-        if (maxSingleExpense.isPresent() && maxSingleExpense.get().compareTo(
-                limit.orElse(oldBudget.budgetDetails().limit())) > 0) {
-            maxSingleExpense = limit;
-        }
-        budgetServiceLogic.updateHistoryChange(oldBudget);
-
-        Optional<BigDecimal> checkedMaxSingleExpense = maxSingleExpense;
-        Optional<String> checkedTitle = title;
-
-        return budgetRepository.save(budgetRepository.findByBudgetIdAndUserId(budgetId, userId).map(
-                budgetFromRepository -> Budget.newOf(
-                        budgetId,
-                        userId,
-                        BudgetDetails.newOf(
-                                checkedTitle.orElseGet(() -> budgetFromRepository.budgetDetails().title()),
-                                limit.orElseGet(() -> budgetFromRepository.budgetDetails().limit()),
-                                budgetType.orElseGet(() -> budgetFromRepository.budgetDetails().budgetType()),
-                                checkedMaxSingleExpense.orElseGet(
-                                        () -> budgetFromRepository.budgetDetails().maxSingleExpense()),
-                                oldBudget.budgetDetails().historyOfChanges(),
-                                budgetPeriod,
-                                description.orElseGet(() -> budgetFromRepository.budgetDetails().description())
-                        )
-                )).orElseThrow(IllegalArgumentException::new));
-    }
-
-    @Override
     public Budget updateBudgetById(BudgetIdWrapper budgetId,
                                    String title,
                                    BigDecimal limit,
                                    BudgetType budgetType,
                                    BigDecimal maxSingleExpense,
+                                   MKTCurrency defaultCurrency,
                                    LocalDate budgetStart,
                                    LocalDate budgetEnd,
                                    String description,
@@ -203,6 +167,7 @@ public class DefaultBudgetService implements BudgetService {
         BudgetPeriod budgetPeriod = budgetServiceLogic.getBudgetPeriod(budgetStart, budgetEnd);
         if (budgetServiceLogic.noParamChangeCheck(oldBudget, Optional.of(title), Optional.of(limit),
                                                   Optional.of(budgetType), Optional.of(maxSingleExpense),
+                                                  Optional.of(defaultCurrency),
                                                   budgetPeriod,
                                                   Optional.ofNullable(description)
         )) {
@@ -225,11 +190,73 @@ public class DefaultBudgetService implements BudgetService {
                         limit,
                         budgetType,
                         maxSingleExpense,
+                        defaultCurrency,
+                        ExpenseSet.newOf(defaultCurrency),
                         oldBudget.budgetDetails().historyOfChanges(),
                         budgetPeriod,
                         description == null ? "" : description
                 )
         ));
+    }
+
+    @Override
+    public Budget patchBudgetContent(BudgetIdWrapper budgetId,
+                                     Optional<String> title,
+                                     Optional<BigDecimal> limit,
+                                     Optional<BudgetType> budgetType,
+                                     Optional<BigDecimal> maxSingleExpense,
+                                     Optional<MKTCurrency> defaultCurrency,
+                                     Optional<LocalDate> budgetStart,
+                                     Optional<LocalDate> budgetEnd,
+                                     Optional<String> description,
+                                     Authentication authentication
+    ) {
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
+        Budget oldBudget = budgetRepository.findByBudgetIdAndUserId(budgetId, userId)
+                                           .orElseThrow(() -> new NoSuchElementException(
+                                                   "Can't update budget, because it doesn't exist"));
+        BudgetPeriod budgetPeriod = budgetServiceLogic.getBudgetPeriod(
+                budgetStart.orElse(oldBudget.budgetDetails().budgetPeriod()
+                                            .getStartTime()),
+                budgetEnd.orElse(oldBudget.budgetDetails().budgetPeriod()
+                                          .getEndTime())
+        );
+        if (budgetServiceLogic.noParamChangeCheck(oldBudget, title, limit, budgetType,
+                                                  maxSingleExpense, defaultCurrency, budgetPeriod, description
+        )) {
+            return oldBudget;
+        }
+        if (title.isPresent() && !title.get().equals(oldBudget.budgetDetails().title())) {
+            title = Optional.of(budgetServiceLogic.duplicateBudgetTitleCheck(title.get(), userId));
+        }
+        if (maxSingleExpense.isPresent() && maxSingleExpense.get().compareTo(
+                limit.orElse(oldBudget.budgetDetails().limit())) > 0) {
+            maxSingleExpense = limit;
+        }
+        //TODO this method is too long check in admin also how to make it shorter
+
+        Optional<BigDecimal> checkedMaxSingleExpense = maxSingleExpense;
+        Optional<String> checkedTitle = title;
+
+        budgetServiceLogic.updateHistoryChange(oldBudget);
+
+        return budgetRepository.save(budgetRepository.findByBudgetIdAndUserId(budgetId, userId).map(
+                budgetFromRepository -> Budget.newOf(
+                        budgetId,
+                        userId,
+                        BudgetDetails.newOf(
+                                checkedTitle.orElseGet(() -> budgetFromRepository.budgetDetails().title()),
+                                limit.orElseGet(() -> budgetFromRepository.budgetDetails().limit()),
+                                budgetType.orElseGet(() -> budgetFromRepository.budgetDetails().budgetType()),
+                                checkedMaxSingleExpense.orElseGet(
+                                        () -> budgetFromRepository.budgetDetails().maxSingleExpense()),
+                                defaultCurrency.orElseGet(() -> budgetFromRepository.budgetDetails().defaultCurrency()),
+                                oldBudget.budgetDetails().expenseSet(),
+                                oldBudget.budgetDetails().historyOfChanges(),
+                                budgetPeriod,
+                                description.orElseGet(() -> budgetFromRepository.budgetDetails().description())
+                        )
+                )).orElseThrow(IllegalArgumentException::new));
     }
 
     @Override

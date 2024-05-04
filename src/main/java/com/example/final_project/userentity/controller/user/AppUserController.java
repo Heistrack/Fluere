@@ -8,7 +8,7 @@ import com.example.final_project.security.response.AuthResponseDTO;
 import com.example.final_project.security.response.RegisterResponseDTO;
 import com.example.final_project.userentity.response.appuser.UserDetailsResponse;
 import com.example.final_project.security.service.AuthenticationService;
-import com.example.final_project.userentity.service.AppUser;
+import com.example.final_project.userentity.model.AppUser;
 import com.example.final_project.userentity.service.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

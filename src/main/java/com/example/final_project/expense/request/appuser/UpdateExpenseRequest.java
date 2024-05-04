@@ -1,6 +1,7 @@
 package com.example.final_project.expense.request.appuser;
 
-import com.example.final_project.expense.service.ExpenseType;
+import com.example.final_project.budget.model.MKTCurrency;
+import com.example.final_project.expense.model.ExpenseType;
 import com.mongodb.lang.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,6 +16,8 @@ public record UpdateExpenseRequest(
         @NotNull(message = "Expense's amount can not be null.")
         @Positive(message = "Expense's amount can not be negative or zero.")
         BigDecimal amount,
+        @NotNull(message = "Expense must have defined currency")
+        MKTCurrency currency,
         @NotBlank(message = "Expense's ID can not be null or blank.")
         String expenseId,
         @Nullable

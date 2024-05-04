@@ -6,9 +6,9 @@ import com.example.final_project.budget.request.appuser.UpdateBudgetRequest;
 import com.example.final_project.budget.response.BudgetResponseDto;
 import com.example.final_project.budget.response.BudgetStatusDTO;
 import com.example.final_project.budget.service.admin.AdminBudgetService;
-import com.example.final_project.budget.service.Budget;
-import com.example.final_project.budget.service.BudgetIdWrapper;
-import com.example.final_project.userentity.service.UserIdWrapper;
+import com.example.final_project.budget.model.Budget;
+import com.example.final_project.budget.model.BudgetIdWrapper;
+import com.example.final_project.userentity.model.UserIdWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -37,6 +37,7 @@ public class AdminBudgetController {
         Budget newBudget = adminBudgetService.registerNewBudget(UserIdWrapper.newFromString(request.userId()),
                                                                 request.title(), request.limit(),
                                                                 request.budgetType(), request.maxSingleExpense(),
+                                                                request.defaultCurrency(),
                                                                 request.budgetStart(), request.budgetEnd(),
                                                                 request.description()
         );
@@ -128,6 +129,7 @@ public class AdminBudgetController {
                 request.limit(),
                 request.budgetType(),
                 request.maxSingleExpense(),
+                request.defaultCurrency(),
                 request.budgetStart(),
                 request.budgetEnd(),
                 request.description()
@@ -144,6 +146,7 @@ public class AdminBudgetController {
                 Optional.ofNullable(request.limit()),
                 Optional.ofNullable(request.budgetType()),
                 Optional.ofNullable(request.maxSingleExpense()),
+                Optional.ofNullable(request.defaultCurrency()),
                 Optional.ofNullable(request.budgetStart()),
                 Optional.ofNullable(request.budgetEnd()),
                 Optional.ofNullable(request.description())

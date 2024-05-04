@@ -4,7 +4,7 @@
 //import com.example.final_project.api.requests.expenses.appusers.UpdateExpenseRequest;
 //import com.example.final_project.api.responses.expenses.appusers.ExpenseResponseDto;
 //import com.example.final_project.domain.expenses.ExpenseId;
-//import com.example.final_project.expense.service.user.ExpensesService;
+//import com.example.final_project.expense.service.user.ExpenseService;
 //import com.example.final_project.expense.repository.ExpenseRepository;
 //import org.junit.jupiter.api.AfterEach;
 //import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +39,7 @@
 //    private WebTestClient webClient;
 //
 //    @Autowired
-//    private ExpensesService expensesService;
+//    private ExpenseService expensesService;
 //
 //
 //    @BeforeEach

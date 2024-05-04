@@ -5,7 +5,7 @@ import com.example.final_project.userentity.request.appuser.EmailChangeRequest;
 import com.example.final_project.userentity.request.appuser.PasswordChangeRequest;
 import com.example.final_project.userentity.request.appuser.RegisterUserRequest;
 import com.example.final_project.security.response.RegisterResponseDTO;
-import com.example.final_project.userentity.service.AppUser;
+import com.example.final_project.userentity.model.AppUser;
 import org.springframework.security.core.Authentication;
 
 public interface UserService {

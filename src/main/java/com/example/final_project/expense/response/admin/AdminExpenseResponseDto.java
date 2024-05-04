@@ -1,7 +1,8 @@
 package com.example.final_project.expense.response.admin;
 
-import com.example.final_project.expense.service.Expense;
-import com.example.final_project.expense.service.ExpenseType;
+import com.example.final_project.budget.model.MKTCurrency;
+import com.example.final_project.expense.model.Expense;
+import com.example.final_project.expense.model.ExpenseType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,6 +13,7 @@ public record AdminExpenseResponseDto(
         String expenseId,
         String budgetId,
         BigDecimal amount,
+        MKTCurrency currency,
         TreeMap<Integer, LocalDateTime> historyOfChanges,
         ExpenseType expenseType,
         String description
@@ -22,6 +24,7 @@ public record AdminExpenseResponseDto(
                 expense.expenseId().id().toString(),
                 expense.budgetId().id().toString(),
                 expense.expenseDetails().amount(),
+                expense.expenseDetails().currency(),
                 expense.expenseDetails().historyOfChanges(),
                 expense.expenseDetails().expenseType(),
                 expense.expenseDetails().description()

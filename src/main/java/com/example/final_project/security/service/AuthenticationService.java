@@ -4,9 +4,9 @@ import com.example.final_project.userentity.request.appuser.AuthenticationReques
 import com.example.final_project.userentity.request.appuser.RegisterUserRequest;
 import com.example.final_project.security.response.AuthResponseDTO;
 import com.example.final_project.security.response.RegisterResponseDTO;
-import com.example.final_project.userentity.service.AppUser;
-import com.example.final_project.userentity.service.Role;
-import com.example.final_project.userentity.service.UserIdWrapper;
+import com.example.final_project.userentity.model.AppUser;
+import com.example.final_project.userentity.model.Role;
+import com.example.final_project.userentity.model.UserIdWrapper;
 import com.example.final_project.userentity.repository.AppUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;

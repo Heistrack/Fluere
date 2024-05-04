@@ -1,8 +1,8 @@
 package com.example.final_project.budget.repository;
 
-import com.example.final_project.budget.service.Budget;
-import com.example.final_project.budget.service.BudgetIdWrapper;
-import com.example.final_project.userentity.service.UserIdWrapper;
+import com.example.final_project.budget.model.Budget;
+import com.example.final_project.budget.model.BudgetIdWrapper;
+import com.example.final_project.userentity.model.UserIdWrapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;

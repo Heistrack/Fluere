@@ -5,7 +5,7 @@ import com.example.final_project.userentity.request.admin.AdminPasswordChangeReq
 import com.example.final_project.userentity.request.appuser.AuthenticationRequest;
 import com.example.final_project.userentity.request.appuser.RegisterUserRequest;
 import com.example.final_project.userentity.response.admin.AdminOperationResponse;
-import com.example.final_project.userentity.service.AppUser;
+import com.example.final_project.userentity.model.AppUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

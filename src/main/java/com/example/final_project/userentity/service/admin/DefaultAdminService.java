@@ -5,11 +5,11 @@ import com.example.final_project.userentity.request.admin.AdminPasswordChangeReq
 import com.example.final_project.userentity.request.appuser.AuthenticationRequest;
 import com.example.final_project.userentity.request.appuser.RegisterUserRequest;
 import com.example.final_project.userentity.response.admin.AdminOperationResponse;
-import com.example.final_project.userentity.service.AppUser;
-import com.example.final_project.userentity.service.Role;
-import com.example.final_project.userentity.service.UserIdWrapper;
+import com.example.final_project.userentity.model.AppUser;
+import com.example.final_project.userentity.model.Role;
+import com.example.final_project.userentity.model.UserIdWrapper;
 import com.example.final_project.budget.service.admin.AdminBudgetService;
-import com.example.final_project.budget.service.Budget;
+import com.example.final_project.budget.model.Budget;
 import com.example.final_project.security.service.JwtService;
 import com.example.final_project.security.service.AuthenticationService;
 import com.example.final_project.exception.custom.UnableToCreateException;

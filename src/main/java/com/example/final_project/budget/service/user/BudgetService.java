@@ -1,9 +1,11 @@
 package com.example.final_project.budget.service.user;
 
+import com.example.final_project.budget.model.Budget;
+import com.example.final_project.budget.model.BudgetIdWrapper;
+import com.example.final_project.budget.model.BudgetType;
+import com.example.final_project.budget.model.MKTCurrency;
 import com.example.final_project.budget.response.BudgetStatusDTO;
-import com.example.final_project.budget.service.Budget;
-import com.example.final_project.budget.service.BudgetIdWrapper;
-import com.example.final_project.budget.service.BudgetType;
+import com.nimbusds.jose.util.Pair;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -12,6 +14,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface BudgetService {
 
@@ -19,6 +22,7 @@ public interface BudgetService {
                              BigDecimal limit,
                              BudgetType budgetType,
                              BigDecimal maxSingleExpense,
+                             MKTCurrency defaultCurrency,
                              LocalDate budgetStart,
                              LocalDate budgetEnd,
                              String description,
@@ -35,11 +39,14 @@ public interface BudgetService {
 
     Page<BudgetStatusDTO> getBudgetsStatuses(Pageable pageable, Authentication authentication);
 
+    Pair<UUID, BigDecimal> getAllMoneySaved(Authentication authentication);
+
     Budget updateBudgetById(BudgetIdWrapper budgetId,
                             String title,
                             BigDecimal limit,
                             BudgetType budgetType,
                             BigDecimal maxSingleExpense,
+                            MKTCurrency defaultCurrency,
                             LocalDate budgetStart,
                             LocalDate budgetEnd,
                             String description,
@@ -51,6 +58,7 @@ public interface BudgetService {
                               Optional<BigDecimal> limit,
                               Optional<BudgetType> budgetType,
                               Optional<BigDecimal> maxSingleExpense,
+                              Optional<MKTCurrency> defaultCurrency,
                               Optional<LocalDate> budgetStart,
                               Optional<LocalDate> budgetEnd,
                               Optional<String> description,

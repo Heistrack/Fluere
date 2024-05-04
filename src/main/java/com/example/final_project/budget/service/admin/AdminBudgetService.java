@@ -1,10 +1,11 @@
 package com.example.final_project.budget.service.admin;
 
+import com.example.final_project.budget.model.MKTCurrency;
 import com.example.final_project.budget.response.BudgetStatusDTO;
-import com.example.final_project.budget.service.Budget;
-import com.example.final_project.budget.service.BudgetIdWrapper;
-import com.example.final_project.budget.service.BudgetType;
-import com.example.final_project.userentity.service.UserIdWrapper;
+import com.example.final_project.budget.model.Budget;
+import com.example.final_project.budget.model.BudgetIdWrapper;
+import com.example.final_project.budget.model.BudgetType;
+import com.example.final_project.userentity.model.UserIdWrapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -21,6 +22,7 @@ public interface AdminBudgetService {
                              BigDecimal limit,
                              BudgetType budgetType,
                              BigDecimal maxSingleExpense,
+                             MKTCurrency defaultCurrency,
                              LocalDate budgetStart,
                              LocalDate budgetEnd,
                              String description
@@ -44,6 +46,7 @@ public interface AdminBudgetService {
                             BigDecimal limit,
                             BudgetType budgetType,
                             BigDecimal maxSingleExpense,
+                            MKTCurrency defaultCurrency,
                             LocalDate budgetStart,
                             LocalDate budgetEnd,
                             String description
@@ -54,6 +57,7 @@ public interface AdminBudgetService {
                               Optional<BigDecimal> limit,
                               Optional<BudgetType> budgetType,
                               Optional<BigDecimal> maxSingleExpense,
+                              Optional<MKTCurrency> defaultCurrency,
                               Optional<LocalDate> budgetStart,
                               Optional<LocalDate> budgetEnd,
                               Optional<String> description

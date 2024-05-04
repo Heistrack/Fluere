@@ -1,6 +1,6 @@
 package com.example.final_project.userentity.response.appuser;
 
-import com.example.final_project.userentity.service.AppUser;
+import com.example.final_project.userentity.model.AppUser;
 
 import java.util.UUID;
 

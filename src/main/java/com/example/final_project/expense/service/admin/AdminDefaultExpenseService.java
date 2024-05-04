@@ -1,15 +1,16 @@
 package com.example.final_project.expense.service.admin;
 
-import com.example.final_project.budget.service.Budget;
-import com.example.final_project.budget.service.BudgetIdWrapper;
-import com.example.final_project.expense.service.Expense;
-import com.example.final_project.expense.service.ExpenseDetails;
-import com.example.final_project.expense.service.ExpenseIdWrapper;
-import com.example.final_project.expense.service.ExpenseType;
-import com.example.final_project.exception.custom.ExpenseTooBigException;
-import com.example.final_project.userentity.service.UserIdWrapper;
+import com.example.final_project.budget.model.Budget;
+import com.example.final_project.budget.model.BudgetIdWrapper;
+import com.example.final_project.budget.model.MKTCurrency;
 import com.example.final_project.budget.repository.BudgetRepository;
+import com.example.final_project.expense.model.Expense;
+import com.example.final_project.expense.model.ExpenseDetails;
+import com.example.final_project.expense.model.ExpenseIdWrapper;
+import com.example.final_project.expense.model.ExpenseType;
 import com.example.final_project.expense.repository.ExpenseRepository;
+import com.example.final_project.expense.service.user.ExpenseServiceLogic;
+import com.example.final_project.userentity.model.UserIdWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,21 +29,26 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
 
     private final ExpenseRepository expenseRepository;
     private final Supplier<ExpenseIdWrapper> expenseIdSupplier;
+    private final ExpenseServiceLogic innerServiceLogic;
     private final BudgetRepository budgetRepository;
 
     @Override
-    public Expense registerNewExpense(BudgetIdWrapper budgetId, UserIdWrapper userId, String title,
-                                      BigDecimal amount, ExpenseType expenseType, String description
+    public Expense registerNewExpense(BudgetIdWrapper budgetId, String title,
+                                      BigDecimal amount, MKTCurrency currency, ExpenseType expenseType,
+                                      String description
     ) {
-        String checkedTitle = duplicateExpenseTitleCheck(title, budgetId);
-        validationExpenseAmount(amount, budgetId);
+        String checkedTitle = innerServiceLogic.duplicateExpenseTitleCheck(title, budgetId);
+        innerServiceLogic.validationExpenseAmount(currency, amount, budgetId);
 
         TreeMap<Integer, LocalDateTime> historyOfChange = new TreeMap<>();
         historyOfChange.put(1, LocalDateTime.now());
-        budgetRepository.findById(budgetId).map(Budget::userId);
+
+        UserIdWrapper userId = budgetRepository.findById(budgetId).map(Budget::userId)
+                                               .orElseThrow(() -> new NoSuchElementException("No user found."));
 
         Expense expense = Expense.newOf(
                 expenseIdSupplier.get(), budgetId, userId, ExpenseDetails.newOf(checkedTitle, amount,
+                                                                                currency,
                                                                                 historyOfChange,
                                                                                 expenseType,
                                                                                 description == null ? "" : description
@@ -76,23 +82,31 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
             ExpenseIdWrapper expenseId,
             String title,
             BigDecimal amount,
-            Optional<ExpenseType> expenseType,
-            Optional<String> description
+            MKTCurrency currency,
+            ExpenseType expenseType,
+            String description
     ) {
         Expense oldExpense = expenseRepository.findById(expenseId).orElseThrow(
                 () -> new NoSuchElementException("Expense doesn't exist."));
 
-        if (noParamChangeCheck(oldExpense, Optional.of(title), Optional.of(amount), expenseType, description)) {
+        if (innerServiceLogic.noParamChangeCheck(oldExpense, Optional.of(title),
+                                                 Optional.of(amount),
+                                                 Optional.of(currency),
+                                                 Optional.ofNullable(expenseType),
+                                                 Optional.ofNullable(description)
+        )) {
             return oldExpense;
         }
         if (!title.equals(oldExpense.expenseDetails().title())) {
-            title = duplicateExpenseTitleCheck(title, oldExpense.budgetId());
+            title = innerServiceLogic.duplicateExpenseTitleCheck(title, oldExpense.budgetId());
         }
-        if (!amount.equals(oldExpense.expenseDetails().amount())) {
-            validationExpenseAmount(amount, oldExpense.budgetId());
+        if (!amount.equals(oldExpense.expenseDetails().amount()) || !currency.equals(
+                oldExpense.expenseDetails().currency())) {
+            innerServiceLogic.validationExpenseAmount(currency, amount, oldExpense.budgetId());
+            innerServiceLogic.balanceUpdate(currency, amount, oldExpense);
         }
 
-        updateHistoryChange(oldExpense);
+        innerServiceLogic.updateHistoryChange(oldExpense);
 
         return expenseRepository.save(Expense.newOf(
                 expenseId,
@@ -101,9 +115,10 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
                 ExpenseDetails.newOf(
                         title,
                         amount,
+                        currency,
                         oldExpense.expenseDetails().historyOfChanges(),
-                        expenseType.orElse(ExpenseType.NO_CATEGORY),
-                        description.orElse("")
+                        expenseType == null ? ExpenseType.NO_CATEGORY : expenseType,
+                        description == null ? "" : description
                 )
         ));
     }
@@ -113,6 +128,7 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
             ExpenseIdWrapper expenseId,
             Optional<String> title,
             Optional<BigDecimal> amount,
+            Optional<MKTCurrency> currency,
             Optional<ExpenseType> expenseType,
             Optional<String> description
     ) {
@@ -120,17 +136,22 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
                                               .orElseThrow(() -> new NoSuchElementException(
                                                       "There's no such expense."));
 
-        if (noParamChangeCheck(oldExpense, title, amount, expenseType, description)) {
+        if (innerServiceLogic.noParamChangeCheck(oldExpense, title, amount, currency, expenseType, description)) {
             return oldExpense;
         }
         if (title.isPresent() && !title.get().equals(oldExpense.expenseDetails().title())) {
-            title = Optional.of(duplicateExpenseTitleCheck(title.get(), oldExpense.budgetId()));
+            title = Optional.of(innerServiceLogic.duplicateExpenseTitleCheck(title.get(), oldExpense.budgetId()));
         }
-        if (amount.isPresent() && !amount.get().equals(oldExpense.expenseDetails().amount())) {
-            validationExpenseAmount(amount.get(), oldExpense.budgetId());
+        MKTCurrency checkedCurrency = currency.orElse(oldExpense.expenseDetails().currency());
+        BigDecimal checkedAmount = amount.orElse(oldExpense.expenseDetails().amount());
+
+        if (!checkedAmount.equals(oldExpense.expenseDetails().amount()) || !checkedCurrency.equals(
+                oldExpense.expenseDetails().currency())) {
+            innerServiceLogic.validationExpenseAmount(checkedCurrency, checkedAmount, oldExpense.budgetId());
+            innerServiceLogic.balanceUpdate(checkedCurrency, checkedAmount, oldExpense);
         }
 
-        updateHistoryChange(oldExpense);
+        innerServiceLogic.updateHistoryChange(oldExpense);
         Optional<String> checkedTitle = title;
 
         return expenseRepository.save(expenseRepository.findById(expenseId).map(
@@ -140,7 +161,8 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
                         oldExpense.userId(),
                         ExpenseDetails.newOf(
                                 checkedTitle.orElseGet(() -> expenseFromRepository.expenseDetails().title()),
-                                amount.orElseGet(() -> expenseFromRepository.expenseDetails().amount()),
+                                checkedAmount,
+                                checkedCurrency,
                                 oldExpense.expenseDetails().historyOfChanges(),
                                 expenseType.orElseGet(() -> expenseFromRepository.expenseDetails().expenseType()),
                                 description.orElseGet(() -> expenseFromRepository.expenseDetails().description())
@@ -152,76 +174,5 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
     @Override
     public void deleteExpenseById(ExpenseIdWrapper expenseId) {
         expenseRepository.deleteById(expenseId);
-    }
-
-    private boolean noParamChangeCheck(Expense oldExpense, Optional<String> newTitle,
-                                       Optional<BigDecimal> newAmount,
-                                       Optional<ExpenseType> newExpenseType,
-                                       Optional<String> newDescription
-    ) {
-        if (newTitle.isPresent() && !oldExpense.expenseDetails().title().equals(newTitle.get())) return false;
-        if (newAmount.isPresent() && !oldExpense.expenseDetails().amount().equals(newAmount.get())) return false;
-        if (newExpenseType.isPresent() && !oldExpense.expenseDetails().expenseType().equals(newExpenseType.get()))
-            return false;
-        if (newDescription.isPresent() && !oldExpense.expenseDetails().description().equals(newDescription.get()))
-            return false;
-
-        return true;
-    }
-
-    private void validationExpenseAmount(BigDecimal amount, BudgetIdWrapper budgetId) {
-        budgetRepository.findById(budgetId).ifPresent((budget) ->
-                                                      {
-                                                          checkBudgetLimit(amount, budget);
-                                                          singleMaxExpValidation(amount, budget);
-                                                      });
-    }
-
-    private void updateHistoryChange(Expense oldExpense) {
-        TreeMap<Integer, LocalDateTime> history = oldExpense.expenseDetails().historyOfChanges();
-        Integer newRecordNumber = history.lastEntry().getKey() + 1;
-        history.put(newRecordNumber, LocalDateTime.now());
-    }
-
-    private String duplicateExpenseTitleCheck(String title, BudgetIdWrapper budgetId) {
-        if (expenseRepository.existsByBudgetIdAndExpenseDetails_Title(budgetId, title)) {
-            long counter = 0;
-            StringBuilder stringBuilder = new StringBuilder(title);
-            while (expenseRepository.existsByBudgetIdAndExpenseDetails_Title(budgetId, stringBuilder.toString())) {
-                counter++;
-                stringBuilder = new StringBuilder(title);
-                stringBuilder.append("(").append(counter).append(")");
-            }
-            return stringBuilder.toString();
-        }
-        return title;
-    }
-
-    private void singleMaxExpValidation(BigDecimal amount, Budget budget) {
-        if (budget.budgetDetails().maxSingleExpense().compareTo(amount) < 0) {
-            throw new ExpenseTooBigException("Expense exceed single maximal expense amount in the budget!");
-        }
-    }
-
-    private void checkBudgetLimit(BigDecimal amount, Budget budget) {
-        if (budget.budgetDetails().budgetType().getValue().compareTo(BigDecimal.valueOf(0)) < 0) {
-            return;
-        }
-
-        BigDecimal totalBudgetLimit = budget.budgetDetails().limit()
-                                            .multiply(budget.budgetDetails().budgetType().getValue());
-
-        BigDecimal totalExpensesSum = expenseRepository.findAllByBudgetIdAndUserId(
-                                                               budget.budgetId(), budget.userId())
-                                                       .stream()
-                                                       .map(Expense::expenseDetails)
-                                                       .map(ExpenseDetails::amount)
-                                                       .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal amountLeft = totalBudgetLimit.subtract(totalExpensesSum);
-
-        if (amountLeft.compareTo(amount) < 0) {
-            throw new ExpenseTooBigException("Expense exceed the budget limit!");
-        }
     }
 }

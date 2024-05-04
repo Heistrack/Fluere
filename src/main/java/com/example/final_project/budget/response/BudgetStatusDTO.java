@@ -1,8 +1,8 @@
 package com.example.final_project.budget.response;
 
-import com.example.final_project.budget.service.BudgetDetails;
-import com.example.final_project.expense.service.Expense;
-import com.example.final_project.expense.service.ExpenseType;
+import com.example.final_project.budget.model.BudgetDetails;
+import com.example.final_project.expense.model.Expense;
+import com.example.final_project.expense.model.ExpenseType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

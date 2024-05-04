@@ -1,13 +1,13 @@
 package com.example.final_project.expense.controller.user;
 
+import com.example.final_project.budget.model.BudgetIdWrapper;
+import com.example.final_project.expense.model.Expense;
+import com.example.final_project.expense.model.ExpenseIdWrapper;
 import com.example.final_project.expense.request.appuser.PatchExpenseRequest;
 import com.example.final_project.expense.request.appuser.RegisterExpenseRequest;
 import com.example.final_project.expense.request.appuser.UpdateExpenseRequest;
 import com.example.final_project.expense.response.appuser.ExpenseResponseDto;
-import com.example.final_project.budget.service.BudgetIdWrapper;
-import com.example.final_project.expense.service.Expense;
-import com.example.final_project.expense.service.ExpenseIdWrapper;
-import com.example.final_project.expense.service.user.ExpensesService;
+import com.example.final_project.expense.service.user.ExpenseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,18 +28,19 @@ import static com.example.final_project.expense.controller.user.ExpenseControlle
 @RequestMapping(EXPENSES_CONTROLLER_BASE_PATH)
 public class ExpenseController {
     public static final String EXPENSES_CONTROLLER_BASE_PATH = "/api/expenses";
-    private final ExpensesService expensesService;
+    private final ExpenseService expenseService;
 
     @PostMapping
     ResponseEntity<ExpenseResponseDto> registerNewExpense(
             @RequestBody @Valid RegisterExpenseRequest request,
             Authentication authentication
     ) {
-        Expense newExpense = expensesService.registerNewExpense(request.title(), request.amount(),
-                                                                BudgetIdWrapper.newFromString(request.budgetId()),
-                                                                authentication,
-                                                                request.expenseType(),
-                                                                request.description()
+        Expense newExpense = expenseService.registerNewExpense(BudgetIdWrapper.newFromString(request.budgetId()),
+                                                               request.title(), request.amount(),
+                                                               request.currency(),
+                                                               request.expenseType(),
+                                                               request.description(),
+                                                               authentication
         );
         ExpenseResponseDto response = ExpenseResponseDto.fromDomain(newExpense);
         return ResponseEntity.created(URI.create("/expenses/" + response.expenseId()))
@@ -51,7 +52,7 @@ public class ExpenseController {
             @PathVariable(name = "expense_uuid") UUID expenseUUID,
             Authentication authentication
     ) {
-        Expense expenseById = expensesService.getExpenseById(ExpenseIdWrapper.newOf(expenseUUID), authentication);
+        Expense expenseById = expenseService.getExpenseById(ExpenseIdWrapper.newOf(expenseUUID), authentication);
         return ResponseEntity.ok(ExpenseResponseDto.fromDomain(expenseById));
     }
 
@@ -64,14 +65,13 @@ public class ExpenseController {
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
             Authentication authentication
     ) {
-        return ResponseEntity.ok(expensesService.getAllExpensesByBudgetId(
-                                                        authentication,
-                                                        BudgetIdWrapper.newOf(budgetUUID),
-                                                        PageRequest.of(page, size,
-                                                                       Sort.by(sortDirection, sortBy)
-                                                        )
-                                                )
-                                                .map(ExpenseResponseDto::fromDomain));
+        return ResponseEntity.ok(expenseService.getAllExpensesByBudgetId(
+                                                       BudgetIdWrapper.newOf(budgetUUID),
+                                                       PageRequest.of(page, size,
+                                                                      Sort.by(sortDirection, sortBy)
+                                                       ), authentication
+                                               )
+                                               .map(ExpenseResponseDto::fromDomain));
     }
 
     @GetMapping
@@ -82,11 +82,11 @@ public class ExpenseController {
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
             Authentication authentication
     ) {
-        return ResponseEntity.ok(expensesService.getAllByPage(
-                                                        authentication,
-                                                        PageRequest.of(page, size, Sort.by(sortDirection, sortBy))
-                                                )
-                                                .map(ExpenseResponseDto::fromDomain));
+        return ResponseEntity.ok(expenseService.getAllByPage(
+                                                       PageRequest.of(page, size, Sort.by(sortDirection, sortBy)),
+                                                       authentication
+                                               )
+                                               .map(ExpenseResponseDto::fromDomain));
     }
 
     @PatchMapping()
@@ -94,13 +94,14 @@ public class ExpenseController {
             @RequestBody @Valid PatchExpenseRequest request,
             Authentication authentication
     ) {
-        return ResponseEntity.ok(ExpenseResponseDto.fromDomain(expensesService.patchExpenseContent(
+        return ResponseEntity.ok(ExpenseResponseDto.fromDomain(expenseService.patchExpenseContent(
                 ExpenseIdWrapper.newOf(UUID.fromString(request.expenseId())),
                 Optional.ofNullable(request.title()),
                 Optional.ofNullable(request.amount()),
-                authentication,
+                Optional.ofNullable(request.currency()),
                 Optional.ofNullable(request.expenseType()),
-                Optional.ofNullable(request.description())
+                Optional.ofNullable(request.description()),
+                authentication
         )));
     }
 
@@ -109,13 +110,14 @@ public class ExpenseController {
             @RequestBody @Valid UpdateExpenseRequest request,
             Authentication authentication
     ) {
-        Expense updatedExpense = expensesService.updateExpenseById(
+        Expense updatedExpense = expenseService.updateExpenseById(
                 ExpenseIdWrapper.newOf(UUID.fromString(request.expenseId())),
                 request.title(),
                 request.amount(),
-                authentication,
-                Optional.ofNullable(request.expenseType()),
-                Optional.ofNullable(request.description())
+                request.currency(),
+                request.expenseType(),
+                request.description(),
+                authentication
         );
         return ResponseEntity.ok(ExpenseResponseDto.fromDomain(updatedExpense));
     }
@@ -125,7 +127,7 @@ public class ExpenseController {
             @PathVariable(name = "expense_uuid") UUID expenseUUID,
             Authentication authentication
     ) {
-        expensesService.deleteExpenseById(ExpenseIdWrapper.newOf(expenseUUID), authentication);
+        expenseService.deleteExpenseById(ExpenseIdWrapper.newOf(expenseUUID), authentication);
         return ResponseEntity.noContent().build();
     }
 }

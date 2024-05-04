@@ -7,7 +7,7 @@ import com.example.final_project.userentity.request.appuser.RegisterUserRequest;
 import com.example.final_project.userentity.response.admin.AdminOperationResponse;
 import com.example.final_project.userentity.response.appuser.UserDetailsResponse;
 import com.example.final_project.userentity.service.admin.AdminService;
-import com.example.final_project.userentity.service.AppUser;
+import com.example.final_project.userentity.model.AppUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

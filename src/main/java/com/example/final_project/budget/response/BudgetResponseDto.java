@@ -1,8 +1,6 @@
 package com.example.final_project.budget.response;
 
-import com.example.final_project.budget.service.Budget;
-import com.example.final_project.budget.service.BudgetPeriod;
-import com.example.final_project.budget.service.BudgetType;
+import com.example.final_project.budget.model.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,6 +13,8 @@ public record BudgetResponseDto(
         BigDecimal limit,
         BudgetType budgetType,
         BigDecimal maxSingleExpense,
+        MKTCurrency defaultCurrency,
+        ExpenseSet expenseSet,
         TreeMap<Integer, LocalDateTime> historyOfChanges,
         BudgetPeriod budgetPeriod,
         String description
@@ -27,6 +27,8 @@ public record BudgetResponseDto(
                 budget.budgetDetails().limit(),
                 budget.budgetDetails().budgetType(),
                 budget.budgetDetails().maxSingleExpense(),
+                budget.budgetDetails().defaultCurrency(),
+                budget.budgetDetails().expenseSet(),
                 budget.budgetDetails().historyOfChanges(),
                 budget.budgetDetails().budgetPeriod(),
                 budget.budgetDetails().description()

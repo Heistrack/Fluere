@@ -1,6 +1,6 @@
 package com.example.final_project.budget.repository;
 
-import com.example.final_project.budget.service.BudgetIdWrapper;
+import com.example.final_project.budget.model.BudgetIdWrapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

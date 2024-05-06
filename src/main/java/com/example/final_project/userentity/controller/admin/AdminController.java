@@ -1,13 +1,13 @@
 package com.example.final_project.userentity.controller.admin;
 
+import com.example.final_project.security.request.AuthenticationRequest;
+import com.example.final_project.security.request.RegisterUserRequest;
+import com.example.final_project.userentity.model.AppUser;
 import com.example.final_project.userentity.request.admin.AdminEmailChangeRequest;
 import com.example.final_project.userentity.request.admin.AdminPasswordChangeRequest;
-import com.example.final_project.userentity.request.appuser.AuthenticationRequest;
-import com.example.final_project.userentity.request.appuser.RegisterUserRequest;
 import com.example.final_project.userentity.response.admin.AdminOperationResponse;
 import com.example.final_project.userentity.response.appuser.UserDetailsResponse;
 import com.example.final_project.userentity.service.admin.AdminService;
-import com.example.final_project.userentity.model.AppUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

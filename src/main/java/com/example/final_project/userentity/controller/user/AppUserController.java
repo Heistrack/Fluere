@@ -1,14 +1,14 @@
 package com.example.final_project.userentity.controller.user;
 
-import com.example.final_project.userentity.request.appuser.AuthenticationRequest;
-import com.example.final_project.userentity.request.appuser.EmailChangeRequest;
-import com.example.final_project.userentity.request.appuser.PasswordChangeRequest;
-import com.example.final_project.userentity.request.appuser.RegisterUserRequest;
+import com.example.final_project.security.request.AuthenticationRequest;
+import com.example.final_project.security.request.RegisterUserRequest;
 import com.example.final_project.security.response.AuthResponseDTO;
 import com.example.final_project.security.response.RegisterResponseDTO;
-import com.example.final_project.userentity.response.appuser.UserDetailsResponse;
 import com.example.final_project.security.service.AuthenticationService;
 import com.example.final_project.userentity.model.AppUser;
+import com.example.final_project.userentity.request.appuser.EmailChangeRequest;
+import com.example.final_project.userentity.request.appuser.PasswordChangeRequest;
+import com.example.final_project.userentity.response.appuser.UserDetailsResponse;
 import com.example.final_project.userentity.service.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

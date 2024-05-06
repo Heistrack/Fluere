@@ -1,7 +1,7 @@
 package com.example.final_project.expense.request.appuser;
 
 
-import com.example.final_project.budget.model.MKTCurrency;
+import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.ExpenseType;
 import com.mongodb.lang.Nullable;
 import jakarta.validation.constraints.NotBlank;
@@ -11,6 +11,8 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 public record PatchExpenseRequest(
+        @NotBlank(message = "Expense's ID can not be null or blank.")
+        String expenseId,
         @Size(min = 3, message = "Title can not be shorter than 3 characters")
         @Size(max = 200, message = "Title can not be longer than 200 characters")
         String title,
@@ -18,8 +20,6 @@ public record PatchExpenseRequest(
         BigDecimal amount,
         @Nullable
         MKTCurrency currency,
-        @NotBlank(message = "Expense's ID can not be null or blank.")
-        String expenseId,
         @Nullable
         ExpenseType expenseType,
         @Size(max = 8000, message = "The expense's description can not be more than 8.000 characters.")

@@ -1,7 +1,11 @@
 package com.example.final_project.budget.service.user;
 
-import com.example.final_project.budget.model.*;
+import com.example.final_project.budget.model.Budget;
+import com.example.final_project.budget.model.BudgetDetails;
+import com.example.final_project.budget.model.BudgetPeriod;
+import com.example.final_project.budget.model.BudgetType;
 import com.example.final_project.budget.repository.BudgetRepository;
+import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseDetails;
 import com.example.final_project.expense.model.ExpenseType;
@@ -140,5 +144,11 @@ public class DefaultBudgetServiceLogic implements BudgetServiceLogic {
             return false;
 
         return true;
+    }
+
+    public BigDecimal sumBudgetExpensesByValue(Budget budget, MKTCurrency currency) {
+        //TODO add this method as a sum
+        //TODO show balance also should be in the service
+        return null;
     }
 }

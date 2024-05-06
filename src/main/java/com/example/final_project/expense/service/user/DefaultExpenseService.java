@@ -1,7 +1,8 @@
 package com.example.final_project.expense.service.user;
 
 import com.example.final_project.budget.model.BudgetIdWrapper;
-import com.example.final_project.budget.model.MKTCurrency;
+import com.example.final_project.budget.repository.BudgetRepository;
+import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseDetails;
 import com.example.final_project.expense.model.ExpenseIdWrapper;
@@ -10,6 +11,7 @@ import com.example.final_project.expense.repository.ExpenseRepository;
 import com.example.final_project.security.service.JwtService;
 import com.example.final_project.userentity.model.UserIdWrapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -24,12 +26,15 @@ import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DefaultExpenseService implements ExpenseService {
 
     private final ExpenseRepository expenseRepository;
     private final Supplier<ExpenseIdWrapper> expenseIdSupplier;
     private final ExpenseServiceLogic innerServiceLogic;
     private final JwtService jwtService;
+    //TODO remove
+    private final BudgetRepository bd;
 
     @Override
     public Expense registerNewExpense(BudgetIdWrapper budgetId, String title, BigDecimal amount, MKTCurrency currency,
@@ -37,6 +42,7 @@ public class DefaultExpenseService implements ExpenseService {
                                       String description,
                                       Authentication authentication
     ) {
+        //TODO expense's title could be duplicated after all
         String checkedTitle = innerServiceLogic.duplicateExpenseTitleCheck(title, budgetId);
         innerServiceLogic.validationExpenseAmount(currency, amount, budgetId);
 
@@ -51,6 +57,11 @@ public class DefaultExpenseService implements ExpenseService {
                                                                                 expenseType,
                                                                                 description == null ? "" : description
                 ));
+        innerServiceLogic.addBalance(currency, amount, budgetId);
+        //TODO remove lines below
+        log.warn("xD1");
+        log.warn(bd.findById(budgetId).orElseThrow().budgetDetails().expenseSet().toString());
+        log.warn("xD2");
         return expenseRepository.save(expense);
     }
 
@@ -100,6 +111,7 @@ public class DefaultExpenseService implements ExpenseService {
         if (!title.equals(oldExpense.expenseDetails().title())) {
             title = innerServiceLogic.duplicateExpenseTitleCheck(title, oldExpense.budgetId());
         }
+
         if (!amount.equals(oldExpense.expenseDetails().amount()) || !currency.equals(
                 oldExpense.expenseDetails().currency())) {
             innerServiceLogic.validationExpenseAmount(currency, amount, oldExpense.budgetId());

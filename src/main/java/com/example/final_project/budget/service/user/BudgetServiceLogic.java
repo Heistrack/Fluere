@@ -3,7 +3,7 @@ package com.example.final_project.budget.service.user;
 import com.example.final_project.budget.model.Budget;
 import com.example.final_project.budget.model.BudgetPeriod;
 import com.example.final_project.budget.model.BudgetType;
-import com.example.final_project.budget.model.MKTCurrency;
+import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
 import com.example.final_project.userentity.model.UserIdWrapper;

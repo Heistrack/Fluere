@@ -1,4 +1,4 @@
-package com.example.final_project.userentity.request.appuser;
+package com.example.final_project.security.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

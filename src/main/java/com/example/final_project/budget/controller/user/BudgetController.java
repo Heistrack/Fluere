@@ -1,12 +1,12 @@
 package com.example.final_project.budget.controller.user;
 
+import com.example.final_project.budget.model.Budget;
+import com.example.final_project.budget.model.BudgetIdWrapper;
 import com.example.final_project.budget.request.appuser.PatchBudgetRequest;
 import com.example.final_project.budget.request.appuser.RegisterBudgetRequest;
 import com.example.final_project.budget.request.appuser.UpdateBudgetRequest;
 import com.example.final_project.budget.response.BudgetResponseDto;
 import com.example.final_project.budget.response.BudgetStatusDTO;
-import com.example.final_project.budget.model.Budget;
-import com.example.final_project.budget.model.BudgetIdWrapper;
 import com.example.final_project.budget.service.user.BudgetService;
 import com.nimbusds.jose.util.Pair;
 import jakarta.validation.Valid;
@@ -103,7 +103,7 @@ public class BudgetController {
 
     @GetMapping("/saved_money")
     ResponseEntity<Pair<UUID, BigDecimal>> getAllMoneySaved(Authentication authentication) {
-       return ResponseEntity.ok(budgetService.getAllMoneySaved(authentication));
+        return ResponseEntity.ok(budgetService.getAllMoneySaved(authentication));
     }
 
     @PutMapping()

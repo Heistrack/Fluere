@@ -5,5 +5,6 @@ import lombok.Builder;
 
 public record RegisterResponseDTO(AppUser user, String token) {
     @Builder
-    public RegisterResponseDTO{}
+    public RegisterResponseDTO {
+    }
 }

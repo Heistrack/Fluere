@@ -1,18 +1,18 @@
 package com.example.final_project.userentity.service.user;
 
-import com.example.final_project.userentity.request.appuser.AuthenticationRequest;
-import com.example.final_project.userentity.request.appuser.EmailChangeRequest;
-import com.example.final_project.userentity.request.appuser.PasswordChangeRequest;
-import com.example.final_project.userentity.request.appuser.RegisterUserRequest;
-import com.example.final_project.security.response.RegisterResponseDTO;
 import com.example.final_project.budget.model.Budget;
 import com.example.final_project.budget.service.user.BudgetService;
-import com.example.final_project.security.service.JwtService;
+import com.example.final_project.exception.custom.UnableToCreateException;
+import com.example.final_project.security.request.AuthenticationRequest;
+import com.example.final_project.security.request.RegisterUserRequest;
+import com.example.final_project.security.response.RegisterResponseDTO;
 import com.example.final_project.security.service.AuthenticationService;
+import com.example.final_project.security.service.JwtService;
 import com.example.final_project.userentity.model.AppUser;
 import com.example.final_project.userentity.model.UserIdWrapper;
-import com.example.final_project.exception.custom.UnableToCreateException;
 import com.example.final_project.userentity.repository.AppUserRepository;
+import com.example.final_project.userentity.request.appuser.EmailChangeRequest;
+import com.example.final_project.userentity.request.appuser.PasswordChangeRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;

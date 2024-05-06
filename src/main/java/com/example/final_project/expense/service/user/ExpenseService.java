@@ -1,7 +1,7 @@
 package com.example.final_project.expense.service.user;
 
 import com.example.final_project.budget.model.BudgetIdWrapper;
-import com.example.final_project.budget.model.MKTCurrency;
+import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseIdWrapper;
 import com.example.final_project.expense.model.ExpenseType;

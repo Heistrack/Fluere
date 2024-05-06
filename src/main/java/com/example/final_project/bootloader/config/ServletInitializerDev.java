@@ -1,6 +1,6 @@
 package com.example.final_project.bootloader.config;
 
-import com.example.final_project.bootloader.FinalProjectApplicationDev;
+import com.example.final_project.FinalProjectApplicationDev;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Profile;

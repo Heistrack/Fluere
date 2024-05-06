@@ -32,7 +32,7 @@ class MainSecurityFilterChain {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.authorizeHttpRequests(request -> request
                            .requestMatchers("/api/users/auth").permitAll()
-                           .requestMatchers("/api/users/new-user").permitAll()
+                           .requestMatchers("/api/users/new_user").permitAll()
                            .requestMatchers("/api/x/**").hasAuthority("ROLE_ADMIN")
                            .anyRequest().authenticated()
                    )

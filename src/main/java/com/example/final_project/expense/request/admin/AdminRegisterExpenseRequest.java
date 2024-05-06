@@ -1,6 +1,6 @@
 package com.example.final_project.expense.request.admin;
 
-import com.example.final_project.budget.model.MKTCurrency;
+import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.ExpenseType;
 import com.mongodb.lang.Nullable;
 import jakarta.validation.constraints.NotBlank;

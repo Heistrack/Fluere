@@ -1,5 +1,6 @@
 package com.example.final_project.budget.model;
 
+import com.example.final_project.currencyapi.model.MKTCurrency;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -31,6 +32,8 @@ public record BudgetDetails(
                                       String description
     ) {
         return new BudgetDetails(
-                title, limit, budgetType, maxSingleExpense, defaultCurrency, expenseSet, historyOfChanges, budgetPeriod, description);
+                title, limit, budgetType, maxSingleExpense, defaultCurrency, expenseSet, historyOfChanges, budgetPeriod,
+                description
+        );
     }
 }

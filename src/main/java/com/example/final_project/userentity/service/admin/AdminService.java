@@ -1,11 +1,11 @@
 package com.example.final_project.userentity.service.admin;
 
+import com.example.final_project.security.request.AuthenticationRequest;
+import com.example.final_project.security.request.RegisterUserRequest;
+import com.example.final_project.userentity.model.AppUser;
 import com.example.final_project.userentity.request.admin.AdminEmailChangeRequest;
 import com.example.final_project.userentity.request.admin.AdminPasswordChangeRequest;
-import com.example.final_project.userentity.request.appuser.AuthenticationRequest;
-import com.example.final_project.userentity.request.appuser.RegisterUserRequest;
 import com.example.final_project.userentity.response.admin.AdminOperationResponse;
-import com.example.final_project.userentity.model.AppUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

@@ -1,6 +1,6 @@
 package com.example.final_project.expense.model;
 
-import com.example.final_project.budget.model.MKTCurrency;
+import com.example.final_project.currencyapi.model.MKTCurrency;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

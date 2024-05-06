@@ -22,8 +22,6 @@ public interface ExpenseRepository extends MongoRepository<Expense, ExpenseIdWra
 
     void deleteByExpenseIdAndUserId(ExpenseIdWrapper expenseId, UserIdWrapper userId);
 
-    List<Expense> findAllByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId);
-
     Page<Expense> findAllByBudgetIdAndUserId(BudgetIdWrapper budgetId, UserIdWrapper userId, Pageable pageable);
 
     Page<Expense> findAllByBudgetId(BudgetIdWrapper budgetId, Pageable pageable);

@@ -1,6 +1,6 @@
 package com.example.final_project.expense.response.admin;
 
-import com.example.final_project.budget.model.MKTCurrency;
+import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
 

@@ -4,6 +4,7 @@ import com.example.final_project.budget.model.*;
 import com.example.final_project.budget.repository.BudgetRepository;
 import com.example.final_project.budget.response.BudgetStatusDTO;
 import com.example.final_project.budget.service.user.BudgetServiceLogic;
+import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
 import com.example.final_project.expense.repository.ExpenseRepository;
@@ -36,7 +37,6 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
                                     LocalDate budgetEnd,
                                     String description
     ) {
-        //TODO add defualt currency to budget layer
         String checkedTitle = budgetServiceLogic.duplicateBudgetTitleCheck(title, userId);
         BudgetPeriod budgetPeriod = budgetServiceLogic.getBudgetPeriod(budgetStart, budgetEnd);
 
@@ -51,7 +51,8 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
         Budget budget = Budget.newOf(budgetIdSupplier.get(), userId, BudgetDetails.newOf(checkedTitle, limit,
                                                                                          budgetType, maxSingleExpense,
                                                                                          defaultCurrency,
-                                                                                         ExpenseSet.newOf(defaultCurrency),
+                                                                                         ExpenseSet.newOf(
+                                                                                                 defaultCurrency),
                                                                                          historyOfChange,
                                                                                          budgetPeriod,
                                                                                          description == null ? "" : description
@@ -165,7 +166,7 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
                         budgetType,
                         maxSingleExpense,
                         defaultCurrency,
-                        ExpenseSet.newOf(defaultCurrency),
+                        oldBudget.budgetDetails().expenseSet(),
                         oldBudget.budgetDetails().historyOfChanges(),
                         budgetPeriod,
                         description == null ? "" : description

@@ -1,19 +1,19 @@
 package com.example.final_project.userentity.service.admin;
 
-import com.example.final_project.userentity.request.admin.AdminEmailChangeRequest;
-import com.example.final_project.userentity.request.admin.AdminPasswordChangeRequest;
-import com.example.final_project.userentity.request.appuser.AuthenticationRequest;
-import com.example.final_project.userentity.request.appuser.RegisterUserRequest;
-import com.example.final_project.userentity.response.admin.AdminOperationResponse;
+import com.example.final_project.budget.model.Budget;
+import com.example.final_project.budget.service.admin.AdminBudgetService;
+import com.example.final_project.exception.custom.UnableToCreateException;
+import com.example.final_project.security.request.AuthenticationRequest;
+import com.example.final_project.security.request.RegisterUserRequest;
+import com.example.final_project.security.service.AuthenticationService;
+import com.example.final_project.security.service.JwtService;
 import com.example.final_project.userentity.model.AppUser;
 import com.example.final_project.userentity.model.Role;
 import com.example.final_project.userentity.model.UserIdWrapper;
-import com.example.final_project.budget.service.admin.AdminBudgetService;
-import com.example.final_project.budget.model.Budget;
-import com.example.final_project.security.service.JwtService;
-import com.example.final_project.security.service.AuthenticationService;
-import com.example.final_project.exception.custom.UnableToCreateException;
 import com.example.final_project.userentity.repository.AppUserRepository;
+import com.example.final_project.userentity.request.admin.AdminEmailChangeRequest;
+import com.example.final_project.userentity.request.admin.AdminPasswordChangeRequest;
+import com.example.final_project.userentity.response.admin.AdminOperationResponse;
 import io.jsonwebtoken.JwtException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -176,7 +176,7 @@ public class DefaultAdminService implements AdminService {
 
     private void removeUserData(UserIdWrapper userId) {
         adminBudgetService.getAllBudgetsByUserId(userId).stream()
-                     .map(Budget::budgetId).forEach(adminBudgetService::deleteBudgetByBudgetId);
+                          .map(Budget::budgetId).forEach(adminBudgetService::deleteBudgetByBudgetId);
     }
 
     private void emailAndLoginDuplicatesCheck(RegisterUserRequest request) {

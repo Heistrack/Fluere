@@ -3,6 +3,7 @@ package com.example.final_project.budget.service.user;
 import com.example.final_project.budget.model.*;
 import com.example.final_project.budget.repository.BudgetRepository;
 import com.example.final_project.budget.response.BudgetStatusDTO;
+import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
 import com.example.final_project.expense.repository.ExpenseRepository;
@@ -191,7 +192,7 @@ public class DefaultBudgetService implements BudgetService {
                         budgetType,
                         maxSingleExpense,
                         defaultCurrency,
-                        ExpenseSet.newOf(defaultCurrency),
+                        oldBudget.budgetDetails().expenseSet(),
                         oldBudget.budgetDetails().historyOfChanges(),
                         budgetPeriod,
                         description == null ? "" : description

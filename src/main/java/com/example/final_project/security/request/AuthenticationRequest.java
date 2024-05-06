@@ -1,4 +1,4 @@
-package com.example.final_project.userentity.request.appuser;
+package com.example.final_project.security.request;
 
 public record AuthenticationRequest(
         String login,

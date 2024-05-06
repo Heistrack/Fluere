@@ -2,8 +2,8 @@ package com.example.final_project.expense.service.admin;
 
 import com.example.final_project.budget.model.Budget;
 import com.example.final_project.budget.model.BudgetIdWrapper;
-import com.example.final_project.budget.model.MKTCurrency;
 import com.example.final_project.budget.repository.BudgetRepository;
+import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseDetails;
 import com.example.final_project.expense.model.ExpenseIdWrapper;
@@ -53,6 +53,7 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
                                                                                 expenseType,
                                                                                 description == null ? "" : description
                 ));
+        innerServiceLogic.addBalance(currency, amount, budgetId);
         return expenseRepository.save(expense);
     }
 

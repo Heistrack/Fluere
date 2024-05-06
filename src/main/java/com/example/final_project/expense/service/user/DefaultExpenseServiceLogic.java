@@ -3,34 +3,49 @@ package com.example.final_project.expense.service.user;
 
 import com.example.final_project.budget.model.Budget;
 import com.example.final_project.budget.model.BudgetIdWrapper;
-import com.example.final_project.budget.model.MKTCurrency;
 import com.example.final_project.budget.repository.BudgetRepository;
+import com.example.final_project.currencyapi.model.MKTCurrency;
+import com.example.final_project.currencyapi.repository.CurrencyRepository;
 import com.example.final_project.exception.custom.ExpenseTooBigException;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
 import com.example.final_project.expense.repository.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+//TODO remove sl@rras
+@Slf4j
 public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
     private final BudgetRepository budgetRepository;
     private final ExpenseRepository expenseRepository;
+    private final CurrencyRepository currencyRepository;
 
 
     public void balanceUpdate(MKTCurrency currency, BigDecimal amount, Expense oldExpense) {
         Budget budget = budgetRepository.findById(oldExpense.budgetId())
                                         .orElseThrow(() -> new NoSuchElementException("Budget not found."));
+        //TODO add balance sum and different currencies add
+        //TODO check if expenses don't make balance negative
         budget.subtractBalance(oldExpense.expenseDetails().currency(), oldExpense.expenseDetails().amount());
         budget.addBalance(currency, amount);
+        budgetRepository.save(budget);
     }
+
+    public void addBalance(MKTCurrency currency, BigDecimal amount, BudgetIdWrapper budgetId) {
+        Budget budget = budgetRepository.findById(budgetId)
+                                        .orElseThrow(() -> new NoSuchElementException("Budget not found."));
+        budget.addBalance(currency, amount);
+        budgetRepository.save(budget);
+    }
+
 
     public void updateHistoryChange(Expense oldExpense) {
         TreeMap<Integer, LocalDateTime> history = oldExpense.expenseDetails().historyOfChanges();
@@ -78,26 +93,63 @@ public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
         return title;
     }
 
-    //TODO provide common inner logic class for both expenses controller.
-    public void singleMaxExpValidation(MKTCurrency currency, BigDecimal amount, Budget budget) {
-        if (budget.budgetDetails().maxSingleExpense().compareTo(amount.multiply(currency.getValue())) < 0) {
+    public void singleMaxExpValidation(MKTCurrency expenseCurrency, BigDecimal amount, Budget budget) {
+        MKTCurrency budgetCurrency = budget.budgetDetails().defaultCurrency();
+        if (budget.budgetDetails().maxSingleExpense().compareTo(amount.multiply(getConversionCurrencyRatio(
+                expenseCurrency,
+                budgetCurrency
+        ))) < 0) {
             throw new ExpenseTooBigException("Expense exceed single maximal expense amount in the budget!");
         }
     }
 
-    public void checkBudgetLimit(MKTCurrency currency, BigDecimal amount, Budget budget) {
-        if (budget.budgetDetails().budgetType().getValue().compareTo(BigDecimal.valueOf(0)) < 0) {
+    public void checkBudgetLimit(MKTCurrency expenseCurrency, BigDecimal amount, Budget budget) {
+        //TODO check how limit is made methods
+        if (budget.budgetDetails().limit().compareTo(BigDecimal.valueOf(0)) < 0) {
             return;
         }
+        //TODO check budget for automatic balance validation
         //TODO should have an option or take a defeault budget currency, then calculate expense currency and then check, right now is hardcoded to PLN
         BigDecimal totalBudgetLimit = budget.budgetDetails().limit()
-                                            .multiply(budget.budgetDetails().budgetType().getValue());
-        BigDecimal totalExpensesSum = budget.showBalance(currency);
-        BigDecimal realAmount = amount.multiply(currency.getValue());
+                                            .multiply(budget.budgetDetails().limit());
+        //TODO add showBalance in the service
+        BigDecimal totalExpensesSum = showBalance(expenseCurrency, budget);
+        BigDecimal realAmount = amount.multiply(getConversionCurrencyRatio(expenseCurrency, budget.budgetDetails()
+                                                                                                  .defaultCurrency()));
         BigDecimal amountLeft = totalBudgetLimit.subtract(totalExpensesSum);
 
         if (amountLeft.compareTo(realAmount) < 0) {
             throw new ExpenseTooBigException("Expense exceed the budget limit!");
         }
+    }
+
+    public BigDecimal showBalance(MKTCurrency expectedCurrency, Budget budget) {
+        HashMap<MKTCurrency, BigDecimal> allExpenses = budget.budgetDetails().expenseSet()
+                                                             .expenseMap();
+        BigDecimal balance = BigDecimal.ZERO;
+        for (Map.Entry<MKTCurrency, BigDecimal> expensePair : allExpenses.entrySet()) {
+            balance = balance.add(expensePair.getValue().multiply(
+                    getConversionCurrencyRatio(expensePair.getKey(), expectedCurrency)));
+        }
+        return balance;
+    }
+
+    public BigDecimal getConversionCurrencyRatio(MKTCurrency expenseCurrency, MKTCurrency expectedCurrency) {
+        if (expenseCurrency.equals(expectedCurrency)) {
+            return BigDecimal.ONE;
+        }
+        HashMap<MKTCurrency, BigDecimal> conversionRates = currencyRepository.findAll().getFirst().conversionRates();
+//TODO check budget currency change and how it works with expense validation
+        BigDecimal expenseCurrencyToUSDRatio = BigDecimal.ONE;
+        if (!expenseCurrency.equals(MKTCurrency.USD)) {
+            expenseCurrencyToUSDRatio = conversionRates.get(expenseCurrency);
+        }
+
+        BigDecimal defaultCurrencyToUSDRatio = BigDecimal.ONE;
+        if (!expectedCurrency.equals(MKTCurrency.USD)) {
+            defaultCurrencyToUSDRatio = conversionRates.get(expectedCurrency);
+        }
+
+        return defaultCurrencyToUSDRatio.divide(expenseCurrencyToUSDRatio, 4, RoundingMode.HALF_UP);
     }
 }

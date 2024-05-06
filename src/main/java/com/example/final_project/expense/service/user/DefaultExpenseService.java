@@ -1,7 +1,6 @@
 package com.example.final_project.expense.service.user;
 
 import com.example.final_project.budget.model.BudgetIdWrapper;
-import com.example.final_project.budget.repository.BudgetRepository;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseDetails;
@@ -11,7 +10,6 @@ import com.example.final_project.expense.repository.ExpenseRepository;
 import com.example.final_project.security.service.JwtService;
 import com.example.final_project.userentity.model.UserIdWrapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -26,15 +24,12 @@ import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class DefaultExpenseService implements ExpenseService {
 
     private final ExpenseRepository expenseRepository;
     private final Supplier<ExpenseIdWrapper> expenseIdSupplier;
     private final ExpenseServiceLogic innerServiceLogic;
     private final JwtService jwtService;
-    //TODO remove
-    private final BudgetRepository bd;
 
     @Override
     public Expense registerNewExpense(BudgetIdWrapper budgetId, String title, BigDecimal amount, MKTCurrency currency,
@@ -42,8 +37,6 @@ public class DefaultExpenseService implements ExpenseService {
                                       String description,
                                       Authentication authentication
     ) {
-        //TODO expense's title could be duplicated after all
-        String checkedTitle = innerServiceLogic.duplicateExpenseTitleCheck(title, budgetId);
         innerServiceLogic.validationExpenseAmount(currency, amount, budgetId);
 
         TreeMap<Integer, LocalDateTime> historyOfChange = new TreeMap<>();
@@ -51,17 +44,13 @@ public class DefaultExpenseService implements ExpenseService {
 
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
         Expense expense = Expense.newOf(
-                expenseIdSupplier.get(), budgetId, userId, ExpenseDetails.newOf(checkedTitle, amount,
+                expenseIdSupplier.get(), budgetId, userId, ExpenseDetails.newOf(title, amount,
                                                                                 currency,
                                                                                 historyOfChange,
                                                                                 expenseType,
                                                                                 description == null ? "" : description
                 ));
         innerServiceLogic.addBalance(currency, amount, budgetId);
-        //TODO remove lines below
-        log.warn("xD1");
-        log.warn(bd.findById(budgetId).orElseThrow().budgetDetails().expenseSet().toString());
-        log.warn("xD2");
         return expenseRepository.save(expense);
     }
 
@@ -108,10 +97,6 @@ public class DefaultExpenseService implements ExpenseService {
         )) {
             return oldExpense;
         }
-        if (!title.equals(oldExpense.expenseDetails().title())) {
-            title = innerServiceLogic.duplicateExpenseTitleCheck(title, oldExpense.budgetId());
-        }
-
         if (!amount.equals(oldExpense.expenseDetails().amount()) || !currency.equals(
                 oldExpense.expenseDetails().currency())) {
             innerServiceLogic.validationExpenseAmount(currency, amount, oldExpense.budgetId());
@@ -150,12 +135,8 @@ public class DefaultExpenseService implements ExpenseService {
         Expense oldExpense = expenseRepository.findByExpenseIdAndUserId(expenseId, userId)
                                               .orElseThrow(() -> new NoSuchElementException(
                                                       "There's no such expense."));
-
         if (innerServiceLogic.noParamChangeCheck(oldExpense, title, amount, currency, expenseType, description)) {
             return oldExpense;
-        }
-        if (title.isPresent() && !title.get().equals(oldExpense.expenseDetails().title())) {
-            title = Optional.of(innerServiceLogic.duplicateExpenseTitleCheck(title.get(), oldExpense.budgetId()));
         }
 
         MKTCurrency checkedCurrency = currency.orElse(oldExpense.expenseDetails().currency());
@@ -168,7 +149,6 @@ public class DefaultExpenseService implements ExpenseService {
         }
 
         innerServiceLogic.updateHistoryChange(oldExpense);
-        Optional<String> checkedTitle = title;
 
         return expenseRepository.save(expenseRepository.findByExpenseIdAndUserId(expenseId, userId).map(
                 expenseFromRepository -> Expense.newOf(
@@ -176,7 +156,7 @@ public class DefaultExpenseService implements ExpenseService {
                         oldExpense.budgetId(),
                         userId,
                         ExpenseDetails.newOf(
-                                checkedTitle.orElseGet(() -> expenseFromRepository.expenseDetails().title()),
+                                title.orElseGet(() -> expenseFromRepository.expenseDetails().title()),
                                 checkedAmount,
                                 checkedCurrency,
                                 oldExpense.expenseDetails().historyOfChanges(),

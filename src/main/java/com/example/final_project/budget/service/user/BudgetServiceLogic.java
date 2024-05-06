@@ -22,8 +22,6 @@ public interface BudgetServiceLogic {
 
     BudgetPeriod getBudgetPeriod(LocalDate startTime, LocalDate endTime);
 
-    BigDecimal totalExpensesValueSum(Budget budget);
-
     TreeMap<LocalDate, List<Expense>> getExpensesByDay(List<Expense> expenses);
 
     HashMap<ExpenseType, List<Expense>> getExpensesByCategory(List<Expense> expenses);
@@ -43,4 +41,6 @@ public interface BudgetServiceLogic {
                                BudgetPeriod newBudgetPeriod,
                                Optional<String> newDescription
     );
+
+    BigDecimal showBalanceByCurrency(MKTCurrency expectedCurrency, Budget budget);
 }

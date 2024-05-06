@@ -19,7 +19,6 @@ public record ExpenseSet(HashMap<MKTCurrency, BigDecimal> expenseMap) {
         this.expenseMap.put(currency, newExpenseAmount);
     }
 
-    //TODO add patch data to postman for expenses
     public void subtract(MKTCurrency currency, BigDecimal expenseAmount) {
         BigDecimal newExpenseSet = expenseMap.get(currency).subtract(expenseAmount);
         this.expenseMap.put(currency, newExpenseSet);

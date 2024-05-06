@@ -71,7 +71,8 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
         Budget budget = budgetRepository.findById(budgetId)
                                         .orElseThrow(() -> new NoSuchElementException("Budget doesn't exist"));
 
-        BigDecimal totalMoneySpent = budgetServiceLogic.totalExpensesValueSum(budget);
+        BigDecimal totalMoneySpent = budgetServiceLogic.showBalanceByCurrency(
+                budget.budgetDetails().defaultCurrency(), budget);
         BigDecimal amountLeft = budget.budgetDetails().limit().subtract(totalMoneySpent);
         Float budgetFullFillPercent = budgetServiceLogic.budgetFullFillPercentage(
                 budget.budgetDetails().limit(), totalMoneySpent);
@@ -188,21 +189,18 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
         Budget oldBudget = budgetRepository.findById(budgetId)
                                            .orElseThrow(() -> new NoSuchElementException(
                                                    "Can't update budget, because it doesn't exist"));
-        UserIdWrapper userId = oldBudget.userId();
-
         BudgetPeriod budgetPeriod = budgetServiceLogic.getBudgetPeriod(
                 budgetStart.orElse(oldBudget.budgetDetails().budgetPeriod()
                                             .getStartTime()),
                 budgetEnd.orElse(oldBudget.budgetDetails().budgetPeriod()
                                           .getEndTime())
         );
-
         if (budgetServiceLogic.noParamChangeCheck(
                 oldBudget, title, limit, budgetType, maxSingleExpense, defaultCurrency, budgetPeriod, description)) {
             return oldBudget;
         }
         if (title.isPresent() && !title.get().equals(oldBudget.budgetDetails().title())) {
-            title = Optional.of(budgetServiceLogic.duplicateBudgetTitleCheck(title.get(), userId));
+            title = Optional.of(budgetServiceLogic.duplicateBudgetTitleCheck(title.get(), oldBudget.userId()));
         }
         if (maxSingleExpense.isPresent() && maxSingleExpense.get().compareTo(
                 limit.orElse(oldBudget.budgetDetails().limit())) > 0) {
@@ -212,14 +210,12 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
         Optional<String> checkedTitle = title;
         Optional<BigDecimal> checkedMaxSingleExpense = maxSingleExpense;
 
-        //TODO this method is too long check in admin also how to make it shorter
-
         budgetServiceLogic.updateHistoryChange(oldBudget);
 
         return budgetRepository.save(budgetRepository.findById(budgetId).map(
                 budgetFromRepository -> Budget.newOf(
                         budgetId,
-                        userId,
+                        oldBudget.userId(),
                         BudgetDetails.newOf(
                                 checkedTitle.orElseGet(() -> budgetFromRepository.budgetDetails().title()),
                                 limit.orElseGet(() -> budgetFromRepository.budgetDetails().limit()),

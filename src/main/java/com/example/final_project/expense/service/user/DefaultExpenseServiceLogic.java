@@ -11,7 +11,6 @@ import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
 import com.example.final_project.expense.repository.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -21,8 +20,6 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-//TODO remove sl@rras
-@Slf4j
 public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
     private final BudgetRepository budgetRepository;
     private final ExpenseRepository expenseRepository;
@@ -32,8 +29,6 @@ public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
     public void balanceUpdate(MKTCurrency currency, BigDecimal amount, Expense oldExpense) {
         Budget budget = budgetRepository.findById(oldExpense.budgetId())
                                         .orElseThrow(() -> new NoSuchElementException("Budget not found."));
-        //TODO add balance sum and different currencies add
-        //TODO check if expenses don't make balance negative
         budget.subtractBalance(oldExpense.expenseDetails().currency(), oldExpense.expenseDetails().amount());
         budget.addBalance(currency, amount);
         budgetRepository.save(budget);
@@ -79,20 +74,6 @@ public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
                                                       });
     }
 
-    public String duplicateExpenseTitleCheck(String title, BudgetIdWrapper budgetId) {
-        if (expenseRepository.existsByBudgetIdAndExpenseDetails_Title(budgetId, title)) {
-            long counter = 0;
-            StringBuilder stringBuilder = new StringBuilder(title);
-            while (expenseRepository.existsByBudgetIdAndExpenseDetails_Title(budgetId, stringBuilder.toString())) {
-                counter++;
-                stringBuilder = new StringBuilder(title);
-                stringBuilder.append("(").append(counter).append(")");
-            }
-            return stringBuilder.toString();
-        }
-        return title;
-    }
-
     public void singleMaxExpValidation(MKTCurrency expenseCurrency, BigDecimal amount, Budget budget) {
         MKTCurrency budgetCurrency = budget.budgetDetails().defaultCurrency();
         if (budget.budgetDetails().maxSingleExpense().compareTo(amount.multiply(getConversionCurrencyRatio(
@@ -113,7 +94,7 @@ public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
         BigDecimal totalBudgetLimit = budget.budgetDetails().limit()
                                             .multiply(budget.budgetDetails().limit());
         //TODO add showBalance in the service
-        BigDecimal totalExpensesSum = showBalance(expenseCurrency, budget);
+        BigDecimal totalExpensesSum = sumAllExpensesByCurrency(budget.budgetDetails().defaultCurrency(), budget);
         BigDecimal realAmount = amount.multiply(getConversionCurrencyRatio(expenseCurrency, budget.budgetDetails()
                                                                                                   .defaultCurrency()));
         BigDecimal amountLeft = totalBudgetLimit.subtract(totalExpensesSum);
@@ -123,7 +104,7 @@ public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
         }
     }
 
-    public BigDecimal showBalance(MKTCurrency expectedCurrency, Budget budget) {
+    public BigDecimal sumAllExpensesByCurrency(MKTCurrency expectedCurrency, Budget budget) {
         HashMap<MKTCurrency, BigDecimal> allExpenses = budget.budgetDetails().expenseSet()
                                                              .expenseMap();
         BigDecimal balance = BigDecimal.ZERO;

@@ -37,7 +37,6 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
                                       BigDecimal amount, MKTCurrency currency, ExpenseType expenseType,
                                       String description
     ) {
-        String checkedTitle = innerServiceLogic.duplicateExpenseTitleCheck(title, budgetId);
         innerServiceLogic.validationExpenseAmount(currency, amount, budgetId);
 
         TreeMap<Integer, LocalDateTime> historyOfChange = new TreeMap<>();
@@ -47,7 +46,7 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
                                                .orElseThrow(() -> new NoSuchElementException("No user found."));
 
         Expense expense = Expense.newOf(
-                expenseIdSupplier.get(), budgetId, userId, ExpenseDetails.newOf(checkedTitle, amount,
+                expenseIdSupplier.get(), budgetId, userId, ExpenseDetails.newOf(title, amount,
                                                                                 currency,
                                                                                 historyOfChange,
                                                                                 expenseType,
@@ -98,9 +97,6 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
         )) {
             return oldExpense;
         }
-        if (!title.equals(oldExpense.expenseDetails().title())) {
-            title = innerServiceLogic.duplicateExpenseTitleCheck(title, oldExpense.budgetId());
-        }
         if (!amount.equals(oldExpense.expenseDetails().amount()) || !currency.equals(
                 oldExpense.expenseDetails().currency())) {
             innerServiceLogic.validationExpenseAmount(currency, amount, oldExpense.budgetId());
@@ -140,9 +136,6 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
         if (innerServiceLogic.noParamChangeCheck(oldExpense, title, amount, currency, expenseType, description)) {
             return oldExpense;
         }
-        if (title.isPresent() && !title.get().equals(oldExpense.expenseDetails().title())) {
-            title = Optional.of(innerServiceLogic.duplicateExpenseTitleCheck(title.get(), oldExpense.budgetId()));
-        }
         MKTCurrency checkedCurrency = currency.orElse(oldExpense.expenseDetails().currency());
         BigDecimal checkedAmount = amount.orElse(oldExpense.expenseDetails().amount());
 
@@ -153,7 +146,6 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
         }
 
         innerServiceLogic.updateHistoryChange(oldExpense);
-        Optional<String> checkedTitle = title;
 
         return expenseRepository.save(expenseRepository.findById(expenseId).map(
                 expenseFromRepository -> Expense.newOf(
@@ -161,7 +153,7 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
                         oldExpense.budgetId(),
                         oldExpense.userId(),
                         ExpenseDetails.newOf(
-                                checkedTitle.orElseGet(() -> expenseFromRepository.expenseDetails().title()),
+                                title.orElseGet(() -> expenseFromRepository.expenseDetails().title()),
                                 checkedAmount,
                                 checkedCurrency,
                                 oldExpense.expenseDetails().historyOfChanges(),

@@ -26,9 +26,11 @@ public interface ExpenseServiceLogic {
 
     void validationExpenseAmount(MKTCurrency currency, BigDecimal amount, BudgetIdWrapper budgetId);
 
-    String duplicateExpenseTitleCheck(String title, BudgetIdWrapper budgetId);
-
     void singleMaxExpValidation(MKTCurrency currency, BigDecimal amount, Budget budget);
 
     void checkBudgetLimit(MKTCurrency currency, BigDecimal amount, Budget budget);
+
+    BigDecimal getConversionCurrencyRatio(MKTCurrency expenseCurrency, MKTCurrency expectedCurrency);
+
+    BigDecimal sumAllExpensesByCurrency(MKTCurrency expectedCurrency, Budget budget);
 }

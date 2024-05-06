@@ -82,7 +82,8 @@ public class DefaultBudgetService implements BudgetService {
         Budget budget = budgetRepository.findByBudgetIdAndUserId(budgetId, userId)
                                         .orElseThrow(() -> new NoSuchElementException("Budget doesn't exist"));
 
-        BigDecimal totalMoneySpent = budgetServiceLogic.totalExpensesValueSum(budget);
+        BigDecimal totalMoneySpent = budgetServiceLogic.showBalanceByCurrency(
+                budget.budgetDetails().defaultCurrency(), budget);
         BigDecimal amountLeft = budget.budgetDetails().limit().subtract(totalMoneySpent);
         Float budgetFullFillPercent = budgetServiceLogic.budgetFullFillPercentage(
                 budget.budgetDetails().limit(), totalMoneySpent);

@@ -7,9 +7,9 @@ import com.example.final_project.budget.model.BudgetType;
 import com.example.final_project.budget.repository.BudgetRepository;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
-import com.example.final_project.expense.model.ExpenseDetails;
 import com.example.final_project.expense.model.ExpenseType;
 import com.example.final_project.expense.repository.ExpenseRepository;
+import com.example.final_project.expense.service.user.ExpenseServiceLogic;
 import com.example.final_project.userentity.model.UserIdWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 public class DefaultBudgetServiceLogic implements BudgetServiceLogic {
     private final ExpenseRepository expenseRepository;
     private final BudgetRepository budgetRepository;
+    private final ExpenseServiceLogic expenseServiceLogic;
 
     public String duplicateBudgetTitleCheck(String title, UserIdWrapper userId) {
         if (budgetRepository.existsByUserIdAndBudgetDetails_Title(userId, title)) {
@@ -58,14 +59,6 @@ public class DefaultBudgetServiceLogic implements BudgetServiceLogic {
         }
 
         return BudgetPeriod.newOf(startTime, endTime);
-    }
-
-    public BigDecimal totalExpensesValueSum(Budget budget) {
-        return expenseRepository.findAllByBudgetId(budget.budgetId())
-                                .stream()
-                                .map(Expense::expenseDetails)
-                                .map(ExpenseDetails::amount)
-                                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public TreeMap<LocalDate, List<Expense>> getExpensesByDay(List<Expense> expenses) {
@@ -146,9 +139,7 @@ public class DefaultBudgetServiceLogic implements BudgetServiceLogic {
         return true;
     }
 
-    public BigDecimal sumBudgetExpensesByValue(Budget budget, MKTCurrency currency) {
-        //TODO add this method as a sum
-        //TODO show balance also should be in the service
-        return null;
+    public BigDecimal showBalanceByCurrency(MKTCurrency expectedCurrency, Budget budget) {
+        return expenseServiceLogic.sumAllExpensesByCurrency(expectedCurrency, budget);
     }
 }

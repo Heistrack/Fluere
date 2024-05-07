@@ -49,8 +49,7 @@ public class DefaultCurrencyService implements CurrencyService {
 
     @PostConstruct
     private void updateData() {
-        LocalDate now = LocalDate.now();
-        if (!fiatCurrency.previousDateCheck().equals(now)) {
+        if (!fiatCurrency.previousDateCheck().equals(LocalDate.now())) {
             HashMap<MKTCurrency, BigDecimal> jsonMap = getJSONMap();
             Integer currentValue = fiatCurrency.howMuchRequestLeftAPI();
 
@@ -60,8 +59,8 @@ public class DefaultCurrencyService implements CurrencyService {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private HashMap<MKTCurrency, BigDecimal> getJSONMap() {
-        HashMap<MKTCurrency, BigDecimal> conversionRates = new HashMap<>();
         try {
             String strURL = "https://v6.exchangerate-api.com/v6/" + API_KEY + "/latest/USD";
 
@@ -85,17 +84,13 @@ public class DefaultCurrencyService implements CurrencyService {
 
                 Map<String, Object> jsonMap = objectMapper.readValue(parsedJSON, Map.class);
 
-                //TODO check how to safe cast
-                if (jsonMap instanceof HashMap<String, Object>) {
-                    conversionRates = new HashMap<>((Map<MKTCurrency, BigDecimal>) jsonMap.get(
-                            "conversion_rates"));
-                }
-                return conversionRates;
+                return new HashMap<>((Map<MKTCurrency, BigDecimal>) jsonMap.get(
+                        "conversion_rates"));
             }
         } catch (IOException e) {
             log.error(e.toString());
         }
-        return conversionRates;
+        return new HashMap<>();
     }
 }
 

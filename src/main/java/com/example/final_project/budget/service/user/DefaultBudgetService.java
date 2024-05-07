@@ -15,7 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -50,7 +49,7 @@ public class DefaultBudgetService implements BudgetService {
 
         TreeMap<Integer, LocalDateTime> historyOfChange = new TreeMap<>();
         historyOfChange.put(1, LocalDateTime.now());
-        //TODO check how limit is made depending from TypeOfBudget
+
         if (maxSingleExpense.compareTo(limit) > 0) {
             maxSingleExpense = limit;
         }
@@ -88,7 +87,6 @@ public class DefaultBudgetService implements BudgetService {
         Float budgetFullFillPercent = budgetServiceLogic.budgetFullFillPercentage(
                 budget.budgetDetails().limit(), totalMoneySpent);
         List<Expense> allBudgetExpenses = expenseRepository.findAllByBudgetId(budgetId);
-        Integer expensesNumber = allBudgetExpenses.size();
         String trueBudgetLimitValue = budgetServiceLogic.getTrueLimitFromBudget(budget);
         TreeMap<LocalDate, List<Expense>> expensesByDay = budgetServiceLogic.getExpensesByDay(allBudgetExpenses);
         HashMap<ExpenseType, List<Expense>> expensesByCategory = budgetServiceLogic.getExpensesByCategory(
@@ -101,7 +99,7 @@ public class DefaultBudgetService implements BudgetService {
                 budget.budgetDetails(),
                 amountLeft,
                 totalMoneySpent,
-                expensesNumber,
+                allBudgetExpenses.size(),
                 budgetFullFillPercent,
                 trueBudgetLimitValue,
                 expensesByDay,
@@ -131,8 +129,8 @@ public class DefaultBudgetService implements BudgetService {
                                                                                         .getEndTime()
                                                                                         .isBefore(now)).toList();
         BigDecimal sum = BigDecimal.ZERO;
-        for(Budget budget : closedBudgets) {
-           sum = sum.add(budgetServiceLogic.showBalanceByCurrency(budget.budgetDetails().defaultCurrency(), budget));
+        for (Budget budget : closedBudgets) {
+            sum = sum.add(budgetServiceLogic.showBalanceByCurrency(budget.budgetDetails().defaultCurrency(), budget));
         }
         return Pair.of(userId.id(), sum);
     }
@@ -238,7 +236,6 @@ public class DefaultBudgetService implements BudgetService {
                 limit.orElse(oldBudget.budgetDetails().limit())) > 0) {
             maxSingleExpense = limit;
         }
-        //TODO this method is too long check in admin also how to make it shorter
 
         Optional<BigDecimal> checkedMaxSingleExpense = maxSingleExpense;
         Optional<String> checkedTitle = title;

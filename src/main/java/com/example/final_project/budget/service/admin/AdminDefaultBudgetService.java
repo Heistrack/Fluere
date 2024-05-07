@@ -43,7 +43,6 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
         TreeMap<Integer, LocalDateTime> historyOfChange = new TreeMap<>();
         historyOfChange.put(1, LocalDateTime.now());
 
-        //TODO check how limit is made depending from TypeOfBudget
         if (maxSingleExpense.compareTo(limit) > 0) {
             maxSingleExpense = limit;
         }

@@ -9,7 +9,6 @@ import com.example.final_project.currencyapi.repository.CurrencyRepository;
 import com.example.final_project.exception.custom.ExpenseTooBigException;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
-import com.example.final_project.expense.repository.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -84,17 +83,14 @@ public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
     }
 
     public void checkBudgetLimit(MKTCurrency expenseCurrency, BigDecimal amount, Budget budget) {
-        //TODO check how limit is made methods
-        if (budget.budgetDetails().limit().compareTo(BigDecimal.valueOf(0)) < 0) {
+        if (budget.budgetDetails().budgetType().getValue().compareTo(BigDecimal.ZERO) < 0) {
             return;
         }
-        //TODO check budget for automatic balance validation
-        //TODO should have an option or take a defeault budget currency, then calculate expense currency and then check, right now is hardcoded to PLN
         BigDecimal totalBudgetLimit = budget.budgetDetails().limit()
-                                            .multiply(budget.budgetDetails().limit());
+                                            .multiply(budget.budgetDetails().budgetType().getValue());
 
-        //TODO add showBalance in the service
         BigDecimal totalExpensesSum = sumAllExpensesByCurrency(budget.budgetDetails().defaultCurrency(), budget);
+
         BigDecimal realAmount = amount.multiply(getConversionCurrencyRatio(expenseCurrency, budget.budgetDetails()
                                                                                                   .defaultCurrency()));
         BigDecimal amountLeft = totalBudgetLimit.subtract(totalExpensesSum);
@@ -116,11 +112,10 @@ public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
     }
 
     public BigDecimal getConversionCurrencyRatio(MKTCurrency expenseCurrency, MKTCurrency expectedCurrency) {
-        if (expenseCurrency.equals(expectedCurrency)) {
-            return BigDecimal.ONE;
-        }
+        if (expenseCurrency.equals(expectedCurrency)) return BigDecimal.ONE;
+
         HashMap<MKTCurrency, BigDecimal> conversionRates = currencyRepository.findAll().getFirst().conversionRates();
-//TODO check budget currency change and how it works with expense validation
+
         BigDecimal expenseCurrencyToUSDRatio = BigDecimal.ONE;
         if (!expenseCurrency.equals(MKTCurrency.USD)) {
             expenseCurrencyToUSDRatio = conversionRates.get(expenseCurrency);

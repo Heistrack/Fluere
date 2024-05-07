@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class DefaultBudgetServiceLogic implements BudgetServiceLogic {
-    private final ExpenseRepository expenseRepository;
     private final BudgetRepository budgetRepository;
     private final ExpenseServiceLogic expenseServiceLogic;
 

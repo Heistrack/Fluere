@@ -81,6 +81,11 @@ public class BudgetController {
         ), authentication));
     }
 
+    @GetMapping("/saved_money")
+    ResponseEntity<Pair<UUID, BigDecimal>> getAllMoneySaved(Authentication authentication) {
+        return ResponseEntity.ok(budgetService.getAllMoneySaved(authentication));
+    }
+
     @GetMapping
     ResponseEntity<Page<BudgetResponseDto>> getBudgetsByPage(
             @RequestParam(required = false, defaultValue = "0") Integer page,
@@ -99,11 +104,6 @@ public class BudgetController {
                                                  )
                                          ), authentication)
                                          .map(BudgetResponseDto::fromDomain));
-    }
-
-    @GetMapping("/saved_money")
-    ResponseEntity<Pair<UUID, BigDecimal>> getAllMoneySaved(Authentication authentication) {
-        return ResponseEntity.ok(budgetService.getAllMoneySaved(authentication));
     }
 
     @PutMapping()

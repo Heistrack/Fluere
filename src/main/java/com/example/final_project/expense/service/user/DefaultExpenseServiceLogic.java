@@ -22,7 +22,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
     private final BudgetRepository budgetRepository;
-    private final ExpenseRepository expenseRepository;
     private final CurrencyRepository currencyRepository;
 
 
@@ -93,6 +92,7 @@ public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
         //TODO should have an option or take a defeault budget currency, then calculate expense currency and then check, right now is hardcoded to PLN
         BigDecimal totalBudgetLimit = budget.budgetDetails().limit()
                                             .multiply(budget.budgetDetails().limit());
+
         //TODO add showBalance in the service
         BigDecimal totalExpensesSum = sumAllExpensesByCurrency(budget.budgetDetails().defaultCurrency(), budget);
         BigDecimal realAmount = amount.multiply(getConversionCurrencyRatio(expenseCurrency, budget.budgetDetails()

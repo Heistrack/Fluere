@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -32,7 +33,6 @@ public class DefaultBudgetService implements BudgetService {
     private final Supplier<BudgetIdWrapper> budgetIdSupplier;
     private final BudgetServiceLogic budgetServiceLogic;
     private final JwtService jwtService;
-    //TODO implement expenseMap for budgets to show how much money user saved already
 
     @Override
     public Budget registerNewBudget(String title, BigDecimal limit, BudgetType budgetType,
@@ -124,14 +124,17 @@ public class DefaultBudgetService implements BudgetService {
 
     @Override
     public Pair<UUID, BigDecimal> getAllMoneySaved(Authentication authentication) {
-        //TODO add getAllMoneySaved in the next commit
-//        List<Budget> allBudgetsByUserId = getAllBudgetsByUserId(authentication);
-//        LocalDate now = LocalDate.now();
-//        allBudgetsByUserId.stream().filter(budget -> budget.budgetDetails()
-//                                                           .budgetPeriod()
-//                                                           .getEndTime()
-//                                                           .isBefore(now)).map(budget -> budget.budgetDetails().)
-        return null;
+        UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
+        List<Budget> allBudgetsByUserId = budgetRepository.findAllByUserId(userId);
+        LocalDate now = LocalDate.now();
+        List<Budget> closedBudgets = allBudgetsByUserId.stream().filter(budget -> budget.budgetDetails().budgetPeriod()
+                                                                                        .getEndTime()
+                                                                                        .isBefore(now)).toList();
+        BigDecimal sum = BigDecimal.ZERO;
+        for(Budget budget : closedBudgets) {
+           sum = sum.add(budgetServiceLogic.showBalanceByCurrency(budget.budgetDetails().defaultCurrency(), budget));
+        }
+        return Pair.of(userId.id(), sum);
     }
 
     @Override

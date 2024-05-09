@@ -1,7 +1,9 @@
 package com.example.final_project.budget.service.user;
 
+import com.example.final_project.budget.controller.user.BudgetController;
 import com.example.final_project.budget.model.*;
 import com.example.final_project.budget.repository.BudgetRepository;
+import com.example.final_project.budget.response.BudgetResponseDto;
 import com.example.final_project.budget.response.BudgetStatusDTO;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
@@ -14,6 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +28,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Supplier;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+
 @Service
 @RequiredArgsConstructor
 public class DefaultBudgetService implements BudgetService {
@@ -30,7 +37,7 @@ public class DefaultBudgetService implements BudgetService {
     private final BudgetRepository budgetRepository;
     private final ExpenseRepository expenseRepository;
     private final Supplier<BudgetIdWrapper> budgetIdSupplier;
-    private final BudgetServiceLogic budgetServiceLogic;
+    private final BudgetServiceLogic innerServiceLogic;
     private final JwtService jwtService;
 
     @Override
@@ -43,9 +50,9 @@ public class DefaultBudgetService implements BudgetService {
                                     Authentication authentication
     ) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-        String checkedTitle = budgetServiceLogic.duplicateBudgetTitleCheck(title, userId);
+        String checkedTitle = innerServiceLogic.duplicateBudgetTitleCheck(title, userId);
 
-        BudgetPeriod budgetPeriod = budgetServiceLogic.getBudgetPeriod(budgetStart, budgetEnd);
+        BudgetPeriod budgetPeriod = innerServiceLogic.getBudgetPeriod(budgetStart, budgetEnd);
 
         TreeMap<Integer, LocalDateTime> historyOfChange = new TreeMap<>();
         historyOfChange.put(1, LocalDateTime.now());
@@ -81,17 +88,17 @@ public class DefaultBudgetService implements BudgetService {
         Budget budget = budgetRepository.findByBudgetIdAndUserId(budgetId, userId)
                                         .orElseThrow(() -> new NoSuchElementException("Budget doesn't exist"));
 
-        BigDecimal totalMoneySpent = budgetServiceLogic.showBalanceByCurrency(
+        BigDecimal totalMoneySpent = innerServiceLogic.showBalanceByCurrency(
                 budget.budgetDetails().defaultCurrency(), budget);
         BigDecimal amountLeft = budget.budgetDetails().limit().subtract(totalMoneySpent);
-        Float budgetFullFillPercent = budgetServiceLogic.budgetFullFillPercentage(
+        Float budgetFullFillPercent = innerServiceLogic.budgetFullFillPercentage(
                 budget.budgetDetails().limit(), totalMoneySpent);
         List<Expense> allBudgetExpenses = expenseRepository.findAllByBudgetId(budgetId);
-        String trueBudgetLimitValue = budgetServiceLogic.getTrueLimitFromBudget(budget);
-        TreeMap<LocalDate, List<Expense>> expensesByDay = budgetServiceLogic.getExpensesByDay(allBudgetExpenses);
-        HashMap<ExpenseType, List<Expense>> expensesByCategory = budgetServiceLogic.getExpensesByCategory(
+        String trueBudgetLimitValue = innerServiceLogic.getTrueLimitFromBudget(budget);
+        TreeMap<LocalDate, List<Expense>> expensesByDay = innerServiceLogic.getExpensesByDay(allBudgetExpenses);
+        HashMap<ExpenseType, List<Expense>> expensesByCategory = innerServiceLogic.getExpensesByCategory(
                 allBudgetExpenses);
-        HashMap<ExpenseType, Float> expenseCategoryPercentage = budgetServiceLogic.getExpenseCategoryPercentage(
+        HashMap<ExpenseType, Float> expenseCategoryPercentage = innerServiceLogic.getExpenseCategoryPercentage(
                 allBudgetExpenses, budget);
 
         return BudgetStatusDTO.newOf(
@@ -130,7 +137,7 @@ public class DefaultBudgetService implements BudgetService {
                                                                                         .isBefore(now)).toList();
         BigDecimal sum = BigDecimal.ZERO;
         for (Budget budget : closedBudgets) {
-            sum = sum.add(budgetServiceLogic.showBalanceByCurrency(budget.budgetDetails().defaultCurrency(), budget));
+            sum = sum.add(innerServiceLogic.showBalanceByCurrency(budget.budgetDetails().defaultCurrency(), budget));
         }
         return Pair.of(userId.id(), sum);
     }
@@ -167,23 +174,23 @@ public class DefaultBudgetService implements BudgetService {
                                            .orElseThrow(() -> new NoSuchElementException(
                                                    "Can't update budget, because it doesn't exist"));
 
-        BudgetPeriod budgetPeriod = budgetServiceLogic.getBudgetPeriod(budgetStart, budgetEnd);
-        if (budgetServiceLogic.noParamChangeCheck(oldBudget, Optional.of(title), Optional.of(limit),
-                                                  Optional.of(budgetType), Optional.of(maxSingleExpense),
-                                                  Optional.of(defaultCurrency),
-                                                  budgetPeriod,
-                                                  Optional.ofNullable(description)
+        BudgetPeriod budgetPeriod = innerServiceLogic.getBudgetPeriod(budgetStart, budgetEnd);
+        if (innerServiceLogic.noParamChangeCheck(oldBudget, Optional.of(title), Optional.of(limit),
+                                                 Optional.of(budgetType), Optional.of(maxSingleExpense),
+                                                 Optional.of(defaultCurrency),
+                                                 budgetPeriod,
+                                                 Optional.ofNullable(description)
         )) {
             return oldBudget;
         }
         if (!title.equals(oldBudget.budgetDetails().title())) {
-            title = budgetServiceLogic.duplicateBudgetTitleCheck(title, userId);
+            title = innerServiceLogic.duplicateBudgetTitleCheck(title, userId);
         }
         if (maxSingleExpense.compareTo(limit) > 0) {
             maxSingleExpense = limit;
         }
 
-        budgetServiceLogic.updateHistoryChange(oldBudget);
+        innerServiceLogic.updateHistoryChange(oldBudget);
 
         return budgetRepository.save(Budget.newOf(
                 budgetId,
@@ -218,19 +225,19 @@ public class DefaultBudgetService implements BudgetService {
         Budget oldBudget = budgetRepository.findByBudgetIdAndUserId(budgetId, userId)
                                            .orElseThrow(() -> new NoSuchElementException(
                                                    "Can't update budget, because it doesn't exist"));
-        BudgetPeriod budgetPeriod = budgetServiceLogic.getBudgetPeriod(
+        BudgetPeriod budgetPeriod = innerServiceLogic.getBudgetPeriod(
                 budgetStart.orElse(oldBudget.budgetDetails().budgetPeriod()
                                             .getStartTime()),
                 budgetEnd.orElse(oldBudget.budgetDetails().budgetPeriod()
                                           .getEndTime())
         );
-        if (budgetServiceLogic.noParamChangeCheck(oldBudget, title, limit, budgetType,
-                                                  maxSingleExpense, defaultCurrency, budgetPeriod, description
+        if (innerServiceLogic.noParamChangeCheck(oldBudget, title, limit, budgetType,
+                                                 maxSingleExpense, defaultCurrency, budgetPeriod, description
         )) {
             return oldBudget;
         }
         if (title.isPresent() && !title.get().equals(oldBudget.budgetDetails().title())) {
-            title = Optional.of(budgetServiceLogic.duplicateBudgetTitleCheck(title.get(), userId));
+            title = Optional.of(innerServiceLogic.duplicateBudgetTitleCheck(title.get(), userId));
         }
         if (maxSingleExpense.isPresent() && maxSingleExpense.get().compareTo(
                 limit.orElse(oldBudget.budgetDetails().limit())) > 0) {
@@ -240,7 +247,7 @@ public class DefaultBudgetService implements BudgetService {
         Optional<BigDecimal> checkedMaxSingleExpense = maxSingleExpense;
         Optional<String> checkedTitle = title;
 
-        budgetServiceLogic.updateHistoryChange(oldBudget);
+        innerServiceLogic.updateHistoryChange(oldBudget);
 
         return budgetRepository.save(budgetRepository.findByBudgetIdAndUserId(budgetId, userId).map(
                 budgetFromRepository -> Budget.newOf(
@@ -266,5 +273,17 @@ public class DefaultBudgetService implements BudgetService {
         BudgetIdWrapper checkedBudgetId = getBudgetById(budgetId, authentication).budgetId();
         expenseRepository.deleteAllByBudgetId(checkedBudgetId);
         budgetRepository.deleteById(budgetId);
+    }
+
+    @Override
+    public EntityModel<BudgetResponseDto> getEntityModel(Budget budget) {
+        Link link = linkTo(BudgetController.class).slash(budget.budgetId().id()).withSelfRel();
+        return innerServiceLogic.getEntityModelFromLink(link, budget);
+    }
+
+    @Override
+    public PagedModel<BudgetResponseDto> getEntities(Page<Budget> budget) {
+        Link generalLink = linkTo(BudgetController.class).withSelfRel();
+        return innerServiceLogic.getPagedModel(generalLink, BudgetController.class, budget);
     }
 }

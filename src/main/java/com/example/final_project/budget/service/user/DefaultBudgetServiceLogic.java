@@ -5,13 +5,18 @@ import com.example.final_project.budget.model.BudgetDetails;
 import com.example.final_project.budget.model.BudgetPeriod;
 import com.example.final_project.budget.model.BudgetType;
 import com.example.final_project.budget.repository.BudgetRepository;
+import com.example.final_project.budget.response.BudgetResponseDto;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
-import com.example.final_project.expense.repository.ExpenseRepository;
+import com.example.final_project.expense.response.ExpenseResponseDto;
 import com.example.final_project.expense.service.user.ExpenseServiceLogic;
 import com.example.final_project.userentity.model.UserIdWrapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -21,12 +26,15 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+
 @Service
 @RequiredArgsConstructor
 public class DefaultBudgetServiceLogic implements BudgetServiceLogic {
     private final BudgetRepository budgetRepository;
     private final ExpenseServiceLogic expenseServiceLogic;
 
+    @Override
     public String duplicateBudgetTitleCheck(String title, UserIdWrapper userId) {
         if (budgetRepository.existsByUserIdAndBudgetDetails_Title(userId, title)) {
             long counter = 0;
@@ -41,12 +49,14 @@ public class DefaultBudgetServiceLogic implements BudgetServiceLogic {
         return title;
     }
 
+    @Override
     public void updateHistoryChange(Budget oldBudget) {
         TreeMap<Integer, LocalDateTime> history = oldBudget.budgetDetails().historyOfChanges();
         Integer newRecordNumber = history.lastEntry().getKey() + 1;
         history.put(newRecordNumber, LocalDateTime.now());
     }
 
+    @Override
     public BudgetPeriod getBudgetPeriod(LocalDate startTime, LocalDate endTime) {
         if (startTime == null) {
             LocalDate now = LocalDate.now();
@@ -60,6 +70,7 @@ public class DefaultBudgetServiceLogic implements BudgetServiceLogic {
         return BudgetPeriod.newOf(startTime, endTime);
     }
 
+    @Override
     public TreeMap<LocalDate, List<Expense>> getExpensesByDay(List<Expense> expenses) {
         return expenses.stream().collect(Collectors.groupingBy(
                 exp -> exp.expenseDetails()
@@ -69,11 +80,13 @@ public class DefaultBudgetServiceLogic implements BudgetServiceLogic {
                           .toLocalDate(), TreeMap::new, Collectors.toList()));
     }
 
+    @Override
     public HashMap<ExpenseType, List<Expense>> getExpensesByCategory(List<Expense> expenses) {
         return expenses.stream().collect(
                 Collectors.groupingBy(exp -> exp.expenseDetails().expenseType(), HashMap::new, Collectors.toList()));
     }
 
+    @Override
     public HashMap<ExpenseType, Float> getExpenseCategoryPercentage(List<Expense> expenses, Budget budget) {
         HashMap<ExpenseType, List<Expense>> expensesByCategory = getExpensesByCategory(expenses);
         BigDecimal limit = budget.budgetDetails().limit();
@@ -97,10 +110,12 @@ public class DefaultBudgetServiceLogic implements BudgetServiceLogic {
                                                       )));
     }
 
+    @Override
     public Float budgetFullFillPercentage(BigDecimal base, BigDecimal actual) {
         return actual.multiply(BigDecimal.valueOf(100)).divide(base, 1, RoundingMode.DOWN).floatValue();
     }
 
+    @Override
     public String getTrueLimitFromBudget(Budget budget) {
         BudgetType ourBudgetType = budget.budgetDetails().budgetType();
         BigDecimal limit = budget.budgetDetails().limit().multiply(ourBudgetType.getValue());
@@ -111,6 +126,7 @@ public class DefaultBudgetServiceLogic implements BudgetServiceLogic {
         }
     }
 
+    @Override
     public boolean noParamChangeCheck(Budget oldBudget,
                                       Optional<String> newTitle,
                                       Optional<BigDecimal> newLimit,
@@ -138,7 +154,24 @@ public class DefaultBudgetServiceLogic implements BudgetServiceLogic {
         return true;
     }
 
+    @Override
     public BigDecimal showBalanceByCurrency(MKTCurrency expectedCurrency, Budget budget) {
         return expenseServiceLogic.sumAllExpensesByCurrency(expectedCurrency, budget);
+    }
+    //TODO extend HATEOAS links to more road signs
+    @Override
+    public EntityModel<BudgetResponseDto> getEntityModelFromLink(Link link, Budget budget) {
+        BudgetResponseDto budgetResponseDto = BudgetResponseDto.fromDomain(budget);
+        return EntityModel.of(budgetResponseDto.add(link));
+    }
+
+    @Override
+    public PagedModel<BudgetResponseDto> getPagedModel(Link generalLink, Class<?> controller, Page<Budget> budgets) {
+        List<BudgetResponseDto> list = budgets.map(BudgetResponseDto::fromDomain).stream().toList();
+        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(budgets.getSize(), budgets.getNumber(),
+                                                                           budgets.getTotalElements(),
+                                                                           budgets.getTotalPages());
+        list.forEach(dto -> dto.add(linkTo(controller).slash(dto.getBudgetId()).withSelfRel()));
+        return PagedModel.of(list, pageMetadata, generalLink);
     }
 }

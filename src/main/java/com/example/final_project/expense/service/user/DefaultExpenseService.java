@@ -2,6 +2,7 @@ package com.example.final_project.expense.service.user;
 
 import com.example.final_project.budget.model.BudgetIdWrapper;
 import com.example.final_project.currencyapi.model.MKTCurrency;
+import com.example.final_project.expense.controller.admin.AdminExpenseController;
 import com.example.final_project.expense.controller.user.ExpenseController;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseDetails;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -60,7 +62,7 @@ public class DefaultExpenseService implements ExpenseService {
         innerServiceLogic.addBalance(currency, amount, budgetId);
         return expenseRepository.save(expense);
     }
-
+///TODO add hateoas
     @Override
     public Expense getExpenseById(ExpenseIdWrapper expenseId, Authentication authentication) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);

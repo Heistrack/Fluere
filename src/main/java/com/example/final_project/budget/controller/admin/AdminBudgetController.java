@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +33,7 @@ public class AdminBudgetController {
     private final AdminBudgetService adminBudgetService;
 
     @PostMapping
-    ResponseEntity<BudgetResponseDto> registerNewBudget(
+    ResponseEntity<EntityModel<BudgetResponseDto>> registerNewBudget(
             @RequestBody @Valid AdminRegisterBudgetRequest request
     ) {
         Budget newBudget = adminBudgetService.registerNewBudget(UserIdWrapper.newFromString(request.userId()),
@@ -41,27 +43,25 @@ public class AdminBudgetController {
                                                                 request.budgetStart(), request.budgetEnd(),
                                                                 request.description()
         );
-
-        BudgetResponseDto budgetResponseDto = BudgetResponseDto.fromDomain(newBudget);
-        return ResponseEntity.created(URI.create("/expenses/" + budgetResponseDto.budgetId().toString()))
-                             .body(budgetResponseDto);
+        return ResponseEntity.status(201).body(adminBudgetService.getEntityModel(newBudget));
     }
 
     @GetMapping("/{budget_uuid}")
-    ResponseEntity<BudgetResponseDto> getSingleBudget(
+    ResponseEntity<EntityModel<BudgetResponseDto>> getSingleBudget(
             @PathVariable(name = "budget_uuid") UUID budgetUUID
     ) {
-        Budget budgetById = adminBudgetService.getBudgetById(BudgetIdWrapper.newOf(budgetUUID));
-        return ResponseEntity.ok(BudgetResponseDto.fromDomain(budgetById));
+        Budget budget = adminBudgetService.getBudgetById(BudgetIdWrapper.newOf(budgetUUID));
+        return ResponseEntity.ok(adminBudgetService.getEntityModel(budget));
     }
 
+//TODO hateoas for two endpoints
     @GetMapping("/status/{budget_uuid}")
     ResponseEntity<BudgetStatusDTO> getBudgetStatus(@PathVariable(name = "budget_uuid") UUID budgetUUID
     ) {
         return ResponseEntity.ok(
                 adminBudgetService.getBudgetStatus(BudgetIdWrapper.newOf(budgetUUID)));
     }
-
+//TODO add HATEOAS
     @GetMapping("/statuses/{user_uuid}")
     ResponseEntity<Page<BudgetStatusDTO>> getBudgetsStatusByPage(
             @PathVariable(name = "user_uuid") UUID userUUID,
@@ -81,49 +81,49 @@ public class AdminBudgetController {
     }
 
     @GetMapping("/users/{user_uuid}")
-    ResponseEntity<Page<BudgetResponseDto>> getAllBudgetsByUserIdAndPage(
+    ResponseEntity<PagedModel<BudgetResponseDto>> getAllBudgetsByUserIdAndPage(
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "25") Integer size,
             @RequestParam(required = false, defaultValue = "budgetId") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
             @PathVariable(name = "user_uuid") UUID userUUID
     ) {
-        return ResponseEntity.ok(adminBudgetService
-                                         .getAllBudgetsByUserIdAndPage(userUUID, PageRequest.of(
-                                                 page,
-                                                 size,
-                                                 Sort.by(
-                                                         sortDirection,
-                                                         sortBy
-                                                 )
-                                         ))
-                                         .map(BudgetResponseDto::fromDomain));
+        Page<Budget> budgets = adminBudgetService
+                .getAllBudgetsByUserIdAndPage(userUUID, PageRequest.of(
+                        page,
+                        size,
+                        Sort.by(
+                                sortDirection,
+                                sortBy
+                        )
+                ));
+        return ResponseEntity.ok(adminBudgetService.getEntities(budgets));
     }
 
     @GetMapping("/users")
-    ResponseEntity<Page<BudgetResponseDto>> getAllBudgetsByPage(
+    ResponseEntity<PagedModel<BudgetResponseDto>> getAllBudgetsByPage(
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "25") Integer size,
             @RequestParam(required = false, defaultValue = "budgetId") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
     ) {
-        return ResponseEntity.ok(adminBudgetService
-                                         .getAllBudgetsByPage(PageRequest.of(
-                                                 page,
-                                                 size,
-                                                 Sort.by(
-                                                         sortDirection,
-                                                         sortBy
-                                                 )
-                                         ))
-                                         .map(BudgetResponseDto::fromDomain));
+        Page<Budget> budgets = adminBudgetService
+                .getAllBudgetsByPage(PageRequest.of(
+                        page,
+                        size,
+                        Sort.by(
+                                sortDirection,
+                                sortBy
+                        )
+                ));
+        return ResponseEntity.ok(adminBudgetService.getEntities(budgets));
     }
 
     @PutMapping()
-    ResponseEntity<BudgetResponseDto> updateBudget(
+    ResponseEntity<EntityModel<BudgetResponseDto>> updateBudget(
             @Valid @RequestBody UpdateBudgetRequest request
     ) {
-        return ResponseEntity.ok(BudgetResponseDto.fromDomain(adminBudgetService.updateBudgetById(
+        Budget budget = adminBudgetService.updateBudgetById(
                 BudgetIdWrapper.newFromString(request.budgetId()),
                 request.title(),
                 request.limit(),
@@ -133,14 +133,15 @@ public class AdminBudgetController {
                 request.budgetStart(),
                 request.budgetEnd(),
                 request.description()
-        )));
+        );
+        return ResponseEntity.ok(adminBudgetService.getEntityModel(budget));
     }
 
     @PatchMapping()
-    ResponseEntity<BudgetResponseDto> patchBudget(
+    ResponseEntity<EntityModel<BudgetResponseDto>> patchBudget(
             @Valid @RequestBody PatchBudgetRequest request
     ) {
-        return ResponseEntity.ok(BudgetResponseDto.fromDomain(adminBudgetService.patchBudgetContent(
+        Budget budget = adminBudgetService.patchBudgetContent(
                 BudgetIdWrapper.newFromString(request.budgetId()),
                 Optional.ofNullable(request.title()),
                 Optional.ofNullable(request.limit()),
@@ -150,11 +151,12 @@ public class AdminBudgetController {
                 Optional.ofNullable(request.budgetStart()),
                 Optional.ofNullable(request.budgetEnd()),
                 Optional.ofNullable(request.description())
-        )));
+        );
+        return ResponseEntity.ok(adminBudgetService.getEntityModel(budget));
     }
 
     @DeleteMapping("/{budget_uuid}")
-    ResponseEntity<BudgetResponseDto> deleteBudget(@PathVariable(name = "budget_uuid") UUID budgetUUID
+    ResponseEntity<EntityModel<BudgetResponseDto>> deleteBudget(@PathVariable(name = "budget_uuid") UUID budgetUUID
     ) {
         adminBudgetService.deleteBudgetByBudgetId(BudgetIdWrapper.newOf(budgetUUID));
         return ResponseEntity.noContent().build();

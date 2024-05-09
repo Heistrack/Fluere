@@ -6,13 +6,15 @@ import com.example.final_project.expense.model.ExpenseIdWrapper;
 import com.example.final_project.expense.request.appuser.PatchExpenseRequest;
 import com.example.final_project.expense.request.appuser.RegisterExpenseRequest;
 import com.example.final_project.expense.request.appuser.UpdateExpenseRequest;
-import com.example.final_project.expense.response.appuser.ExpenseResponseDto;
+import com.example.final_project.expense.response.ExpenseResponseDto;
 import com.example.final_project.expense.service.user.ExpenseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +33,7 @@ public class ExpenseController {
     private final ExpenseService expenseService;
 
     @PostMapping
-    ResponseEntity<ExpenseResponseDto> registerNewExpense(
+    ResponseEntity<EntityModel<ExpenseResponseDto>> registerNewExpense(
             @RequestBody @Valid RegisterExpenseRequest request,
             Authentication authentication
     ) {
@@ -42,22 +44,20 @@ public class ExpenseController {
                                                                request.description(),
                                                                authentication
         );
-        ExpenseResponseDto response = ExpenseResponseDto.fromDomain(newExpense);
-        return ResponseEntity.created(URI.create("/expenses/" + response.expenseId()))
-                             .body(response);
+        return ResponseEntity.status(201).body(expenseService.getEntityModel(newExpense));
     }
 
     @GetMapping("/{expense_uuid}")
-    ResponseEntity<ExpenseResponseDto> getSingleExpense(
+    ResponseEntity<EntityModel<ExpenseResponseDto>> getSingleExpense(
             @PathVariable(name = "expense_uuid") UUID expenseUUID,
             Authentication authentication
     ) {
-        Expense expenseById = expenseService.getExpenseById(ExpenseIdWrapper.newOf(expenseUUID), authentication);
-        return ResponseEntity.ok(ExpenseResponseDto.fromDomain(expenseById));
+        Expense expense = expenseService.getExpenseById(ExpenseIdWrapper.newOf(expenseUUID), authentication);
+        return ResponseEntity.ok(expenseService.getEntityModel(expense));
     }
 
     @GetMapping("/budget/{budget_uuid}")
-    ResponseEntity<Page<ExpenseResponseDto>> getExpensesByBudgetId(
+    ResponseEntity<PagedModel<ExpenseResponseDto>> getExpensesByBudgetId(
             @PathVariable(name = "budget_uuid") UUID budgetUUID,
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "25") Integer size,
@@ -65,36 +65,36 @@ public class ExpenseController {
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
             Authentication authentication
     ) {
-        return ResponseEntity.ok(expenseService.getAllExpensesByBudgetId(
-                                                       BudgetIdWrapper.newOf(budgetUUID),
-                                                       PageRequest.of(page, size,
-                                                                      Sort.by(sortDirection, sortBy)
-                                                       ), authentication
-                                               )
-                                               .map(ExpenseResponseDto::fromDomain));
+        Page<Expense> allExpensesByBudgetId = expenseService.getAllExpensesByBudgetId(
+                BudgetIdWrapper.newOf(budgetUUID),
+                PageRequest.of(page, size,
+                               Sort.by(sortDirection, sortBy)
+                ), authentication
+        );
+        return ResponseEntity.ok(expenseService.getEntities(allExpensesByBudgetId));
     }
 
     @GetMapping
-    ResponseEntity<Page<ExpenseResponseDto>> getExpensesByPage(
+    ResponseEntity<PagedModel<ExpenseResponseDto>> getExpensesByPage(
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "25") Integer size,
             @RequestParam(required = false, defaultValue = "id") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
             Authentication authentication
     ) {
-        return ResponseEntity.ok(expenseService.getAllByPage(
-                                                       PageRequest.of(page, size, Sort.by(sortDirection, sortBy)),
-                                                       authentication
-                                               )
-                                               .map(ExpenseResponseDto::fromDomain));
+        Page<Expense> allByPage = expenseService.getAllByPage(
+                PageRequest.of(page, size, Sort.by(sortDirection, sortBy)),
+                authentication
+        );
+        return ResponseEntity.ok(expenseService.getEntities(allByPage));
     }
 
     @PatchMapping()
-    ResponseEntity<ExpenseResponseDto> patchExpenseField(
+    ResponseEntity<EntityModel<ExpenseResponseDto>> patchExpenseField(
             @RequestBody @Valid PatchExpenseRequest request,
             Authentication authentication
     ) {
-        return ResponseEntity.ok(ExpenseResponseDto.fromDomain(expenseService.patchExpenseContent(
+        Expense patchedExpense = expenseService.patchExpenseContent(
                 ExpenseIdWrapper.newOf(UUID.fromString(request.expenseId())),
                 Optional.ofNullable(request.title()),
                 Optional.ofNullable(request.amount()),
@@ -102,11 +102,12 @@ public class ExpenseController {
                 Optional.ofNullable(request.expenseType()),
                 Optional.ofNullable(request.description()),
                 authentication
-        )));
+        );
+        return ResponseEntity.ok(expenseService.getEntityModel(patchedExpense));
     }
 
     @PutMapping()
-    ResponseEntity<ExpenseResponseDto> updateExpense(
+    ResponseEntity<EntityModel<ExpenseResponseDto>> updateExpense(
             @RequestBody @Valid UpdateExpenseRequest request,
             Authentication authentication
     ) {
@@ -119,11 +120,11 @@ public class ExpenseController {
                 request.description(),
                 authentication
         );
-        return ResponseEntity.ok(ExpenseResponseDto.fromDomain(updatedExpense));
+        return ResponseEntity.ok(expenseService.getEntityModel(updatedExpense));
     }
 
     @DeleteMapping("/{expense_uuid}")
-    ResponseEntity<ExpenseResponseDto> deleteExpense(
+    ResponseEntity<EntityModel<ExpenseResponseDto>> deleteExpense(
             @PathVariable(name = "expense_uuid") UUID expenseUUID,
             Authentication authentication
     ) {

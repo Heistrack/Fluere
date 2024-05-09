@@ -5,6 +5,11 @@ import com.example.final_project.budget.model.BudgetIdWrapper;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
+import com.example.final_project.expense.response.ExpenseResponseDto;
+import org.springframework.data.domain.Page;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -33,4 +38,8 @@ public interface ExpenseServiceLogic {
     BigDecimal getConversionCurrencyRatio(MKTCurrency expenseCurrency, MKTCurrency expectedCurrency);
 
     BigDecimal sumAllExpensesByCurrency(MKTCurrency expectedCurrency, Budget budget);
+
+    EntityModel<ExpenseResponseDto> getEntityModelFromLink(Link link, Expense expense);
+
+    PagedModel<ExpenseResponseDto> getPagedModel(Link generalLink, Class<?> controller, Page<Expense> expenses);
 }

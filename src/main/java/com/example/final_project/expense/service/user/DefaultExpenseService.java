@@ -2,16 +2,21 @@ package com.example.final_project.expense.service.user;
 
 import com.example.final_project.budget.model.BudgetIdWrapper;
 import com.example.final_project.currencyapi.model.MKTCurrency;
+import com.example.final_project.expense.controller.user.ExpenseController;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseDetails;
 import com.example.final_project.expense.model.ExpenseIdWrapper;
 import com.example.final_project.expense.model.ExpenseType;
 import com.example.final_project.expense.repository.ExpenseRepository;
+import com.example.final_project.expense.response.ExpenseResponseDto;
 import com.example.final_project.security.service.JwtService;
 import com.example.final_project.userentity.model.UserIdWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +26,8 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Supplier;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @Service
 @RequiredArgsConstructor
@@ -172,5 +179,17 @@ public class DefaultExpenseService implements ExpenseService {
     public void deleteExpenseById(ExpenseIdWrapper expenseId, Authentication authentication) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
         expenseRepository.deleteByExpenseIdAndUserId(expenseId, userId);
+    }
+
+    @Override
+    public EntityModel<ExpenseResponseDto> getEntityModel(Expense expense) {
+        Link link = linkTo(ExpenseController.class).slash(expense.expenseId().id()).withSelfRel();
+        return innerServiceLogic.getEntityModelFromLink(link, expense);
+    }
+
+    @Override
+    public PagedModel<ExpenseResponseDto> getEntities(Page<Expense> expenses) {
+        Link generalLink = linkTo(ExpenseController.class).withSelfRel();
+        return innerServiceLogic.getPagedModel(generalLink, ExpenseController.class, expenses);
     }
 }

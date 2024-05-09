@@ -5,6 +5,7 @@ import com.example.final_project.userentity.model.UserIdWrapper;
 import lombok.Builder;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
+import org.springframework.hateoas.RepresentationModel;
 
 @Document
 public record Expense(

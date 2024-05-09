@@ -45,10 +45,12 @@ public class DefaultCurrencyService implements CurrencyService {
     @Override
     public FiatCurrencyDailyData getData() {
         return fiatCurrency;
+        //TODO check dependency version update in pom.xml
     }
 
     @PostConstruct
     private void updateData() {
+        System.out.println(fiatCurrency);
         if (!fiatCurrency.previousDateCheck().equals(LocalDate.now())) {
             HashMap<MKTCurrency, BigDecimal> jsonMap = getJSONMap();
             Integer currentValue = fiatCurrency.howMuchRequestLeftAPI();

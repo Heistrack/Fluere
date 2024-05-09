@@ -5,9 +5,12 @@ import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseIdWrapper;
 import com.example.final_project.expense.model.ExpenseType;
+import com.example.final_project.expense.response.ExpenseResponseDto;
 import com.example.final_project.userentity.model.UserIdWrapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -42,4 +45,8 @@ public interface AdminExpenseService {
     );
 
     void deleteExpenseById(ExpenseIdWrapper expenseId);
+
+    EntityModel<ExpenseResponseDto> getEntityModel(Expense expense);
+
+    PagedModel<ExpenseResponseDto> getEntities(Page<Expense> expenses);
 }

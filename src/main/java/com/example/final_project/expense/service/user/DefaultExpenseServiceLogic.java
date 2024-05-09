@@ -9,7 +9,12 @@ import com.example.final_project.currencyapi.repository.CurrencyRepository;
 import com.example.final_project.exception.custom.ExpenseTooBigException;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
+import com.example.final_project.expense.response.ExpenseResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,13 +22,15 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+
 @Service
 @RequiredArgsConstructor
 public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
     private final BudgetRepository budgetRepository;
     private final CurrencyRepository currencyRepository;
 
-
+    @Override
     public void balanceUpdate(MKTCurrency currency, BigDecimal amount, Expense oldExpense) {
         Budget budget = budgetRepository.findById(oldExpense.budgetId())
                                         .orElseThrow(() -> new NoSuchElementException("Budget not found."));
@@ -32,6 +39,7 @@ public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
         budgetRepository.save(budget);
     }
 
+    @Override
     public void addBalance(MKTCurrency currency, BigDecimal amount, BudgetIdWrapper budgetId) {
         Budget budget = budgetRepository.findById(budgetId)
                                         .orElseThrow(() -> new NoSuchElementException("Budget not found."));
@@ -39,13 +47,14 @@ public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
         budgetRepository.save(budget);
     }
 
-
+    @Override
     public void updateHistoryChange(Expense oldExpense) {
         TreeMap<Integer, LocalDateTime> history = oldExpense.expenseDetails().historyOfChanges();
         Integer newRecordNumber = history.lastEntry().getKey() + 1;
         history.put(newRecordNumber, LocalDateTime.now());
     }
 
+    @Override
     public boolean noParamChangeCheck(Expense oldExpense,
                                       Optional<String> newTitle,
                                       Optional<BigDecimal> newAmount,
@@ -64,6 +73,7 @@ public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
         return true;
     }
 
+    @Override
     public void validationExpenseAmount(MKTCurrency currency, BigDecimal amount, BudgetIdWrapper budgetId) {
         budgetRepository.findById(budgetId).ifPresent((budget) ->
                                                       {
@@ -72,6 +82,7 @@ public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
                                                       });
     }
 
+    @Override
     public void singleMaxExpValidation(MKTCurrency expenseCurrency, BigDecimal amount, Budget budget) {
         MKTCurrency budgetCurrency = budget.budgetDetails().defaultCurrency();
         if (budget.budgetDetails().maxSingleExpense().compareTo(amount.multiply(getConversionCurrencyRatio(
@@ -82,6 +93,7 @@ public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
         }
     }
 
+    @Override
     public void checkBudgetLimit(MKTCurrency expenseCurrency, BigDecimal amount, Budget budget) {
         if (budget.budgetDetails().budgetType().getValue().compareTo(BigDecimal.ZERO) < 0) {
             return;
@@ -100,6 +112,7 @@ public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
         }
     }
 
+    @Override
     public BigDecimal sumAllExpensesByCurrency(MKTCurrency expectedCurrency, Budget budget) {
         HashMap<MKTCurrency, BigDecimal> allExpenses = budget.budgetDetails().expenseSet()
                                                              .expenseMap();
@@ -111,6 +124,7 @@ public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
         return balance;
     }
 
+    @Override
     public BigDecimal getConversionCurrencyRatio(MKTCurrency expenseCurrency, MKTCurrency expectedCurrency) {
         if (expenseCurrency.equals(expectedCurrency)) return BigDecimal.ONE;
 
@@ -127,5 +141,23 @@ public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
         }
 
         return defaultCurrencyToUSDRatio.divide(expenseCurrencyToUSDRatio, 4, RoundingMode.HALF_UP);
+    }
+
+    //TODO extend HATEOAS links to more road signs
+    @Override
+    public EntityModel<ExpenseResponseDto> getEntityModelFromLink(Link link, Expense expense) {
+        ExpenseResponseDto expenseResponseDto = ExpenseResponseDto.fromDomain(expense);
+        return EntityModel.of(expenseResponseDto.add(link));
+    }
+
+    @Override
+    public PagedModel<ExpenseResponseDto> getPagedModel(Link generalLink, Class<?> controller, Page<Expense> expenses) {
+        List<ExpenseResponseDto> list = expenses.map(ExpenseResponseDto::fromDomain).stream().toList();
+        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(expenses.getSize(), expenses.getNumber(),
+                                                                           expenses.getTotalElements(),
+                                                                           expenses.getTotalPages()
+        );
+        list.forEach(dto -> dto.add(linkTo(controller).slash(dto.getExpenseId()).withSelfRel()));
+        return PagedModel.of(list, pageMetadata, generalLink);
     }
 }

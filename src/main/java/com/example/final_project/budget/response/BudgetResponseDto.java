@@ -4,9 +4,11 @@ import com.example.final_project.budget.model.Budget;
 import com.example.final_project.budget.model.BudgetPeriod;
 import com.example.final_project.budget.model.BudgetType;
 import com.example.final_project.budget.model.ExpenseSet;
-import com.example.final_project.budget.repository.BudgetRepository;
 import com.example.final_project.currencyapi.model.MKTCurrency;
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.math.BigDecimal;
@@ -20,16 +22,16 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = false)
 public class BudgetResponseDto extends RepresentationModel<BudgetResponseDto> {
 
-        private final UUID budgetId;
-        private final String title;
-        private final BigDecimal limit;
-        private final BudgetType budgetType;
-        private final BigDecimal maxSingleExpense;
-        private final MKTCurrency defaultCurrency;
-        private final ExpenseSet expenseSet;
-        private final TreeMap<Integer, LocalDateTime> historyOfChanges;
-        private final BudgetPeriod budgetPeriod;
-        private final String description;
+    private final UUID budgetId;
+    private final String title;
+    private final BigDecimal limit;
+    private final BudgetType budgetType;
+    private final BigDecimal maxSingleExpense;
+    private final MKTCurrency defaultCurrency;
+    private final ExpenseSet expenseSet;
+    private final TreeMap<Integer, LocalDateTime> historyOfChanges;
+    private final BudgetPeriod budgetPeriod;
+    private final String description;
 
 
     public static BudgetResponseDto fromDomain(Budget budget) {

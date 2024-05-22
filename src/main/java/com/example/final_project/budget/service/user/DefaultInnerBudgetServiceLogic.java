@@ -157,6 +157,7 @@ public class DefaultInnerBudgetServiceLogic implements BudgetInnerServiceLogic {
     public BigDecimal showBalanceByCurrency(MKTCurrency expectedCurrency, Budget budget) {
         return expenseInnerServiceLogic.sumAllExpensesByCurrency(expectedCurrency, budget);
     }
+
     //TODO extend HATEOAS links to more road signs
     @Override
     public EntityModel<BudgetResponseDto> getEntityModelFromLink(Link link, Budget budget) {
@@ -169,7 +170,8 @@ public class DefaultInnerBudgetServiceLogic implements BudgetInnerServiceLogic {
         List<BudgetResponseDto> list = budgets.map(BudgetResponseDto::fromDomain).stream().toList();
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(budgets.getSize(), budgets.getNumber(),
                                                                            budgets.getTotalElements(),
-                                                                           budgets.getTotalPages());
+                                                                           budgets.getTotalPages()
+        );
         list.forEach(dto -> dto.add(linkTo(controller).slash(dto.getBudgetId()).withSelfRel()));
         return PagedModel.of(list, pageMetadata, generalLink);
     }

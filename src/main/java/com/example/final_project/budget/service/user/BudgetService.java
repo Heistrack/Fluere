@@ -6,13 +6,10 @@ import com.example.final_project.budget.model.BudgetType;
 import com.example.final_project.budget.response.BudgetResponseDto;
 import com.example.final_project.budget.response.BudgetStatusDTO;
 import com.example.final_project.currencyapi.model.MKTCurrency;
-import com.example.final_project.expense.model.Expense;
-import com.example.final_project.expense.response.ExpenseResponseDto;
 import com.nimbusds.jose.util.Pair;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.security.core.Authentication;
 

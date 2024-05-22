@@ -155,7 +155,8 @@ public class DefaultInnerExpenseServiceLogic implements ExpenseInnerServiceLogic
         List<ExpenseResponseDto> list = expenses.map(ExpenseResponseDto::fromDomain).stream().toList();
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(expenses.getSize(), expenses.getNumber(),
                                                                            expenses.getTotalElements(),
-                                                                           expenses.getTotalPages());
+                                                                           expenses.getTotalPages()
+        );
         list.forEach(dto -> dto.add(linkTo(controller).slash(dto.getExpenseId()).withSelfRel()));
         return PagedModel.of(list, pageMetadata, generalLink);
     }

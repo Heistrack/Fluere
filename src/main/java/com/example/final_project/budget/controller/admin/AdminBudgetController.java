@@ -19,7 +19,6 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -54,14 +53,15 @@ public class AdminBudgetController {
         return ResponseEntity.ok(adminBudgetService.getEntityModel(budget));
     }
 
-//TODO hateoas for two endpoints
+    //TODO hateoas for two endpoints
     @GetMapping("/status/{budget_uuid}")
     ResponseEntity<BudgetStatusDTO> getBudgetStatus(@PathVariable(name = "budget_uuid") UUID budgetUUID
     ) {
         return ResponseEntity.ok(
                 adminBudgetService.getBudgetStatus(BudgetIdWrapper.newOf(budgetUUID)));
     }
-//TODO add HATEOAS
+
+    //TODO add HATEOAS
     @GetMapping("/statuses/{user_uuid}")
     ResponseEntity<Page<BudgetStatusDTO>> getBudgetsStatusByPage(
             @PathVariable(name = "user_uuid") UUID userUUID,

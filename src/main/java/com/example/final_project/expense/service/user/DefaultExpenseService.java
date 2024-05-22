@@ -60,7 +60,8 @@ public class DefaultExpenseService implements ExpenseService {
         innerServiceLogic.addBalance(currency, amount, budgetId);
         return expenseRepository.save(expense);
     }
-///TODO add hateoas
+
+    ///TODO add hateoas
     @Override
     public Expense getExpenseById(ExpenseIdWrapper expenseId, Authentication authentication) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);

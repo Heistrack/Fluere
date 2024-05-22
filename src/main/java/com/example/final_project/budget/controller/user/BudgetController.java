@@ -53,7 +53,8 @@ public class BudgetController {
         Budget budget = budgetService.getBudgetById(BudgetIdWrapper.newOf(budgetUUID), authentication);
         return ResponseEntity.ok(budgetService.getEntityModel(budget));
     }
-//TODO implement hateoas
+
+    //TODO implement hateoas
     @GetMapping("/status/{budget_uuid}")
     ResponseEntity<BudgetStatusDTO> getBudgetStatus(@PathVariable(name = "budget_uuid") UUID budgetUUID,
                                                     Authentication authentication

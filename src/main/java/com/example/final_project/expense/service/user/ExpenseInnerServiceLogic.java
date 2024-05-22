@@ -14,7 +14,7 @@ import org.springframework.hateoas.PagedModel;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-public interface ExpenseServiceLogic {
+public interface ExpenseInnerServiceLogic {
     void balanceUpdate(MKTCurrency currency, BigDecimal amount, Expense oldExpense);
 
     void addBalance(MKTCurrency currency, BigDecimal amount, BudgetIdWrapper budgetId);

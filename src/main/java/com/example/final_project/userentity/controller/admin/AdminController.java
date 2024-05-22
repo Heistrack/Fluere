@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -27,12 +28,14 @@ import static com.example.final_project.userentity.controller.admin.AdminControl
 public class AdminController {
     static final String ADMIN_CONTROLLERS_BASE_PATH = "/api/x/users";
     private final AdminService adminService;
+//TODO add hateoas to admin and user layer
 
     @PostMapping()
-    ResponseEntity<AppUser> registerNewUser(
+    ResponseEntity<EntityModel<AppUser>> registerNewUser(
             @Valid @RequestBody RegisterUserRequest request
     ) {
-        return ResponseEntity.ok(adminService.registerNewUser(request));
+        AppUser appUser = adminService.registerNewUser(request);
+        return ResponseEntity.status(201).body(adminService.getEntityModel(appUser));
     }
 
     @GetMapping("/auth_check/{login}")
@@ -55,39 +58,43 @@ public class AdminController {
     }
 
     @PostMapping("/password_reset")
-    ResponseEntity<AppUser> passwordChange(
+    ResponseEntity<EntityModel<AppUser>> passwordChange(
             @RequestBody @Valid AdminPasswordChangeRequest request
     ) {
         AppUser updatedUser = adminService.resetUserPassword(request);
-        return ResponseEntity.ok(updatedUser);
+        return ResponseEntity.ok(adminService.getEntityModel(updatedUser));
     }
 
     @PostMapping("/email_change")
-    ResponseEntity<AppUser> emailChange(
+    ResponseEntity<EntityModel<AppUser>> emailChange(
             @RequestBody @Valid AdminEmailChangeRequest request
     ) {
         AppUser updatedUser = adminService.patchUserEmail(request);
-        return ResponseEntity.ok(updatedUser);
+        return ResponseEntity.ok(adminService.getEntityModel(updatedUser));
     }
 
     @GetMapping("/from_token")
-    ResponseEntity<AppUser> getUserFromToken(Authentication authentication) {
-        return ResponseEntity.ok(adminService.findFromToken(authentication.getName()));
+    ResponseEntity<EntityModel<AppUser>> getUserFromToken(Authentication authentication) {
+        AppUser user = adminService.findFromToken(authentication.getName());
+        return ResponseEntity.ok(adminService.getEntityModel(user));
     }
 
     @GetMapping("/id/{uuid}")
-    ResponseEntity<AppUser> getUserById(@PathVariable(name = "uuid") UUID userUUID) {
-        return ResponseEntity.ok(adminService.findByUserId(userUUID));
+    ResponseEntity<EntityModel<AppUser>> getUserById(@PathVariable(name = "uuid") UUID userUUID) {
+        AppUser user = adminService.findByUserId(userUUID);
+        return ResponseEntity.ok(adminService.getEntityModel(user));
     }
 
     @GetMapping("/logins/{login}")
-    ResponseEntity<AppUser> getUserByLogin(@PathVariable(name = "login") String login) {
-        return ResponseEntity.ok(adminService.findUserByLogin(login));
+    ResponseEntity<EntityModel<AppUser>> getUserByLogin(@PathVariable(name = "login") String login) {
+        AppUser user = adminService.findUserByLogin(login);
+        return ResponseEntity.ok(adminService.getEntityModel(user));
     }
 
     @GetMapping("/emails/{email}")
-    ResponseEntity<AppUser> getUserByEmail(@PathVariable(name = "email") String email) {
-        return ResponseEntity.ok(adminService.findUserByEmail(email));
+    ResponseEntity<EntityModel<AppUser>> getUserByEmail(@PathVariable(name = "email") String email) {
+        AppUser user = adminService.findUserByEmail(email);
+        return ResponseEntity.ok(adminService.getEntityModel(user));
     }
 
     @DeleteMapping("ids/{uuid}")

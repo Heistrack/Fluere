@@ -2,7 +2,3 @@ prod:
   username: "prod"
   password: "prod"
 ---
-admin:
-  key:
-    value: "${ADMIN_KEY_VALUE}"
----

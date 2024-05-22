@@ -6,6 +6,9 @@ import com.example.final_project.security.response.RegisterResponseDTO;
 import com.example.final_project.userentity.model.AppUser;
 import com.example.final_project.userentity.request.appuser.EmailChangeRequest;
 import com.example.final_project.userentity.request.appuser.PasswordChangeRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.security.core.Authentication;
 
 public interface UserService {
@@ -18,4 +21,8 @@ public interface UserService {
     AppUser patchEmail(EmailChangeRequest request, Authentication authentication);
 
     AppUser patchPassword(PasswordChangeRequest request, Authentication authentication);
+
+    EntityModel<AppUser> getEntityModel(AppUser user);
+
+    PagedModel<AppUser> getEntities(Page<AppUser> users);
 }

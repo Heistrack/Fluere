@@ -2,7 +2,6 @@ package com.example.final_project.expense.service.user;
 
 import com.example.final_project.budget.model.BudgetIdWrapper;
 import com.example.final_project.currencyapi.model.MKTCurrency;
-import com.example.final_project.expense.controller.admin.AdminExpenseController;
 import com.example.final_project.expense.controller.user.ExpenseController;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseDetails;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -37,7 +35,7 @@ public class DefaultExpenseService implements ExpenseService {
 
     private final ExpenseRepository expenseRepository;
     private final Supplier<ExpenseIdWrapper> expenseIdSupplier;
-    private final ExpenseServiceLogic innerServiceLogic;
+    private final ExpenseInnerServiceLogic innerServiceLogic;
     private final JwtService jwtService;
 
     @Override

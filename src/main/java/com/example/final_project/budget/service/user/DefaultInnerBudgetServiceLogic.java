@@ -9,8 +9,7 @@ import com.example.final_project.budget.response.BudgetResponseDto;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
-import com.example.final_project.expense.response.ExpenseResponseDto;
-import com.example.final_project.expense.service.user.ExpenseServiceLogic;
+import com.example.final_project.expense.service.user.ExpenseInnerServiceLogic;
 import com.example.final_project.userentity.model.UserIdWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,9 +29,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @Service
 @RequiredArgsConstructor
-public class DefaultBudgetServiceLogic implements BudgetServiceLogic {
+public class DefaultInnerBudgetServiceLogic implements BudgetInnerServiceLogic {
     private final BudgetRepository budgetRepository;
-    private final ExpenseServiceLogic expenseServiceLogic;
+    private final ExpenseInnerServiceLogic expenseInnerServiceLogic;
 
     @Override
     public String duplicateBudgetTitleCheck(String title, UserIdWrapper userId) {
@@ -156,7 +155,7 @@ public class DefaultBudgetServiceLogic implements BudgetServiceLogic {
 
     @Override
     public BigDecimal showBalanceByCurrency(MKTCurrency expectedCurrency, Budget budget) {
-        return expenseServiceLogic.sumAllExpensesByCurrency(expectedCurrency, budget);
+        return expenseInnerServiceLogic.sumAllExpensesByCurrency(expectedCurrency, budget);
     }
     //TODO extend HATEOAS links to more road signs
     @Override

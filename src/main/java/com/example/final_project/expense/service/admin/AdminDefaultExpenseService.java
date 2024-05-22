@@ -11,7 +11,7 @@ import com.example.final_project.expense.model.ExpenseIdWrapper;
 import com.example.final_project.expense.model.ExpenseType;
 import com.example.final_project.expense.repository.ExpenseRepository;
 import com.example.final_project.expense.response.ExpenseResponseDto;
-import com.example.final_project.expense.service.user.ExpenseServiceLogic;
+import com.example.final_project.expense.service.user.ExpenseInnerServiceLogic;
 import com.example.final_project.userentity.model.UserIdWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,7 +36,7 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
 
     private final ExpenseRepository expenseRepository;
     private final Supplier<ExpenseIdWrapper> expenseIdSupplier;
-    private final ExpenseServiceLogic innerServiceLogic;
+    private final ExpenseInnerServiceLogic innerServiceLogic;
     private final BudgetRepository budgetRepository;
 
     @Override
@@ -179,7 +179,6 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
     @Override
     public EntityModel<ExpenseResponseDto> getEntityModel(Expense expense) {
         Link link = linkTo(AdminExpenseController.class).slash(expense.expenseId().id()).withSelfRel();
-
         return innerServiceLogic.getEntityModelFromLink(link, expense);
     }
 

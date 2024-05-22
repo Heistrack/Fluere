@@ -8,6 +8,8 @@ import com.example.final_project.userentity.request.admin.AdminPasswordChangeReq
 import com.example.final_project.userentity.response.admin.AdminOperationResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 
 import java.util.UUID;
 
@@ -39,4 +41,8 @@ public interface AdminService {
     AppUser resetUserPassword(AdminPasswordChangeRequest request);
 
     AdminOperationResponse authenticateTest(String login);
+
+    EntityModel<AppUser> getEntityModel(AppUser user);
+
+    PagedModel<AppUser> getEntities(Page<AppUser> users);
 }

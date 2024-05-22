@@ -1,5 +1,6 @@
 package com.example.final_project.userentity.controller.user;
 
+import com.example.final_project.expense.response.ExpenseResponseDto;
 import com.example.final_project.security.request.AuthenticationRequest;
 import com.example.final_project.security.request.RegisterUserRequest;
 import com.example.final_project.security.response.AuthResponseDTO;
@@ -12,6 +13,7 @@ import com.example.final_project.userentity.response.appuser.UserDetailsResponse
 import com.example.final_project.userentity.service.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +32,7 @@ public class AppUserController {
     ResponseEntity<RegisterResponseDTO> registerNewUser(
             @Valid @RequestBody RegisterUserRequest request
     ) {
-        return ResponseEntity.ok(userService.registerNewUser(request));
+        return ResponseEntity.status(201).body(userService.registerNewUser(request));
     }
 
     @PostMapping("/auth")
@@ -59,13 +61,14 @@ public class AppUserController {
     }
 
     @GetMapping
-    ResponseEntity<AppUser> getMyAccountInfo(Authentication authentication) {
-        return ResponseEntity.ok(userService.getUserDetailsFromToken(authentication));
+    ResponseEntity<EntityModel<AppUser>> getMyAccountInfo(Authentication authentication) {
+        AppUser user = userService.getUserDetailsFromToken(authentication);
+        return ResponseEntity.ok(userService.getEntityModel(user));
     }
 
 
     @DeleteMapping()
-    ResponseEntity<AppUser> removeOneselfAccount(
+    ResponseEntity<EntityModel<AppUser>> removeOneselfAccount(
             @RequestBody AuthenticationRequest confirmation,
             Authentication authentication
     ) {

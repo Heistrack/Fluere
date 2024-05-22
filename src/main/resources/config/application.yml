@@ -8,10 +8,14 @@ spring:
       database: mongodb
       port: 27017
       host: localhost
-      username: root
+      username: adminUser
       password: root
 ---
 spring:
   profiles:
     active: dev
+---
+admin:
+  key:
+    value: "${ADMIN_KEY_VALUE}"
 ---

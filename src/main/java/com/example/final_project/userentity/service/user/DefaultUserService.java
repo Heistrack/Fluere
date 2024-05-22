@@ -8,12 +8,17 @@ import com.example.final_project.security.request.RegisterUserRequest;
 import com.example.final_project.security.response.RegisterResponseDTO;
 import com.example.final_project.security.service.AuthenticationService;
 import com.example.final_project.security.service.JwtService;
+import com.example.final_project.userentity.controller.user.AppUserController;
 import com.example.final_project.userentity.model.AppUser;
 import com.example.final_project.userentity.model.UserIdWrapper;
 import com.example.final_project.userentity.repository.AppUserRepository;
 import com.example.final_project.userentity.request.appuser.EmailChangeRequest;
 import com.example.final_project.userentity.request.appuser.PasswordChangeRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,18 +27,21 @@ import org.springframework.stereotype.Service;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+
 @Service
 @RequiredArgsConstructor
 public class DefaultUserService implements UserService {
     private final AppUserRepository userRepository;
     private final AuthenticationService authenticationService;
     private final PasswordEncoder passwordEncoder;
+    private final UserInnerServiceLogic innerServiceLogic;
     private final JwtService jwtService;
     private final BudgetService budgetService;
 
     @Override
     public RegisterResponseDTO registerNewUser(RegisterUserRequest request) {
-        emailAndLoginDuplicatesCheck(request);
+        innerServiceLogic.emailAndLoginDuplicatesCheck(request);
         return authenticationService.register(request);
     }
 
@@ -51,12 +59,12 @@ public class DefaultUserService implements UserService {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
         Optional<AppUser> user = userRepository.findById(userId);
 
-        if (!(user.isPresent() && passwordEncoder.matches(confirmation.password(), user.get().password()) &&
-                confirmation.login().equals(user.get().login()))) {
+        if (!(user.isPresent() && passwordEncoder.matches(confirmation.password(), user.get().getPassword()) &&
+                confirmation.login().equals(user.get().getLogin()))) {
             throw new BadCredentialsException("Login or password are incorrect");
         }
 
-        if (!user.get().login().equals("admin")) {
+        if (!user.get().getLogin().equals("admin")) {
             userRemoveProcedure(authentication);
         }
     }
@@ -70,13 +78,13 @@ public class DefaultUserService implements UserService {
         }
 
         return userRepository.save(AppUser.builder()
-                                          .userId(currentUser.userId())
-                                          .login(currentUser.login())
+                                          .userId(currentUser.getUserId())
+                                          .login(currentUser.getLogin())
                                           .email(request.newEmail())
-                                          .password(currentUser.password())
-                                          .role(currentUser.role())
-                                          .enabled(currentUser.enabled())
-                                          .creationTime(currentUser.creationTime())
+                                          .password(currentUser.getPassword())
+                                          .role(currentUser.getRole())
+                                          .enabled(currentUser.getEnabled())
+                                          .creationTime(currentUser.getCreationTime())
                                           .build());
     }
 
@@ -88,14 +96,26 @@ public class DefaultUserService implements UserService {
             throw new BadCredentialsException("Passwords are not the same.");
 
         return userRepository.save(AppUser.builder()
-                                          .userId(currentUser.userId())
-                                          .login(currentUser.login())
-                                          .email(currentUser.email())
+                                          .userId(currentUser.getUserId())
+                                          .login(currentUser.getLogin())
+                                          .email(currentUser.getEmail())
                                           .password(passwordEncoder.encode(request.firstPasswordAttempt()))
-                                          .role(currentUser.role())
-                                          .enabled(currentUser.enabled())
-                                          .creationTime(currentUser.creationTime())
+                                          .role(currentUser.getRole())
+                                          .enabled(currentUser.getEnabled())
+                                          .creationTime(currentUser.getCreationTime())
                                           .build());
+    }
+
+    @Override
+    public EntityModel<AppUser> getEntityModel(AppUser user) {
+        Link link = linkTo(AppUserController.class).slash(user.getUserId().id()).withSelfRel();
+        return innerServiceLogic.getEntityModelFromLink(link, user);
+    }
+
+    @Override
+    public PagedModel<AppUser> getEntities(Page<AppUser> users) {
+        Link generalLink = linkTo(AppUserController.class).withSelfRel();
+        return innerServiceLogic.getPagedModel(generalLink, AppUserController.class, users);
     }
 
     private void userRemoveProcedure(Authentication authentication) {
@@ -110,22 +130,13 @@ public class DefaultUserService implements UserService {
                      .forEach((budgetId) -> budgetService.deleteAllBudgetExpensesByBudgetId(budgetId, authentication));
     }
 
-    private void emailAndLoginDuplicatesCheck(RegisterUserRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
-            throw new UnableToCreateException("User's email is already occupied!");
-        }
-        if (userRepository.existsByLogin(request.login())) {
-            throw new UnableToCreateException("User's login is already occupied!");
-        }
-    }
-
     private AppUser userCheckBeforeModifyProperties(String password, Authentication authentication) {
         AppUser userFromAuth = (AppUser) authentication.getPrincipal();
 
-        if (!passwordEncoder.matches(password, userFromAuth.password()))
+        if (!passwordEncoder.matches(password, userFromAuth.getPassword()))
             throw new BadCredentialsException("Invalid login or password");
 
-        return userRepository.findById(userFromAuth.userId()).orElseThrow(
+        return userRepository.findById(userFromAuth.getUserId()).orElseThrow(
                 () -> new NoSuchElementException("There is no such user"));
     }
 }

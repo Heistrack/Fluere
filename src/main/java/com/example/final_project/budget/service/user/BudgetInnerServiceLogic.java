@@ -7,7 +7,6 @@ import com.example.final_project.budget.response.BudgetResponseDto;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
-import com.example.final_project.expense.response.ExpenseResponseDto;
 import com.example.final_project.userentity.model.UserIdWrapper;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
@@ -21,7 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.TreeMap;
 
-public interface BudgetServiceLogic {
+public interface BudgetInnerServiceLogic {
     String duplicateBudgetTitleCheck(String title, UserIdWrapper userId);
 
     void updateHistoryChange(Budget oldBudget);

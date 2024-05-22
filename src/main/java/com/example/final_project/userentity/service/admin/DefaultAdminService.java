@@ -7,6 +7,7 @@ import com.example.final_project.security.request.AuthenticationRequest;
 import com.example.final_project.security.request.RegisterUserRequest;
 import com.example.final_project.security.service.AuthenticationService;
 import com.example.final_project.security.service.JwtService;
+import com.example.final_project.userentity.controller.admin.AdminController;
 import com.example.final_project.userentity.model.AppUser;
 import com.example.final_project.userentity.model.Role;
 import com.example.final_project.userentity.model.UserIdWrapper;
@@ -14,12 +15,16 @@ import com.example.final_project.userentity.repository.AppUserRepository;
 import com.example.final_project.userentity.request.admin.AdminEmailChangeRequest;
 import com.example.final_project.userentity.request.admin.AdminPasswordChangeRequest;
 import com.example.final_project.userentity.response.admin.AdminOperationResponse;
+import com.example.final_project.userentity.service.user.UserInnerServiceLogic;
 import io.jsonwebtoken.JwtException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,20 +32,23 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+
 @Service
 @RequiredArgsConstructor
 public class DefaultAdminService implements AdminService {
     private final AppUserRepository userRepository;
     private final AuthenticationService authenticationService;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    private final UserInnerServiceLogic innerServiceLogic;
     private final AdminBudgetService adminBudgetService;
+    private final JwtService jwtService;
     @Value("${admin.key.value}")
     private String ADMIN_PASSWORD;
 
     @Override
     public AppUser registerNewUser(RegisterUserRequest request) {
-        emailAndLoginDuplicatesCheck(request);
+        innerServiceLogic.emailAndLoginDuplicatesCheck(request);
         return authenticationService.register(request).user();
     }
 
@@ -85,32 +93,33 @@ public class DefaultAdminService implements AdminService {
 
     @Override
     public void removeUserByLogin(String login) {
-        userRepository.findByLogin(login).map(AppUser::userId).ifPresent(this::userRemoveProcedure);
+        userRepository.findByLogin(login).map(AppUser::getUserId).ifPresent(this::userRemoveProcedure);
     }
 
     @Override
     public void removeUserByUserId(UUID userId) {
-        userRepository.findById(UserIdWrapper.newOf(userId)).map(AppUser::userId).ifPresent(this::userRemoveProcedure);
+        userRepository.findById(UserIdWrapper.newOf(userId)).map(AppUser::getUserId)
+                      .ifPresent(this::userRemoveProcedure);
     }
 
     @Override
     public void removeUserByEmail(String email) {
-        userRepository.findByEmail(email).map(AppUser::userId).ifPresent(this::userRemoveProcedure);
+        userRepository.findByEmail(email).map(AppUser::getUserId).ifPresent(this::userRemoveProcedure);
     }
 
 
     @Override
     public void removeAllUsers(AuthenticationRequest confirmation) {
         AppUser admin = userRepository.findByLogin("admin").orElseThrow();
-        UUID adminId = admin.userId().id();
+        UUID adminId = admin.getUserId().id();
 
-        if (!(passwordEncoder.matches(confirmation.password(), admin.password()) &&
-                confirmation.login().equals(admin.login()))) {
+        if (!(passwordEncoder.matches(confirmation.password(), admin.getPassword()) &&
+                confirmation.login().equals(admin.getLogin()))) {
             throw new BadCredentialsException("Incorrect login or password");
         }
 
         List<UUID> allUsers = new ArrayList<>(
-                userRepository.findAll().stream().map(AppUser::userId).map(UserIdWrapper::id).toList());
+                userRepository.findAll().stream().map(AppUser::getUserId).map(UserIdWrapper::id).toList());
         allUsers.remove(adminId);
         for (UUID userId : allUsers) {
             removeUserByUserId(userId);
@@ -120,12 +129,12 @@ public class DefaultAdminService implements AdminService {
     @Override
     public void databaseRestart(AuthenticationRequest confirmation) {
         AppUser admin = userRepository.findByLogin("admin").orElseThrow();
-        if (!(passwordEncoder.matches(confirmation.password(), admin.password()) &&
-                confirmation.login().equals(admin.login()))) {
+        if (!(passwordEncoder.matches(confirmation.password(), admin.getPassword()) &&
+                confirmation.login().equals(admin.getLogin()))) {
             throw new BadCredentialsException("Incorrect login or password");
         }
-        userRepository.findAll().stream().map(AppUser::userId).forEach(this::userRemoveProcedure);
-        userRepository.deleteById(admin.userId());
+        userRepository.findAll().stream().map(AppUser::getUserId).forEach(this::userRemoveProcedure);
+        userRepository.deleteById(admin.getUserId());
         registerAdminUser();
     }
 
@@ -138,15 +147,17 @@ public class DefaultAdminService implements AdminService {
             throw new UnableToCreateException("Such email is occupied.");
         }
 
-        return userRepository.save(AppUser.builder()
-                                          .userId(currentUser.userId())
-                                          .login(currentUser.login())
-                                          .email(request.newEmail())
-                                          .password(currentUser.password())
-                                          .role(currentUser.role())
-                                          .enabled(currentUser.enabled())
-                                          .creationTime(currentUser.creationTime())
-                                          .build());
+        //TODO fix it
+        return null;
+//        return userRepository.save(AppUser.builder()
+//                                          .userId(currentUser.getUserId())
+//                                          .login(currentUser.getLogin())
+//                                          .email(request.newEmail())
+//                                          .password(currentUser.getPassword())
+//                                          .role(currentUser.getRole())
+//                                          .enabled(currentUser.getEnabled())
+//                                          .creationTime(currentUser.getCreationTime())
+//                                          .build());
     }
 
 
@@ -156,36 +167,26 @@ public class DefaultAdminService implements AdminService {
                                             .orElseThrow(() -> new NoSuchElementException("User doesn't exist"));
 
         return userRepository.save(AppUser.builder()
-                                          .userId(currentUser.userId())
-                                          .login(currentUser.login())
-                                          .email(currentUser.email())
+                                          .userId(currentUser.getUserId())
+                                          .login(currentUser.getLogin())
+                                          .email(currentUser.getEmail())
                                           .password(passwordEncoder.encode(request.newPassword()))
-                                          .role(currentUser.role())
-                                          .enabled(currentUser.enabled())
-                                          .creationTime(currentUser.creationTime())
+                                          .role(currentUser.getRole())
+                                          .enabled(currentUser.getEnabled())
+                                          .creationTime(currentUser.getCreationTime())
                                           .build());
     }
 
-    private void userRemoveProcedure(UserIdWrapper userToRemove) {
-        if (!Objects.isNull(userToRemove)) {
-            removeUserData(userToRemove);
-            userRepository.deleteById(userToRemove);
-            registerAdminUser();
-        }
+    @Override
+    public EntityModel<AppUser> getEntityModel(AppUser user) {
+        Link link = linkTo(AdminController.class).slash(user.getUserId().id()).withSelfRel();
+        return innerServiceLogic.getEntityModelFromLink(link, user);
     }
 
-    private void removeUserData(UserIdWrapper userId) {
-        adminBudgetService.getAllBudgetsByUserId(userId).stream()
-                          .map(Budget::budgetId).forEach(adminBudgetService::deleteBudgetByBudgetId);
-    }
-
-    private void emailAndLoginDuplicatesCheck(RegisterUserRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
-            throw new UnableToCreateException("User's email is already occupied!");
-        }
-        if (userRepository.existsByLogin(request.login())) {
-            throw new UnableToCreateException("User's login is already occupied!");
-        }
+    @Override
+    public PagedModel<AppUser> getEntities(Page<AppUser> users) {
+        Link generalLink = linkTo(AdminController.class).withSelfRel();
+        return innerServiceLogic.getPagedModel(generalLink, AdminController.class, users);
     }
 
     @PostConstruct
@@ -202,5 +203,18 @@ public class DefaultAdminService implements AdminService {
                                    .build();
             userRepository.save(admin);
         }
+    }
+
+    private void userRemoveProcedure(UserIdWrapper userToRemove) {
+        if (!Objects.isNull(userToRemove)) {
+            removeUserData(userToRemove);
+            userRepository.deleteById(userToRemove);
+            registerAdminUser();
+        }
+    }
+
+    private void removeUserData(UserIdWrapper userId) {
+        adminBudgetService.getAllBudgetsByUserId(userId).stream()
+                          .map(Budget::budgetId).forEach(adminBudgetService::deleteBudgetByBudgetId);
     }
 }

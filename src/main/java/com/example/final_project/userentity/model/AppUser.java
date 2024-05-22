@@ -2,9 +2,10 @@ package com.example.final_project.userentity.model;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import lombok.Builder;
+import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,20 +14,24 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
+
+@Data
+@Builder
 @Document
-public record AppUser(@MongoId
-                      UserIdWrapper userId,
-                      String login,
-                      String email,
-                      String password,
-                      @Enumerated(EnumType.STRING)
-                      Role role,
-                      Boolean enabled,
-                      LocalDateTime creationTime
-) implements UserDetails {
-    @Builder
-    public AppUser {
-    }
+@EqualsAndHashCode(callSuper = true)
+public class AppUser extends RepresentationModel<AppUser> implements UserDetails {
+
+    @MongoId
+    private final UserIdWrapper userId;
+    private final String login;
+    private final String email;
+    private final String password;
+    @Enumerated(EnumType.STRING)
+    private final Role role;
+    private final Boolean enabled;
+    private final LocalDateTime creationTime;
+
+    //TODO add Hateoas to this class
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -40,7 +45,7 @@ public record AppUser(@MongoId
 
     @Override
     public String getUsername() {
-        return this.userId().id().toString();
+        return userId.id().toString();
     }
 
     @Override

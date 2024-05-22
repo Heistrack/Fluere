@@ -62,7 +62,7 @@ public class JwtServiceDev implements JwtService {
 
     public UserIdWrapper extractUserIdFromRequestAuth(Authentication authentication) {
         AppUser checkedUser = (AppUser) authentication.getPrincipal();
-        return checkedUser.userId();
+        return checkedUser.getUserId();
     }
 
     private Claims extractAllClaims(String token) {

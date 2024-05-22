@@ -26,7 +26,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @Service
 @RequiredArgsConstructor
-public class DefaultExpenseServiceLogic implements ExpenseServiceLogic {
+public class DefaultInnerExpenseServiceLogic implements ExpenseInnerServiceLogic {
     private final BudgetRepository budgetRepository;
     private final CurrencyRepository currencyRepository;
 

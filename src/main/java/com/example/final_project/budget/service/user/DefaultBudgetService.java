@@ -37,7 +37,7 @@ public class DefaultBudgetService implements BudgetService {
     private final BudgetRepository budgetRepository;
     private final ExpenseRepository expenseRepository;
     private final Supplier<BudgetIdWrapper> budgetIdSupplier;
-    private final BudgetServiceLogic innerServiceLogic;
+    private final BudgetInnerServiceLogic innerServiceLogic;
     private final JwtService jwtService;
 
     @Override

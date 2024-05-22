@@ -5,7 +5,7 @@ import com.example.final_project.budget.model.*;
 import com.example.final_project.budget.repository.BudgetRepository;
 import com.example.final_project.budget.response.BudgetResponseDto;
 import com.example.final_project.budget.response.BudgetStatusDTO;
-import com.example.final_project.budget.service.user.BudgetServiceLogic;
+import com.example.final_project.budget.service.user.BudgetInnerServiceLogic;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
@@ -33,7 +33,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 public class AdminDefaultBudgetService implements AdminBudgetService {
     private final BudgetRepository budgetRepository;
     private final ExpenseRepository expenseRepository;
-    private final BudgetServiceLogic innerServiceLogic;
+    private final BudgetInnerServiceLogic innerServiceLogic;
     private final Supplier<BudgetIdWrapper> budgetIdSupplier;
 
     @Override

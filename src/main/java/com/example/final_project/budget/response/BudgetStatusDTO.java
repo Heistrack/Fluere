@@ -7,7 +7,6 @@ import com.example.final_project.expense.model.ExpenseType;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 
@@ -20,7 +19,6 @@ import java.util.UUID;
 
 @Data
 @Builder
-@RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 public class BudgetStatusDTO extends RepresentationModel<BudgetStatusDTO> implements LinkableDTO {
 
@@ -35,7 +33,7 @@ public class BudgetStatusDTO extends RepresentationModel<BudgetStatusDTO> implem
     private final HashMap<ExpenseType, List<Expense>> categoryExpenses;
     private final HashMap<ExpenseType, Float> categoryExpensesPercentage;
 
-//TODO remove that method and apply builder instead
+    //TODO remove that method and apply builder instead
     public static BudgetStatusDTO newOf(UUID budgetId,
                                         BudgetDetails budgetDetails,
                                         BigDecimal amountLeft,
@@ -67,7 +65,7 @@ public class BudgetStatusDTO extends RepresentationModel<BudgetStatusDTO> implem
     }
 
     @Override
-    public UUID getId() {
-        return budgetId;
+    public String PathMessage() {
+        return budgetId.toString();
     }
 }

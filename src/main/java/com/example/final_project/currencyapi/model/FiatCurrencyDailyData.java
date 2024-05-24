@@ -12,6 +12,7 @@ import java.util.UUID;
 public record FiatCurrencyDailyData(
         @MongoId
         UUID currencyDataId,
+        //todo update how much request left cuz it doesn't work
         Integer howMuchRequestLeftAPI,
         LocalDate previousDateCheck,
         HashMap<MKTCurrency, BigDecimal> conversionRates

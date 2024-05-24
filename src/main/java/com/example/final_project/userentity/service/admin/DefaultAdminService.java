@@ -1,6 +1,7 @@
 package com.example.final_project.userentity.service.admin;
 
 import com.example.final_project.budget.model.Budget;
+import com.example.final_project.budget.model.LinkableDTO;
 import com.example.final_project.budget.service.admin.AdminBudgetService;
 import com.example.final_project.exception.custom.UnableToCreateException;
 import com.example.final_project.security.request.AuthenticationRequest;
@@ -49,7 +50,7 @@ public class DefaultAdminService implements AdminService {
     @Override
     public AppUser registerNewUser(RegisterUserRequest request) {
         innerServiceLogic.emailAndLoginDuplicatesCheck(request);
-        return authenticationService.register(request).user();
+        return authenticationService.register(request).getUser();
     }
 
     @Override
@@ -158,7 +159,6 @@ public class DefaultAdminService implements AdminService {
                                           .build());
     }
 
-
     @Override
     public AppUser resetUserPassword(AdminPasswordChangeRequest request) {
         AppUser currentUser = userRepository.findByLogin(request.login())
@@ -176,15 +176,16 @@ public class DefaultAdminService implements AdminService {
     }
 
     @Override
-    public EntityModel<AppUser> getEntityModel(AppUser user) {
-        Link link = linkTo(AdminController.class).slash(user.getUserId().id()).withSelfRel();
-        return innerServiceLogic.getEntityModelFromLink(link, user);
+    public <T extends LinkableDTO> EntityModel<T> getEntityModel(T linkableDTO, Class<T> classCast) {
+        Link link = linkTo(AdminController.class).slash(linkableDTO.PathMessage()).withSelfRel();
+        linkableDTO.addLink(link);
+        return EntityModel.of(classCast.cast(linkableDTO));
     }
 
     @Override
-    public PagedModel<AppUser> getEntities(Page<AppUser> users) {
+    public <T extends LinkableDTO> PagedModel<T> getEntities(Page<T> linkableDTOs, Class<T> classCast) {
         Link generalLink = linkTo(AdminController.class).withSelfRel();
-        return innerServiceLogic.getPagedModel(generalLink, AdminController.class, users);
+        return innerServiceLogic.getPagedModel(linkableDTOs, classCast, generalLink);
     }
 
     @PostConstruct

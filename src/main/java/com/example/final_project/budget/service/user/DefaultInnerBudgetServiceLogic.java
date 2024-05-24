@@ -165,7 +165,7 @@ public class DefaultInnerBudgetServiceLogic implements BudgetInnerServiceLogic {
                 linkableDTOs.getTotalPages()
         );
         List<T> list = linkableDTOs.stream().toList();
-        list.forEach(dto -> dto.addLink(linkTo(generalLink).slash(dto.getId()).withSelfRel()));
+        list.forEach(dto -> dto.addLink(linkTo(generalLink).slash(dto.PathMessage()).withSelfRel()));
         list.forEach(classCast::cast);
         return PagedModel.of(list, pageMetadata, generalLink);
     }

@@ -150,7 +150,6 @@ public class DefaultBudgetService implements BudgetService {
         return allByUserId;
     }
 
-    //TODO add pagination here regardless
     @Override
     public List<Budget> getAllBudgetsByUserId(Authentication authentication) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
@@ -278,7 +277,7 @@ public class DefaultBudgetService implements BudgetService {
     //TODO test if it's work
     @Override
     public <T extends LinkableDTO> EntityModel<T> getEntityModel(T linkableDTO, Class<T> classCast) {
-        Link link = linkTo(BudgetController.class).slash(linkableDTO.getId()).withSelfRel();
+        Link link = linkTo(BudgetController.class).slash(linkableDTO.PathMessage()).withSelfRel();
         linkableDTO.addLink(link);
         return EntityModel.of(classCast.cast(linkableDTO));
     }

@@ -1,6 +1,7 @@
 package com.example.final_project.userentity.service.user;
 
 import com.example.final_project.budget.model.Budget;
+import com.example.final_project.budget.model.LinkableDTO;
 import com.example.final_project.budget.service.user.BudgetService;
 import com.example.final_project.exception.custom.UnableToCreateException;
 import com.example.final_project.security.request.AuthenticationRequest;
@@ -107,15 +108,16 @@ public class DefaultUserService implements UserService {
     }
 
     @Override
-    public EntityModel<AppUser> getEntityModel(AppUser user) {
-        Link link = linkTo(AppUserController.class).slash(user.getUserId().id()).withSelfRel();
-        return innerServiceLogic.getEntityModelFromLink(link, user);
+    public <T extends LinkableDTO> EntityModel<T> getEntityModel(T linkableDTO, Class<T> classCast) {
+        Link link = linkTo(AppUserController.class).slash(linkableDTO.PathMessage()).withSelfRel();
+        linkableDTO.addLink(link);
+        return EntityModel.of(classCast.cast(linkableDTO));
     }
 
     @Override
-    public PagedModel<AppUser> getEntities(Page<AppUser> users) {
+    public <T extends LinkableDTO> PagedModel<T> getEntities(Page<T> linkableDTOs, Class<T> classCast) {
         Link generalLink = linkTo(AppUserController.class).withSelfRel();
-        return innerServiceLogic.getPagedModel(generalLink, AppUserController.class, users);
+        return innerServiceLogic.getPagedModel(linkableDTOs, classCast, generalLink);
     }
 
     private void userRemoveProcedure(Authentication authentication) {

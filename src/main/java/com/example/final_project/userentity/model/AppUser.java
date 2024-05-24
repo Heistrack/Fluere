@@ -1,5 +1,6 @@
 package com.example.final_project.userentity.model;
 
+import com.example.final_project.budget.model.LinkableDTO;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Builder;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,12 +18,11 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
-
 @Data
 @Builder
 @Document
 @EqualsAndHashCode(callSuper = true)
-public class AppUser extends RepresentationModel<AppUser> implements UserDetails {
+public class AppUser extends RepresentationModel<AppUser> implements UserDetails, LinkableDTO {
 
     @MongoId
     private final UserIdWrapper userId;
@@ -68,5 +69,15 @@ public class AppUser extends RepresentationModel<AppUser> implements UserDetails
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+
+    @Override
+    public void addLink(Link link) {
+        this.add(link);
+    }
+
+    @Override
+    public String PathMessage() {
+        return userId.toString();
     }
 }

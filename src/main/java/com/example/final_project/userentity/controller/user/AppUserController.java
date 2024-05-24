@@ -1,6 +1,5 @@
 package com.example.final_project.userentity.controller.user;
 
-import com.example.final_project.expense.response.ExpenseResponseDto;
 import com.example.final_project.security.request.AuthenticationRequest;
 import com.example.final_project.security.request.RegisterUserRequest;
 import com.example.final_project.security.response.AuthResponseDTO;
@@ -29,41 +28,46 @@ public class AppUserController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/new_user")
-    ResponseEntity<RegisterResponseDTO> registerNewUser(
+    ResponseEntity<EntityModel<RegisterResponseDTO>> registerNewUser(
             @Valid @RequestBody RegisterUserRequest request
     ) {
-        return ResponseEntity.status(201).body(userService.registerNewUser(request));
+        RegisterResponseDTO registerResponseDTO = userService.registerNewUser(request);
+        return ResponseEntity.status(201)
+                             .body(userService.getEntityModel(registerResponseDTO, RegisterResponseDTO.class));
     }
 
     @PostMapping("/auth")
-    ResponseEntity<AuthResponseDTO> authenticate(
+    ResponseEntity<EntityModel<AuthResponseDTO>> authenticate(
             @Valid @RequestBody AuthenticationRequest request
     ) {
-        return ResponseEntity.ok(authenticationService.authenticate(request));
+        AuthResponseDTO authResponseDTO = authenticationService.authenticate(request);
+        return ResponseEntity.ok(userService.getEntityModel(authResponseDTO, AuthResponseDTO.class));
     }
 
     @PostMapping("/password_change")
-    ResponseEntity<UserDetailsResponse> passwordChange(
+    ResponseEntity<EntityModel<UserDetailsResponse>> passwordChange(
             @RequestBody @Valid PasswordChangeRequest request,
             Authentication authentication
     ) {
         AppUser updatedUser = userService.patchPassword(request, authentication);
-        return ResponseEntity.ok(UserDetailsResponse.fromDomain(updatedUser));
+        UserDetailsResponse userDetailsResponse = UserDetailsResponse.fromDomain(updatedUser);
+        return ResponseEntity.ok(userService.getEntityModel(userDetailsResponse, UserDetailsResponse.class));
     }
 
     @PostMapping("/email_change")
-    ResponseEntity<UserDetailsResponse> emailChange(
+    ResponseEntity<EntityModel<UserDetailsResponse>> emailChange(
             @RequestBody @Valid EmailChangeRequest request,
             Authentication authentication
     ) {
         AppUser updatedUser = userService.patchEmail(request, authentication);
-        return ResponseEntity.ok(UserDetailsResponse.fromDomain(updatedUser));
+        UserDetailsResponse userDetailsResponse = UserDetailsResponse.fromDomain(updatedUser);
+        return ResponseEntity.ok(userService.getEntityModel(userDetailsResponse, UserDetailsResponse.class));
     }
 
     @GetMapping
     ResponseEntity<EntityModel<AppUser>> getMyAccountInfo(Authentication authentication) {
         AppUser user = userService.getUserDetailsFromToken(authentication);
-        return ResponseEntity.ok(userService.getEntityModel(user));
+        return ResponseEntity.ok(userService.getEntityModel(user, AppUser.class));
     }
 
 

@@ -4,7 +4,6 @@ import com.example.final_project.budget.model.LinkableDTO;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 
@@ -13,7 +12,6 @@ import java.util.UUID;
 
 @Data
 @Builder
-@RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 public class BudgetUserMoneySavedDTO extends RepresentationModel<BudgetUserMoneySavedDTO> implements LinkableDTO {
 
@@ -30,7 +28,7 @@ public class BudgetUserMoneySavedDTO extends RepresentationModel<BudgetUserMoney
     }
 
     @Override
-    public UUID getId() {
-        return userId;
+    public String PathMessage() {
+        return userId.toString();
     }
 }

@@ -260,7 +260,7 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
 
     @Override
     public <T extends LinkableDTO> EntityModel<T> getEntityModel(T linkableDTO, Class<T> classCast) {
-        Link link = linkTo(AdminBudgetController.class).slash(linkableDTO.getId()).withSelfRel();
+        Link link = linkTo(AdminBudgetController.class).slash(linkableDTO.PathMessage()).withSelfRel();
         linkableDTO.addLink(link);
         return EntityModel.of(classCast.cast(linkableDTO));
     }

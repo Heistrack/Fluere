@@ -5,7 +5,6 @@ import com.example.final_project.currencyapi.model.MKTCurrency;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 
@@ -16,7 +15,6 @@ import java.util.UUID;
 
 @Data
 @Builder
-@RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 public class BudgetResponseDTO
         extends RepresentationModel<BudgetResponseDTO>
@@ -56,7 +54,7 @@ public class BudgetResponseDTO
     }
 
     @Override
-    public UUID getId() {
-        return budgetId;
+    public String PathMessage() {
+        return budgetId.toString();
     }
 }

@@ -1,14 +1,11 @@
 package com.example.final_project.userentity.service.user;
 
+import com.example.final_project.budget.model.LinkableDTO;
 import com.example.final_project.exception.custom.UnableToCreateException;
-import com.example.final_project.expense.model.Expense;
-import com.example.final_project.expense.response.ExpenseResponseDto;
 import com.example.final_project.security.request.RegisterUserRequest;
-import com.example.final_project.userentity.model.AppUser;
 import com.example.final_project.userentity.repository.AppUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
@@ -33,18 +30,18 @@ public class DefaultInnerUserServiceLogic implements UserInnerServiceLogic {
         }
     }
 
-    @Override
-    public EntityModel<AppUser> getEntityModelFromLink(Link link, AppUser user) {
-        return EntityModel.of(user.add(link));
-    }
-
-    @Override
-    public PagedModel<AppUser> getPagedModel(Link generalLink, Class<?> controller, Page<AppUser> users) {
-        List<AppUser> list = users.stream().toList();
-        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(users.getSize(), users.getNumber(),
-                                                                           users.getTotalElements(),
-                                                                           users.getTotalPages());
-        list.forEach(dto -> dto.add(linkTo(controller).slash(dto.getUserId().id()).withSelfRel()));
+    public <T extends LinkableDTO> PagedModel<T> getPagedModel(Page<T> linkableDTOs, Class<T> classCast,
+                                                               Link generalLink
+    ) {
+        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(
+                linkableDTOs.getSize(),
+                linkableDTOs.getNumber(),
+                linkableDTOs.getTotalElements(),
+                linkableDTOs.getTotalPages()
+        );
+        List<T> list = linkableDTOs.stream().toList();
+        list.forEach(dto -> dto.addLink(linkTo(generalLink).slash(dto.PathMessage()).withSelfRel()));
+        list.forEach(classCast::cast);
         return PagedModel.of(list, pageMetadata, generalLink);
     }
 }

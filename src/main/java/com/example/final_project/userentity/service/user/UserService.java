@@ -1,5 +1,6 @@
 package com.example.final_project.userentity.service.user;
 
+import com.example.final_project.budget.model.LinkableDTO;
 import com.example.final_project.security.request.AuthenticationRequest;
 import com.example.final_project.security.request.RegisterUserRequest;
 import com.example.final_project.security.response.RegisterResponseDTO;
@@ -22,7 +23,7 @@ public interface UserService {
 
     AppUser patchPassword(PasswordChangeRequest request, Authentication authentication);
 
-    EntityModel<AppUser> getEntityModel(AppUser user);
+    <T extends LinkableDTO> EntityModel<T> getEntityModel(T linkableDTO, Class<T> classCast);
 
-    PagedModel<AppUser> getEntities(Page<AppUser> users);
+    <T extends LinkableDTO> PagedModel<T> getEntities(Page<T> linkableDTOs, Class<T> classCast);
 }

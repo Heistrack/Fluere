@@ -28,7 +28,7 @@ import static com.example.final_project.userentity.controller.admin.AdminControl
 public class AdminController {
     static final String ADMIN_CONTROLLERS_BASE_PATH = "/api/x/users";
     private final AdminService adminService;
-//TODO add hateoas to admin and user layer
+    //TODO add hateoas to admin and user layer
 
     @PostMapping()
     ResponseEntity<EntityModel<AppUser>> registerNewUser(

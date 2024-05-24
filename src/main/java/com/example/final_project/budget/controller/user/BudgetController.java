@@ -5,10 +5,10 @@ import com.example.final_project.budget.model.BudgetIdWrapper;
 import com.example.final_project.budget.request.appuser.PatchBudgetRequest;
 import com.example.final_project.budget.request.appuser.RegisterBudgetRequest;
 import com.example.final_project.budget.request.appuser.UpdateBudgetRequest;
-import com.example.final_project.budget.response.BudgetResponseDto;
+import com.example.final_project.budget.response.BudgetResponseDTO;
 import com.example.final_project.budget.response.BudgetStatusDTO;
+import com.example.final_project.budget.response.BudgetUserMoneySavedDTO;
 import com.example.final_project.budget.service.user.BudgetService;
-import com.nimbusds.jose.util.Pair;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,7 +33,7 @@ public class BudgetController {
     private final BudgetService budgetService;
 
     @PostMapping
-    ResponseEntity<EntityModel<BudgetResponseDto>> registerNewBudget(
+    ResponseEntity<EntityModel<BudgetResponseDTO>> registerNewBudget(
             @RequestBody @Valid RegisterBudgetRequest request, Authentication authentication
     ) {
         Budget newBudget = budgetService.registerNewBudget(request.title(), request.limit(),
@@ -43,58 +42,63 @@ public class BudgetController {
                                                            request.budgetStart(), request.budgetEnd(),
                                                            request.description(), authentication
         );
-        return ResponseEntity.status(201).body(budgetService.getEntityModel(newBudget));
+        return ResponseEntity.status(201).body(budgetService.getEntityModel(
+                BudgetResponseDTO.fromDomain(newBudget),
+                BudgetResponseDTO.class
+        ));
     }
 
     @GetMapping("/{budget_uuid}")
-    ResponseEntity<EntityModel<BudgetResponseDto>> getSingleBudget(
+    ResponseEntity<EntityModel<BudgetResponseDTO>> getSingleBudget(
             @PathVariable(name = "budget_uuid") UUID budgetUUID, Authentication authentication
     ) {
         Budget budget = budgetService.getBudgetById(BudgetIdWrapper.newOf(budgetUUID), authentication);
-        return ResponseEntity.ok(budgetService.getEntityModel(budget));
+        return ResponseEntity.ok(
+                budgetService.getEntityModel(BudgetResponseDTO.fromDomain(budget), BudgetResponseDTO.class));
     }
 
-    //TODO implement hateoas
     @GetMapping("/status/{budget_uuid}")
-    ResponseEntity<BudgetStatusDTO> getBudgetStatus(@PathVariable(name = "budget_uuid") UUID budgetUUID,
-                                                    Authentication authentication
+    ResponseEntity<EntityModel<BudgetStatusDTO>> getBudgetStatus(@PathVariable(name = "budget_uuid") UUID budgetUUID,
+                                                                 Authentication authentication
     ) {
-        return ResponseEntity.ok(budgetService.getBudgetStatus(BudgetIdWrapper.newOf(budgetUUID), authentication));
+        BudgetStatusDTO budgetStatus = budgetService.getBudgetStatus(BudgetIdWrapper.newOf(budgetUUID), authentication);
+        return ResponseEntity.ok(budgetService.getEntityModel(budgetStatus, BudgetStatusDTO.class));
     }
 
     @GetMapping("/statuses")
-    ResponseEntity<Page<BudgetStatusDTO>> getBudgetsStatusByPage(
+    ResponseEntity<PagedModel<BudgetStatusDTO>> getBudgetsStatusByPage(
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "25") Integer size,
             @RequestParam(required = false, defaultValue = "budgetId") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
             Authentication authentication
     ) {
-        return ResponseEntity.ok(budgetService.getBudgetsStatuses(PageRequest.of(
+        Page<BudgetStatusDTO> budgetsStatuses = budgetService.getBudgetsStatuses(PageRequest.of(
                 page,
                 size,
                 Sort.by(
                         sortDirection,
                         sortBy
                 )
-        ), authentication));
+        ), authentication);
+        return ResponseEntity.ok(budgetService.getEntities(budgetsStatuses, BudgetStatusDTO.class));
     }
 
-    //TODO hateoas
     @GetMapping("/saved_money")
-    ResponseEntity<Pair<UUID, BigDecimal>> getAllMoneySaved(Authentication authentication) {
-        return ResponseEntity.ok(budgetService.getAllMoneySaved(authentication));
+    ResponseEntity<EntityModel<BudgetUserMoneySavedDTO>> getAllMoneySaved(Authentication authentication) {
+        BudgetUserMoneySavedDTO allMoneySaved = budgetService.getAllMoneySaved(authentication);
+        return ResponseEntity.ok(budgetService.getEntityModel(allMoneySaved, BudgetUserMoneySavedDTO.class));
     }
 
     @GetMapping
-    ResponseEntity<PagedModel<BudgetResponseDto>> getBudgetsByPage(
+    ResponseEntity<PagedModel<BudgetResponseDTO>> getBudgetsByPage(
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "25") Integer size,
             @RequestParam(required = false, defaultValue = "budgetId") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
             Authentication authentication
     ) {
-        Page<Budget> allByPage = budgetService
+        Page<BudgetResponseDTO> allByPage = budgetService
                 .getAllByPage(PageRequest.of(
                         page,
                         size,
@@ -102,12 +106,12 @@ public class BudgetController {
                                 sortDirection,
                                 sortBy
                         )
-                ), authentication);
-        return ResponseEntity.ok(budgetService.getEntities(allByPage));
+                ), authentication).map(BudgetResponseDTO::fromDomain);
+        return ResponseEntity.ok(budgetService.getEntities(allByPage, BudgetResponseDTO.class));
     }
 
     @PutMapping()
-    ResponseEntity<EntityModel<BudgetResponseDto>> updateBudget(
+    ResponseEntity<EntityModel<BudgetResponseDTO>> updateBudget(
             @Valid @RequestBody UpdateBudgetRequest request,
             Authentication authentication
     ) {
@@ -123,11 +127,12 @@ public class BudgetController {
                 request.description(),
                 authentication
         );
-        return ResponseEntity.ok(budgetService.getEntityModel(budget));
+        return ResponseEntity.ok(
+                budgetService.getEntityModel(BudgetResponseDTO.fromDomain(budget), BudgetResponseDTO.class));
     }
 
     @PatchMapping()
-    ResponseEntity<EntityModel<BudgetResponseDto>> patchBudget(
+    ResponseEntity<EntityModel<BudgetResponseDTO>> patchBudget(
             @Valid @RequestBody PatchBudgetRequest request,
             Authentication authentication
     ) {
@@ -143,11 +148,12 @@ public class BudgetController {
                 Optional.ofNullable(request.description()),
                 authentication
         );
-        return ResponseEntity.ok(budgetService.getEntityModel(budget));
+        return ResponseEntity.ok(
+                budgetService.getEntityModel(BudgetResponseDTO.fromDomain(budget), BudgetResponseDTO.class));
     }
 
     @DeleteMapping("/{budget_uuid}")
-    ResponseEntity<EntityModel<BudgetResponseDto>> deleteBudget(@PathVariable(name = "budget_uuid") UUID budgetUUID,
+    ResponseEntity<EntityModel<BudgetResponseDTO>> deleteBudget(@PathVariable(name = "budget_uuid") UUID budgetUUID,
                                                                 Authentication authentication
     ) {
         budgetService.deleteAllBudgetExpensesByBudgetId(BudgetIdWrapper.newOf(budgetUUID), authentication);

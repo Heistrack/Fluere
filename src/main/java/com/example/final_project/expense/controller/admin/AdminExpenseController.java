@@ -52,7 +52,6 @@ public class AdminExpenseController {
             @PathVariable(name = "expense_uuid") UUID expenseUUID
     ) {
         Expense expense = adminExpenseService.getExpenseById(ExpenseIdWrapper.newOf(expenseUUID));
-
         return ResponseEntity.ok(adminExpenseService.getEntityModel(expense));
     }
 

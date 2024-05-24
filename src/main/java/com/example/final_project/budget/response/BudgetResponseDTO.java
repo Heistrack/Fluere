@@ -1,14 +1,12 @@
 package com.example.final_project.budget.response;
 
-import com.example.final_project.budget.model.Budget;
-import com.example.final_project.budget.model.BudgetPeriod;
-import com.example.final_project.budget.model.BudgetType;
-import com.example.final_project.budget.model.ExpenseSet;
+import com.example.final_project.budget.model.*;
 import com.example.final_project.currencyapi.model.MKTCurrency;
+import lombok.Builder;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.math.BigDecimal;
@@ -16,11 +14,13 @@ import java.time.LocalDateTime;
 import java.util.TreeMap;
 import java.util.UUID;
 
-@Getter
-@ToString
+@Data
+@Builder
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class BudgetResponseDto extends RepresentationModel<BudgetResponseDto> {
+public class BudgetResponseDTO
+        extends RepresentationModel<BudgetResponseDTO>
+        implements LinkableDTO {
 
     private final UUID budgetId;
     private final String title;
@@ -34,8 +34,8 @@ public class BudgetResponseDto extends RepresentationModel<BudgetResponseDto> {
     private final String description;
 
 
-    public static BudgetResponseDto fromDomain(Budget budget) {
-        return new BudgetResponseDto(
+    public static BudgetResponseDTO fromDomain(Budget budget) {
+        return new BudgetResponseDTO(
                 budget.budgetId().id(),
                 budget.budgetDetails().title(),
                 budget.budgetDetails().limit(),
@@ -47,5 +47,16 @@ public class BudgetResponseDto extends RepresentationModel<BudgetResponseDto> {
                 budget.budgetDetails().budgetPeriod(),
                 budget.budgetDetails().description()
         );
+    }
+
+
+    @Override
+    public void addLink(Link link) {
+        this.add(link);
+    }
+
+    @Override
+    public UUID getId() {
+        return budgetId;
     }
 }

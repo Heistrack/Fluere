@@ -3,15 +3,14 @@ package com.example.final_project.budget.service.user;
 import com.example.final_project.budget.controller.user.BudgetController;
 import com.example.final_project.budget.model.*;
 import com.example.final_project.budget.repository.BudgetRepository;
-import com.example.final_project.budget.response.BudgetResponseDto;
 import com.example.final_project.budget.response.BudgetStatusDTO;
+import com.example.final_project.budget.response.BudgetUserMoneySavedDTO;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
 import com.example.final_project.expense.repository.ExpenseRepository;
 import com.example.final_project.security.service.JwtService;
 import com.example.final_project.userentity.model.UserIdWrapper;
-import com.nimbusds.jose.util.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -128,7 +127,7 @@ public class DefaultBudgetService implements BudgetService {
     }
 
     @Override
-    public Pair<UUID, BigDecimal> getAllMoneySaved(Authentication authentication) {
+    public BudgetUserMoneySavedDTO getAllMoneySaved(Authentication authentication) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
         List<Budget> allBudgetsByUserId = budgetRepository.findAllByUserId(userId);
         LocalDate now = LocalDate.now();
@@ -139,7 +138,7 @@ public class DefaultBudgetService implements BudgetService {
         for (Budget budget : closedBudgets) {
             sum = sum.add(innerServiceLogic.showBalanceByCurrency(budget.budgetDetails().defaultCurrency(), budget));
         }
-        return Pair.of(userId.id(), sum);
+        return BudgetUserMoneySavedDTO.newOf(userId.id(), sum);
     }
 
     @Override
@@ -151,6 +150,7 @@ public class DefaultBudgetService implements BudgetService {
         return allByUserId;
     }
 
+    //TODO add pagination here regardless
     @Override
     public List<Budget> getAllBudgetsByUserId(Authentication authentication) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
@@ -275,15 +275,17 @@ public class DefaultBudgetService implements BudgetService {
         budgetRepository.deleteById(budgetId);
     }
 
+    //TODO test if it's work
     @Override
-    public EntityModel<BudgetResponseDto> getEntityModel(Budget budget) {
-        Link link = linkTo(BudgetController.class).slash(budget.budgetId().id()).withSelfRel();
-        return innerServiceLogic.getEntityModelFromLink(link, budget);
+    public <T extends LinkableDTO> EntityModel<T> getEntityModel(T linkableDTO, Class<T> classCast) {
+        Link link = linkTo(BudgetController.class).slash(linkableDTO.getId()).withSelfRel();
+        linkableDTO.addLink(link);
+        return EntityModel.of(classCast.cast(linkableDTO));
     }
 
     @Override
-    public PagedModel<BudgetResponseDto> getEntities(Page<Budget> budget) {
+    public <T extends LinkableDTO> PagedModel<T> getEntities(Page<T> linkableDTOs, Class<T> classCast) {
         Link generalLink = linkTo(BudgetController.class).withSelfRel();
-        return innerServiceLogic.getPagedModel(generalLink, BudgetController.class, budget);
+        return innerServiceLogic.getPagedModel(linkableDTOs, classCast, generalLink);
     }
 }

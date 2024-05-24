@@ -147,17 +147,15 @@ public class DefaultAdminService implements AdminService {
             throw new UnableToCreateException("Such email is occupied.");
         }
 
-        //TODO fix it
-        return null;
-//        return userRepository.save(AppUser.builder()
-//                                          .userId(currentUser.getUserId())
-//                                          .login(currentUser.getLogin())
-//                                          .email(request.newEmail())
-//                                          .password(currentUser.getPassword())
-//                                          .role(currentUser.getRole())
-//                                          .enabled(currentUser.getEnabled())
-//                                          .creationTime(currentUser.getCreationTime())
-//                                          .build());
+        return userRepository.save(AppUser.builder()
+                                          .userId(currentUser.getUserId())
+                                          .login(currentUser.getLogin())
+                                          .email(request.newEmail())
+                                          .password(currentUser.getPassword())
+                                          .role(currentUser.getRole())
+                                          .enabled(currentUser.getEnabled())
+                                          .creationTime(currentUser.getCreationTime())
+                                          .build());
     }
 
 

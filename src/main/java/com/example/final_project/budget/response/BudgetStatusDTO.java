@@ -1,12 +1,14 @@
 package com.example.final_project.budget.response;
 
 import com.example.final_project.budget.model.BudgetDetails;
+import com.example.final_project.budget.model.LinkableDTO;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
+import lombok.Builder;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.math.BigDecimal;
@@ -16,11 +18,11 @@ import java.util.List;
 import java.util.TreeMap;
 import java.util.UUID;
 
-@Getter
-@ToString
+@Data
+@Builder
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class BudgetStatusDTO extends RepresentationModel<BudgetStatusDTO> {
+public class BudgetStatusDTO extends RepresentationModel<BudgetStatusDTO> implements LinkableDTO {
 
     private final UUID budgetId;
     private final BudgetDetails budgetDetails;
@@ -33,7 +35,7 @@ public class BudgetStatusDTO extends RepresentationModel<BudgetStatusDTO> {
     private final HashMap<ExpenseType, List<Expense>> categoryExpenses;
     private final HashMap<ExpenseType, Float> categoryExpensesPercentage;
 
-
+//TODO remove that method and apply builder instead
     public static BudgetStatusDTO newOf(UUID budgetId,
                                         BudgetDetails budgetDetails,
                                         BigDecimal amountLeft,
@@ -57,5 +59,15 @@ public class BudgetStatusDTO extends RepresentationModel<BudgetStatusDTO> {
                 categoryExpenses,
                 categoryExpensesPercentage
         );
+    }
+
+    @Override
+    public void addLink(Link link) {
+        this.add(link);
+    }
+
+    @Override
+    public UUID getId() {
+        return budgetId;
     }
 }

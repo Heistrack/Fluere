@@ -3,8 +3,8 @@ package com.example.final_project.budget.service.admin;
 import com.example.final_project.budget.controller.admin.AdminBudgetController;
 import com.example.final_project.budget.model.*;
 import com.example.final_project.budget.repository.BudgetRepository;
-import com.example.final_project.budget.response.BudgetResponseDto;
 import com.example.final_project.budget.response.BudgetStatusDTO;
+import com.example.final_project.budget.response.BudgetUserMoneySavedDTO;
 import com.example.final_project.budget.service.user.BudgetInnerServiceLogic;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
@@ -114,6 +114,20 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
                                                      .map(budget -> getBudgetStatus(budget.budgetId()))
                                                      .toList();
         return new PageImpl<>(budgetsStatus, pageable, budgetsStatus.size());
+    }
+
+    @Override
+    public BudgetUserMoneySavedDTO getAllMoneySavedByUser(UUID userId) {
+        List<Budget> allBudgetsByUserId = budgetRepository.findAllByUserId(UserIdWrapper.newOf(userId));
+        LocalDate now = LocalDate.now();
+        List<Budget> closedBudgets = allBudgetsByUserId.stream().filter(budget -> budget.budgetDetails().budgetPeriod()
+                                                                                        .getEndTime()
+                                                                                        .isBefore(now)).toList();
+        BigDecimal sum = BigDecimal.ZERO;
+        for (Budget budget : closedBudgets) {
+            sum = sum.add(innerServiceLogic.showBalanceByCurrency(budget.budgetDetails().defaultCurrency(), budget));
+        }
+        return BudgetUserMoneySavedDTO.newOf(userId, sum);
     }
 
     @Override
@@ -245,14 +259,15 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
     }
 
     @Override
-    public EntityModel<BudgetResponseDto> getEntityModel(Budget budget) {
-        Link link = linkTo(AdminBudgetController.class).slash(budget.budgetId().id()).withSelfRel();
-        return innerServiceLogic.getEntityModelFromLink(link, budget);
+    public <T extends LinkableDTO> EntityModel<T> getEntityModel(T linkableDTO, Class<T> classCast) {
+        Link link = linkTo(AdminBudgetController.class).slash(linkableDTO.getId()).withSelfRel();
+        linkableDTO.addLink(link);
+        return EntityModel.of(classCast.cast(linkableDTO));
     }
 
     @Override
-    public PagedModel<BudgetResponseDto> getEntities(Page<Budget> budget) {
+    public <T extends LinkableDTO> PagedModel<T> getEntities(Page<T> linkableDTOs, Class<T> classCast) {
         Link generalLink = linkTo(AdminBudgetController.class).withSelfRel();
-        return innerServiceLogic.getPagedModel(generalLink, AdminBudgetController.class, budget);
+        return innerServiceLogic.getPagedModel(linkableDTOs, classCast, generalLink);
     }
 }

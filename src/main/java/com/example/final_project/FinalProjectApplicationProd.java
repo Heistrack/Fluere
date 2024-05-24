@@ -11,6 +11,5 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 public class FinalProjectApplicationProd {
     public static void main(String[] args) {
         SpringApplication.run(FinalProjectApplicationProd.class, args);
-        //TODO add vm argument into pom.xml not local intelliJ config
     }
 }

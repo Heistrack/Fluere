@@ -61,7 +61,6 @@ public class DefaultExpenseService implements ExpenseService {
         return expenseRepository.save(expense);
     }
 
-    ///TODO add hateoas
     @Override
     public Expense getExpenseById(ExpenseIdWrapper expenseId, Authentication authentication) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);

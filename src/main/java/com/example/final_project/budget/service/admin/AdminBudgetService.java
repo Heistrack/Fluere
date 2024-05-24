@@ -3,8 +3,9 @@ package com.example.final_project.budget.service.admin;
 import com.example.final_project.budget.model.Budget;
 import com.example.final_project.budget.model.BudgetIdWrapper;
 import com.example.final_project.budget.model.BudgetType;
-import com.example.final_project.budget.response.BudgetResponseDto;
+import com.example.final_project.budget.model.LinkableDTO;
 import com.example.final_project.budget.response.BudgetStatusDTO;
+import com.example.final_project.budget.response.BudgetUserMoneySavedDTO;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.userentity.model.UserIdWrapper;
 import org.springframework.data.domain.Page;
@@ -44,6 +45,8 @@ public interface AdminBudgetService {
 
     Page<BudgetStatusDTO> getBudgetsStatuses(Pageable pageable, UserIdWrapper userId);
 
+    BudgetUserMoneySavedDTO getAllMoneySavedByUser(UUID userId);
+
     Budget updateBudgetById(BudgetIdWrapper budgetId,
                             String title,
                             BigDecimal limit,
@@ -68,7 +71,7 @@ public interface AdminBudgetService {
 
     void deleteBudgetByBudgetId(BudgetIdWrapper budgetId);
 
-    EntityModel<BudgetResponseDto> getEntityModel(Budget budget);
+    <T extends LinkableDTO> EntityModel<T> getEntityModel(T linkableDTO, Class<T> classCast);
 
-    PagedModel<BudgetResponseDto> getEntities(Page<Budget> budgets);
+    <T extends LinkableDTO> PagedModel<T> getEntities(Page<T> linkableDTOs, Class<T> classCast);
 }

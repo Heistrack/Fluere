@@ -1,7 +1,6 @@
 package com.example.final_project.budget.response;
 
 import com.example.final_project.budget.model.LinkableDTO;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.hateoas.Link;
@@ -11,7 +10,6 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
-@Builder
 @EqualsAndHashCode(callSuper = false)
 public class BudgetUserMoneySavedDTO extends RepresentationModel<BudgetUserMoneySavedDTO> implements LinkableDTO {
 

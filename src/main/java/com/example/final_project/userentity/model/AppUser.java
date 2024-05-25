@@ -1,15 +1,11 @@
 package com.example.final_project.userentity.model;
 
-import com.example.final_project.budget.model.LinkableDTO;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.RepresentationModel;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,10 +15,9 @@ import java.util.Collection;
 import java.util.List;
 
 @Data
-@Builder
 @Document
-@EqualsAndHashCode(callSuper = true)
-public class AppUser extends RepresentationModel<AppUser> implements UserDetails, LinkableDTO {
+@EqualsAndHashCode(callSuper = false)
+public class AppUser implements UserDetails {
 
     @MongoId
     private final UserIdWrapper userId;
@@ -34,7 +29,24 @@ public class AppUser extends RepresentationModel<AppUser> implements UserDetails
     private final Boolean enabled;
     private final LocalDateTime creationTime;
 
-    //TODO add Hateoas to this class
+    public static AppUser newOf(UserIdWrapper userId,
+                                String login,
+                                String email,
+                                String password,
+                                Role role,
+                                Boolean enabled,
+                                LocalDateTime creationTime
+    ) {
+        return new AppUser(
+                userId,
+                login,
+                email,
+                password,
+                role,
+                enabled,
+                creationTime
+        );
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -69,15 +81,5 @@ public class AppUser extends RepresentationModel<AppUser> implements UserDetails
     @Override
     public boolean isEnabled() {
         return enabled;
-    }
-
-    @Override
-    public void addLink(Link link) {
-        this.add(link);
-    }
-
-    @Override
-    public String PathMessage() {
-        return userId.toString();
     }
 }

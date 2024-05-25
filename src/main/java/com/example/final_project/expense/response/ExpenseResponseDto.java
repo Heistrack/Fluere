@@ -4,16 +4,15 @@ package com.example.final_project.expense.response;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.TreeMap;
 
-@Getter
-@ToString
-@RequiredArgsConstructor
+@Data
 @EqualsAndHashCode(callSuper = false)
 public class ExpenseResponseDto extends RepresentationModel<ExpenseResponseDto> {
 
@@ -37,4 +36,5 @@ public class ExpenseResponseDto extends RepresentationModel<ExpenseResponseDto> 
                 expense.expenseDetails().expenseType(),
                 expense.expenseDetails().description()
         );
-    }}
+    }
+}

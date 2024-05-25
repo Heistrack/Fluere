@@ -1,7 +1,6 @@
 package com.example.final_project.userentity.response.admin;
 
 import com.example.final_project.budget.model.LinkableDTO;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.hateoas.Link;
@@ -10,7 +9,6 @@ import org.springframework.hateoas.RepresentationModel;
 import java.time.LocalDateTime;
 
 @Data
-@Builder
 @EqualsAndHashCode(callSuper = false)
 public class AdminOperationResponse extends RepresentationModel<AdminOperationResponse> implements LinkableDTO {
 

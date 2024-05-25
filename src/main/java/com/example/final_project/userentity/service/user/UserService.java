@@ -24,6 +24,4 @@ public interface UserService {
     AppUser patchPassword(PasswordChangeRequest request, Authentication authentication);
 
     <T extends LinkableDTO> EntityModel<T> getEntityModel(T linkableDTO, Class<T> classCast);
-
-    <T extends LinkableDTO> PagedModel<T> getEntities(Page<T> linkableDTOs, Class<T> classCast);
 }

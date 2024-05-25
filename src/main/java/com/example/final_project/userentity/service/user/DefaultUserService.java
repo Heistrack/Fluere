@@ -16,10 +16,8 @@ import com.example.final_project.userentity.repository.AppUserRepository;
 import com.example.final_project.userentity.request.appuser.EmailChangeRequest;
 import com.example.final_project.userentity.request.appuser.PasswordChangeRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -78,15 +76,15 @@ public class DefaultUserService implements UserService {
             throw new UnableToCreateException("Such email is occupied.");
         }
 
-        return userRepository.save(AppUser.builder()
-                                          .userId(currentUser.getUserId())
-                                          .login(currentUser.getLogin())
-                                          .email(request.newEmail())
-                                          .password(currentUser.getPassword())
-                                          .role(currentUser.getRole())
-                                          .enabled(currentUser.getEnabled())
-                                          .creationTime(currentUser.getCreationTime())
-                                          .build());
+        return userRepository.save(AppUser.newOf(
+                currentUser.getUserId(),
+                currentUser.getLogin(),
+                request.newEmail(),
+                currentUser.getPassword(),
+                currentUser.getRole(),
+                currentUser.getEnabled(),
+                currentUser.getCreationTime()
+        ));
     }
 
     @Override
@@ -96,15 +94,15 @@ public class DefaultUserService implements UserService {
         if (!request.firstPasswordAttempt().equals(request.secondPasswordAttempt()))
             throw new BadCredentialsException("Passwords are not the same.");
 
-        return userRepository.save(AppUser.builder()
-                                          .userId(currentUser.getUserId())
-                                          .login(currentUser.getLogin())
-                                          .email(currentUser.getEmail())
-                                          .password(passwordEncoder.encode(request.firstPasswordAttempt()))
-                                          .role(currentUser.getRole())
-                                          .enabled(currentUser.getEnabled())
-                                          .creationTime(currentUser.getCreationTime())
-                                          .build());
+        return userRepository.save(AppUser.newOf(
+                currentUser.getUserId(),
+                currentUser.getLogin(),
+                currentUser.getEmail(),
+                passwordEncoder.encode(request.firstPasswordAttempt()),
+                currentUser.getRole(),
+                currentUser.getEnabled(),
+                currentUser.getCreationTime()
+        ));
     }
 
     @Override
@@ -112,12 +110,6 @@ public class DefaultUserService implements UserService {
         Link link = linkTo(AppUserController.class).slash(linkableDTO.PathMessage()).withSelfRel();
         linkableDTO.addLink(link);
         return EntityModel.of(classCast.cast(linkableDTO));
-    }
-
-    @Override
-    public <T extends LinkableDTO> PagedModel<T> getEntities(Page<T> linkableDTOs, Class<T> classCast) {
-        Link generalLink = linkTo(AppUserController.class).withSelfRel();
-        return innerServiceLogic.getPagedModel(linkableDTOs, classCast, generalLink);
     }
 
     private void userRemoveProcedure(Authentication authentication) {

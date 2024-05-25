@@ -148,15 +148,16 @@ public class DefaultAdminService implements AdminService {
             throw new UnableToCreateException("Such email is occupied.");
         }
 
-        return userRepository.save(AppUser.builder()
-                                          .userId(currentUser.getUserId())
-                                          .login(currentUser.getLogin())
-                                          .email(request.newEmail())
-                                          .password(currentUser.getPassword())
-                                          .role(currentUser.getRole())
-                                          .enabled(currentUser.getEnabled())
-                                          .creationTime(currentUser.getCreationTime())
-                                          .build());
+        return userRepository.save(AppUser.newOf(
+                currentUser.getUserId(),
+                currentUser.getLogin(),
+                request.newEmail(),
+                currentUser.getPassword(),
+                currentUser.getRole(),
+                currentUser.getEnabled(),
+                currentUser.getCreationTime()
+        ));
+
     }
 
     @Override
@@ -164,15 +165,15 @@ public class DefaultAdminService implements AdminService {
         AppUser currentUser = userRepository.findByLogin(request.login())
                                             .orElseThrow(() -> new NoSuchElementException("User doesn't exist"));
 
-        return userRepository.save(AppUser.builder()
-                                          .userId(currentUser.getUserId())
-                                          .login(currentUser.getLogin())
-                                          .email(currentUser.getEmail())
-                                          .password(passwordEncoder.encode(request.newPassword()))
-                                          .role(currentUser.getRole())
-                                          .enabled(currentUser.getEnabled())
-                                          .creationTime(currentUser.getCreationTime())
-                                          .build());
+        return userRepository.save(AppUser.newOf(
+                currentUser.getUserId(),
+                currentUser.getLogin(),
+                currentUser.getEmail(),
+                passwordEncoder.encode(request.newPassword()),
+                currentUser.getRole(),
+                currentUser.getEnabled(),
+                currentUser.getCreationTime()
+        ));
     }
 
     @Override
@@ -191,15 +192,16 @@ public class DefaultAdminService implements AdminService {
     @PostConstruct
     private void registerAdminUser() {
         if (!userRepository.existsByLogin("admin")) {
-            AppUser admin = AppUser.builder()
-                                   .userId(UserIdWrapper.newOf(UUID.randomUUID()))
-                                   .login("admin")
-                                   .email("X")
-                                   .password(passwordEncoder.encode(ADMIN_PASSWORD))
-                                   .role(Role.ADMIN)
-                                   .enabled(true)
-                                   .creationTime(LocalDateTime.now())
-                                   .build();
+            AppUser admin = AppUser.newOf(
+                    UserIdWrapper.newOf(UUID.randomUUID()),
+                    "admin",
+                    "X",
+                    passwordEncoder.encode(ADMIN_PASSWORD),
+                    Role.ADMIN,
+                    true,
+                    LocalDateTime.now()
+            );
+
             userRepository.save(admin);
         }
     }

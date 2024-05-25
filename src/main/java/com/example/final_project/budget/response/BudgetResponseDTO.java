@@ -2,7 +2,6 @@ package com.example.final_project.budget.response;
 
 import com.example.final_project.budget.model.*;
 import com.example.final_project.currencyapi.model.MKTCurrency;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.hateoas.Link;
@@ -14,7 +13,6 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 @Data
-@Builder
 @EqualsAndHashCode(callSuper = false)
 public class BudgetResponseDTO
         extends RepresentationModel<BudgetResponseDTO>

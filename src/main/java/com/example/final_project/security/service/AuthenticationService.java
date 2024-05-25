@@ -29,21 +29,21 @@ public class AuthenticationService {
     private final Supplier<UserIdWrapper> userIdSupplier;
 
     public RegisterResponseDTO register(RegisterUserRequest request) {
-        AppUser user = AppUser.builder()
-                              .userId(userIdSupplier.get())
-                              .login(request.login())
-                              .email(request.email())
-                              .password(passwordEncoder.encode(request.password()))
-                              .role(Role.USER)
-                              .enabled(Boolean.TRUE)
-                              .creationTime(LocalDateTime.now())
-                              .build();
+        AppUser user = AppUser.newOf(
+                userIdSupplier.get(),
+                request.login(),
+                request.email(),
+                passwordEncoder.encode(request.password()),
+                Role.USER,
+                Boolean.TRUE,
+                LocalDateTime.now()
+        );
 
         repository.save(user);
 
         String jwtToken = jwtService.generateToken(user);
 
-        return RegisterResponseDTO.builder().user(user).token(jwtToken).build();
+        return RegisterResponseDTO.newOf(user, jwtToken);
     }
 
     public AuthResponseDTO authenticate(AuthenticationRequest request) {
@@ -59,6 +59,6 @@ public class AuthenticationService {
 
         String jwtToken = jwtService.generateToken(user);
 
-        return AuthResponseDTO.builder().token(jwtToken).build();
+        return AuthResponseDTO.newOf(user.getUserId().id(), jwtToken);
     }
 }

@@ -43,7 +43,11 @@ public class AdminExpenseController {
                 request.expenseType(),
                 request.description()
         );
-        return ResponseEntity.status(201).body(adminExpenseService.getEntityModel(newExpense));
+        return ResponseEntity.status(201)
+                             .body(adminExpenseService.getEntityModel(
+                                     ExpenseResponseDto.fromDomain(newExpense),
+                                     ExpenseResponseDto.class
+                             ));
     }
 
 
@@ -52,7 +56,8 @@ public class AdminExpenseController {
             @PathVariable(name = "expense_uuid") UUID expenseUUID
     ) {
         Expense expense = adminExpenseService.getExpenseById(ExpenseIdWrapper.newOf(expenseUUID));
-        return ResponseEntity.ok(adminExpenseService.getEntityModel(expense));
+        return ResponseEntity.ok(
+                adminExpenseService.getEntityModel(ExpenseResponseDto.fromDomain(expense), ExpenseResponseDto.class));
     }
 
     @GetMapping("/budget/{budget_uuid}")
@@ -63,13 +68,13 @@ public class AdminExpenseController {
             @RequestParam(required = false, defaultValue = "id") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
     ) {
-        Page<Expense> expenses = adminExpenseService.getAllExpensesByBudgetId(
+        Page<ExpenseResponseDto> expenses = adminExpenseService.getAllExpensesByBudgetId(
                 BudgetIdWrapper.newOf(budgetUUID),
                 PageRequest.of(page, size,
                                Sort.by(sortDirection, sortBy)
                 )
-        );
-        return ResponseEntity.ok(adminExpenseService.getEntities(expenses));
+        ).map(ExpenseResponseDto::fromDomain);
+        return ResponseEntity.ok(adminExpenseService.getEntities(expenses, ExpenseResponseDto.class));
     }
 
     @GetMapping("/users/{user_uuid}")
@@ -80,13 +85,13 @@ public class AdminExpenseController {
             @RequestParam(required = false, defaultValue = "id") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
     ) {
-        Page<Expense> expenses = adminExpenseService.getAllExpensesByUserId(
+        Page<ExpenseResponseDto> expenses = adminExpenseService.getAllExpensesByUserId(
                 UserIdWrapper.newOf(userUUID),
                 PageRequest.of(page, size,
                                Sort.by(sortDirection, sortBy)
                 )
-        );
-        return ResponseEntity.ok(adminExpenseService.getEntities(expenses));
+        ).map(ExpenseResponseDto::fromDomain);
+        return ResponseEntity.ok(adminExpenseService.getEntities(expenses, ExpenseResponseDto.class));
     }
 
     @GetMapping
@@ -96,10 +101,11 @@ public class AdminExpenseController {
             @RequestParam(required = false, defaultValue = "id") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
     ) {
-        Page<Expense> expenses = adminExpenseService.getAllExpensesByPage(
+        Page<ExpenseResponseDto> expenses = adminExpenseService.getAllExpensesByPage(
                 PageRequest.of(page, size, Sort.by(sortDirection, sortBy))
-        );
-        return ResponseEntity.ok(adminExpenseService.getEntities(expenses));
+        ).map(ExpenseResponseDto::fromDomain);
+        ;
+        return ResponseEntity.ok(adminExpenseService.getEntities(expenses, ExpenseResponseDto.class));
     }
 
     @PutMapping()
@@ -114,7 +120,8 @@ public class AdminExpenseController {
                 request.expenseType(),
                 request.description()
         );
-        return ResponseEntity.ok(adminExpenseService.getEntityModel(expense));
+        return ResponseEntity.ok(
+                adminExpenseService.getEntityModel(ExpenseResponseDto.fromDomain(expense), ExpenseResponseDto.class));
     }
 
     @PatchMapping()
@@ -129,7 +136,8 @@ public class AdminExpenseController {
                 Optional.ofNullable(request.expenseType()),
                 Optional.ofNullable(request.description())
         );
-        return ResponseEntity.ok(adminExpenseService.getEntityModel(expense));
+        return ResponseEntity.ok(
+                adminExpenseService.getEntityModel(ExpenseResponseDto.fromDomain(expense), ExpenseResponseDto.class));
     }
 
     @DeleteMapping("/{expense_uuid}")

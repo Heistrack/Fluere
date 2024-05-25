@@ -3,16 +3,15 @@ package com.example.final_project.expense.service.user;
 
 import com.example.final_project.budget.model.Budget;
 import com.example.final_project.budget.model.BudgetIdWrapper;
+import com.example.final_project.budget.model.LinkableDTO;
 import com.example.final_project.budget.repository.BudgetRepository;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.currencyapi.repository.CurrencyRepository;
 import com.example.final_project.exception.custom.ExpenseTooBigException;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
-import com.example.final_project.expense.response.ExpenseResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
@@ -145,19 +144,20 @@ public class DefaultInnerExpenseServiceLogic implements ExpenseInnerServiceLogic
 
     //TODO extend HATEOAS links to more road signs
     @Override
-    public EntityModel<ExpenseResponseDto> getEntityModelFromLink(Link link, Expense expense) {
-        ExpenseResponseDto expenseResponseDto = ExpenseResponseDto.fromDomain(expense);
-        return EntityModel.of(expenseResponseDto.add(link));
-    }
-
-    @Override
-    public PagedModel<ExpenseResponseDto> getPagedModel(Link generalLink, Class<?> controller, Page<Expense> expenses) {
-        List<ExpenseResponseDto> list = expenses.map(ExpenseResponseDto::fromDomain).stream().toList();
-        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(expenses.getSize(), expenses.getNumber(),
-                                                                           expenses.getTotalElements(),
-                                                                           expenses.getTotalPages()
+    public <T extends LinkableDTO> PagedModel<T> getPagedModel(Page<T> linkableDTOs, Class<T> classCast,
+                                                               Class<?> controllerClass
+    ) {
+        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(
+                linkableDTOs.getSize(),
+                linkableDTOs.getNumber(),
+                linkableDTOs.getTotalElements(),
+                linkableDTOs.getTotalPages()
         );
-        list.forEach(dto -> dto.add(linkTo(controller).slash(dto.getExpenseId()).withSelfRel()));
+        List<T> list = linkableDTOs.stream().toList();
+        Link generalLink = linkTo(controllerClass).slash(linkableDTOs.getNumber() + 1).withSelfRel();
+        list.forEach(dto -> dto.addLink(
+                linkTo(controllerClass).slash(linkableDTOs.getNumber() + 1).slash(dto.PathMessage()).withSelfRel()));
+        list.forEach(classCast::cast);
         return PagedModel.of(list, pageMetadata, generalLink);
     }
 }

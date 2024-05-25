@@ -1,6 +1,7 @@
 package com.example.final_project.expense.service.admin;
 
 import com.example.final_project.budget.model.BudgetIdWrapper;
+import com.example.final_project.budget.model.LinkableDTO;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseIdWrapper;
@@ -46,7 +47,7 @@ public interface AdminExpenseService {
 
     void deleteExpenseById(ExpenseIdWrapper expenseId);
 
-    EntityModel<ExpenseResponseDto> getEntityModel(Expense expense);
+    <T extends LinkableDTO> EntityModel<T> getEntityModel(T linkableDTO, Class<T> classCast);
 
-    PagedModel<ExpenseResponseDto> getEntities(Page<Expense> expenses);
+    <T extends LinkableDTO> PagedModel<T> getEntities(Page<T> linkableDTOs, Class<T> classCast);
 }

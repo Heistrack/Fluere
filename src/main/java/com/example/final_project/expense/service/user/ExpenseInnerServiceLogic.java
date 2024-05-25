@@ -2,13 +2,11 @@ package com.example.final_project.expense.service.user;
 
 import com.example.final_project.budget.model.Budget;
 import com.example.final_project.budget.model.BudgetIdWrapper;
+import com.example.final_project.budget.model.LinkableDTO;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
-import com.example.final_project.expense.response.ExpenseResponseDto;
 import org.springframework.data.domain.Page;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 
 import java.math.BigDecimal;
@@ -39,7 +37,7 @@ public interface ExpenseInnerServiceLogic {
 
     BigDecimal sumAllExpensesByCurrency(MKTCurrency expectedCurrency, Budget budget);
 
-    EntityModel<ExpenseResponseDto> getEntityModelFromLink(Link link, Expense expense);
-
-    PagedModel<ExpenseResponseDto> getPagedModel(Link generalLink, Class<?> controller, Page<Expense> expenses);
+    <T extends LinkableDTO> PagedModel<T> getPagedModel(Page<T> linkableDTOs, Class<T> classCast,
+                                                        Class<?> controllerClass
+    );
 }

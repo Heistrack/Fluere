@@ -1,6 +1,7 @@
 package com.example.final_project.expense.service.user;
 
 import com.example.final_project.budget.model.BudgetIdWrapper;
+import com.example.final_project.budget.model.LinkableDTO;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.controller.user.ExpenseController;
 import com.example.final_project.expense.model.Expense;
@@ -8,7 +9,6 @@ import com.example.final_project.expense.model.ExpenseDetails;
 import com.example.final_project.expense.model.ExpenseIdWrapper;
 import com.example.final_project.expense.model.ExpenseType;
 import com.example.final_project.expense.repository.ExpenseRepository;
-import com.example.final_project.expense.response.ExpenseResponseDto;
 import com.example.final_project.security.service.JwtService;
 import com.example.final_project.userentity.model.UserIdWrapper;
 import lombok.RequiredArgsConstructor;
@@ -182,14 +182,14 @@ public class DefaultExpenseService implements ExpenseService {
     }
 
     @Override
-    public EntityModel<ExpenseResponseDto> getEntityModel(Expense expense) {
-        Link link = linkTo(ExpenseController.class).slash(expense.expenseId().id()).withSelfRel();
-        return innerServiceLogic.getEntityModelFromLink(link, expense);
+    public <T extends LinkableDTO> EntityModel<T> getEntityModel(T linkableDTO, Class<T> classCast) {
+        Link link = linkTo(ExpenseController.class).slash(linkableDTO.PathMessage()).withSelfRel();
+        linkableDTO.addLink(link);
+        return EntityModel.of(classCast.cast(linkableDTO));
     }
 
     @Override
-    public PagedModel<ExpenseResponseDto> getEntities(Page<Expense> expenses) {
-        Link generalLink = linkTo(ExpenseController.class).withSelfRel();
-        return innerServiceLogic.getPagedModel(generalLink, ExpenseController.class, expenses);
+    public <T extends LinkableDTO> PagedModel<T> getEntities(Page<T> linkableDTOs, Class<T> classCast) {
+        return innerServiceLogic.getPagedModel(linkableDTOs, classCast, ExpenseController.class);
     }
 }

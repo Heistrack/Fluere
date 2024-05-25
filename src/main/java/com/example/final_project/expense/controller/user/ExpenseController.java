@@ -43,7 +43,10 @@ public class ExpenseController {
                                                                request.description(),
                                                                authentication
         );
-        return ResponseEntity.status(201).body(expenseService.getEntityModel(newExpense));
+        return ResponseEntity.status(201).body(expenseService.getEntityModel(
+                ExpenseResponseDto.fromDomain(newExpense),
+                ExpenseResponseDto.class
+        ));
     }
 
     @GetMapping("/{expense_uuid}")
@@ -52,7 +55,8 @@ public class ExpenseController {
             Authentication authentication
     ) {
         Expense expense = expenseService.getExpenseById(ExpenseIdWrapper.newOf(expenseUUID), authentication);
-        return ResponseEntity.ok(expenseService.getEntityModel(expense));
+        return ResponseEntity.ok(
+                expenseService.getEntityModel(ExpenseResponseDto.fromDomain(expense), ExpenseResponseDto.class));
     }
 
     @GetMapping("/budget/{budget_uuid}")
@@ -64,13 +68,13 @@ public class ExpenseController {
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
             Authentication authentication
     ) {
-        Page<Expense> allExpensesByBudgetId = expenseService.getAllExpensesByBudgetId(
+        Page<ExpenseResponseDto> allExpensesByBudgetId = expenseService.getAllExpensesByBudgetId(
                 BudgetIdWrapper.newOf(budgetUUID),
                 PageRequest.of(page, size,
                                Sort.by(sortDirection, sortBy)
                 ), authentication
-        );
-        return ResponseEntity.ok(expenseService.getEntities(allExpensesByBudgetId));
+        ).map(ExpenseResponseDto::fromDomain);
+        return ResponseEntity.ok(expenseService.getEntities(allExpensesByBudgetId, ExpenseResponseDto.class));
     }
 
     @GetMapping
@@ -81,11 +85,11 @@ public class ExpenseController {
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection,
             Authentication authentication
     ) {
-        Page<Expense> allByPage = expenseService.getAllByPage(
+        Page<ExpenseResponseDto> allByPage = expenseService.getAllByPage(
                 PageRequest.of(page, size, Sort.by(sortDirection, sortBy)),
                 authentication
-        );
-        return ResponseEntity.ok(expenseService.getEntities(allByPage));
+        ).map(ExpenseResponseDto::fromDomain);
+        return ResponseEntity.ok(expenseService.getEntities(allByPage, ExpenseResponseDto.class));
     }
 
     @PatchMapping()
@@ -102,7 +106,8 @@ public class ExpenseController {
                 Optional.ofNullable(request.description()),
                 authentication
         );
-        return ResponseEntity.ok(expenseService.getEntityModel(patchedExpense));
+        return ResponseEntity.ok(
+                expenseService.getEntityModel(ExpenseResponseDto.fromDomain(patchedExpense), ExpenseResponseDto.class));
     }
 
     @PutMapping()
@@ -119,7 +124,8 @@ public class ExpenseController {
                 request.description(),
                 authentication
         );
-        return ResponseEntity.ok(expenseService.getEntityModel(updatedExpense));
+        return ResponseEntity.ok(
+                expenseService.getEntityModel(ExpenseResponseDto.fromDomain(updatedExpense), ExpenseResponseDto.class));
     }
 
     @DeleteMapping("/{expense_uuid}")

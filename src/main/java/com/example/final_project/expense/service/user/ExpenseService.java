@@ -1,11 +1,11 @@
 package com.example.final_project.expense.service.user;
 
 import com.example.final_project.budget.model.BudgetIdWrapper;
+import com.example.final_project.budget.model.LinkableDTO;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseIdWrapper;
 import com.example.final_project.expense.model.ExpenseType;
-import com.example.final_project.expense.response.ExpenseResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
@@ -52,7 +52,7 @@ public interface ExpenseService {
 
     void deleteExpenseById(ExpenseIdWrapper expenseId, Authentication authentication);
 
-    EntityModel<ExpenseResponseDto> getEntityModel(Expense expense);
+    <T extends LinkableDTO> EntityModel<T> getEntityModel(T linkableDTO, Class<T> classCast);
 
-    PagedModel<ExpenseResponseDto> getEntities(Page<Expense> expenses);
+    <T extends LinkableDTO> PagedModel<T> getEntities(Page<T> linkableDTOs, Class<T> classCast);
 }

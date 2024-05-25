@@ -274,7 +274,6 @@ public class DefaultBudgetService implements BudgetService {
         budgetRepository.deleteById(budgetId);
     }
 
-    //TODO test if it's work
     @Override
     public <T extends LinkableDTO> EntityModel<T> getEntityModel(T linkableDTO, Class<T> classCast) {
         Link link = linkTo(BudgetController.class).slash(linkableDTO.PathMessage()).withSelfRel();
@@ -284,7 +283,6 @@ public class DefaultBudgetService implements BudgetService {
 
     @Override
     public <T extends LinkableDTO> PagedModel<T> getEntities(Page<T> linkableDTOs, Class<T> classCast) {
-        Link generalLink = linkTo(BudgetController.class).withSelfRel();
-        return innerServiceLogic.getPagedModel(linkableDTOs, classCast, generalLink);
+        return innerServiceLogic.getPagedModel(linkableDTOs, classCast, BudgetController.class);
     }
 }

@@ -31,7 +31,7 @@ public class DefaultInnerUserServiceLogic implements UserInnerServiceLogic {
     }
 
     public <T extends LinkableDTO> PagedModel<T> getPagedModel(Page<T> linkableDTOs, Class<T> classCast,
-                                                               Link generalLink
+                                                               Class<?> controllerClass
     ) {
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(
                 linkableDTOs.getSize(),
@@ -40,7 +40,8 @@ public class DefaultInnerUserServiceLogic implements UserInnerServiceLogic {
                 linkableDTOs.getTotalPages()
         );
         List<T> list = linkableDTOs.stream().toList();
-        list.forEach(dto -> dto.addLink(linkTo(generalLink).slash(dto.PathMessage()).withSelfRel()));
+        Link generalLink = linkTo(controllerClass).slash(linkableDTOs.getNumber() + 1).withSelfRel();
+        list.forEach(dto -> dto.addLink(linkTo(controllerClass).slash(linkableDTOs.getNumber() + 1).slash(dto.PathMessage()).withSelfRel()));
         list.forEach(classCast::cast);
         return PagedModel.of(list, pageMetadata, generalLink);
     }

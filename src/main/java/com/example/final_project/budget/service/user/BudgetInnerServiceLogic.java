@@ -9,7 +9,6 @@ import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
 import com.example.final_project.userentity.model.UserIdWrapper;
 import org.springframework.data.domain.Page;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 
 import java.math.BigDecimal;
@@ -48,5 +47,7 @@ public interface BudgetInnerServiceLogic {
 
     BigDecimal showBalanceByCurrency(MKTCurrency expectedCurrency, Budget budget);
 
-    <T extends LinkableDTO> PagedModel<T> getPagedModel(Page<T> linkableDTOs, Class<T> classCast, Link generalLink);
+    <T extends LinkableDTO> PagedModel<T> getPagedModel(Page<T> linkableDTOs, Class<T> classCast,
+                                                        Class<?> controllerClass
+    );
 }

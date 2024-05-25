@@ -185,8 +185,7 @@ public class DefaultAdminService implements AdminService {
 
     @Override
     public <T extends LinkableDTO> PagedModel<T> getEntities(Page<T> linkableDTOs, Class<T> classCast) {
-        Link generalLink = linkTo(AdminController.class).withSelfRel();
-        return innerServiceLogic.getPagedModel(linkableDTOs, classCast, generalLink);
+        return innerServiceLogic.getPagedModel(linkableDTOs, classCast, AdminController.class);
     }
 
     @PostConstruct

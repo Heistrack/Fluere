@@ -118,16 +118,7 @@ public class AdminDefaultBudgetService implements AdminBudgetService {
 
     @Override
     public BudgetUserMoneySavedDTO getAllMoneySavedByUser(UUID userId) {
-        List<Budget> allBudgetsByUserId = budgetRepository.findAllByUserId(UserIdWrapper.newOf(userId));
-        LocalDate now = LocalDate.now();
-        List<Budget> closedBudgets = allBudgetsByUserId.stream().filter(budget -> budget.budgetDetails().budgetPeriod()
-                                                                                        .getEndTime()
-                                                                                        .isBefore(now)).toList();
-        BigDecimal sum = BigDecimal.ZERO;
-        for (Budget budget : closedBudgets) {
-            sum = sum.add(innerServiceLogic.showBalanceByCurrency(budget.budgetDetails().defaultCurrency(), budget));
-        }
-        return BudgetUserMoneySavedDTO.newOf(userId, sum);
+        return innerServiceLogic.getMoneySavedBySingleUser(UserIdWrapper.newOf(userId));
     }
 
     @Override

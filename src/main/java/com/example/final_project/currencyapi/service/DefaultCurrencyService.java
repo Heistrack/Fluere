@@ -45,7 +45,6 @@ public class DefaultCurrencyService implements CurrencyService {
     @Override
     public FiatCurrencyDailyData getData() {
         return fiatCurrency;
-        //TODO check dependency version update in pom.xml
     }
 
     @PostConstruct

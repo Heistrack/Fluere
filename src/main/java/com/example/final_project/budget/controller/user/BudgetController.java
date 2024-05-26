@@ -85,8 +85,14 @@ public class BudgetController {
     }
 
     @GetMapping("/saved_money")
-    ResponseEntity<EntityModel<BudgetUserMoneySavedDTO>> getAllMoneySaved(Authentication authentication) {
-        BudgetUserMoneySavedDTO allMoneySaved = budgetService.getAllMoneySaved(authentication);
+    ResponseEntity<EntityModel<BudgetUserMoneySavedDTO>> getUserSavedMoney(Authentication authentication) {
+        BudgetUserMoneySavedDTO allMoneySaved = budgetService.getAllMoneySavedByUser(authentication);
+        return ResponseEntity.ok(budgetService.getEntityModel(allMoneySaved, BudgetUserMoneySavedDTO.class));
+    }
+
+    @GetMapping("/total_saved_money")
+    ResponseEntity<EntityModel<BudgetUserMoneySavedDTO>> getAllMoneySaved() {
+        BudgetUserMoneySavedDTO allMoneySaved = budgetService.getAllMoneySaved();
         return ResponseEntity.ok(budgetService.getEntityModel(allMoneySaved, BudgetUserMoneySavedDTO.class));
     }
 

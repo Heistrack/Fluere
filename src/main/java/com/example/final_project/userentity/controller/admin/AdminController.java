@@ -7,7 +7,7 @@ import com.example.final_project.userentity.request.admin.AdminEmailChangeReques
 import com.example.final_project.userentity.request.admin.AdminPasswordChangeRequest;
 import com.example.final_project.userentity.response.admin.AdminOperationResponse;
 import com.example.final_project.userentity.response.appuser.UserDetailsResponseDTO;
-import com.example.final_project.userentity.service.admin.AdminService;
+import com.example.final_project.userentity.service.admin.AdminUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,16 +28,15 @@ import static com.example.final_project.userentity.controller.admin.AdminControl
 @RequiredArgsConstructor
 public class AdminController {
     static final String ADMIN_CONTROLLERS_BASE_PATH = "/api/x/users";
-    private final AdminService adminService;
-    //TODO add hateoas to admin and user layer
+    private final AdminUserService adminUserService;
 
     @PostMapping()
     ResponseEntity<EntityModel<UserDetailsResponseDTO>> registerNewUser(
             @Valid @RequestBody RegisterUserRequest request
     ) {
-        AppUser appUser = adminService.registerNewUser(request);
-        return ResponseEntity.status(201).body(adminService.getEntityModel(UserDetailsResponseDTO.fromDomain(appUser),
-                                                                           UserDetailsResponseDTO.class
+        AppUser appUser = adminUserService.registerNewUser(request);
+        return ResponseEntity.status(201).body(adminUserService.getEntityModel(UserDetailsResponseDTO.fromDomain(appUser),
+                                                                               UserDetailsResponseDTO.class
         ));
     }
 
@@ -45,8 +44,8 @@ public class AdminController {
     ResponseEntity<EntityModel<AdminOperationResponse>> authenticate(
             @PathVariable(name = "login") String login
     ) {
-        AdminOperationResponse adminOperationResponse = adminService.authenticateTest(login);
-        return ResponseEntity.ok(adminService.getEntityModel(adminOperationResponse, AdminOperationResponse.class));
+        AdminOperationResponse adminOperationResponse = adminUserService.authenticateTest(login);
+        return ResponseEntity.ok(adminUserService.getEntityModel(adminOperationResponse, AdminOperationResponse.class));
     }
 
     @GetMapping
@@ -56,19 +55,19 @@ public class AdminController {
             @RequestParam(required = false, defaultValue = "id") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
     ) {
-        Page<UserDetailsResponseDTO> allByPage = adminService.getAllUsersByPage(
+        Page<UserDetailsResponseDTO> allByPage = adminUserService.getAllUsersByPage(
                                                                      PageRequest.of(page, size, Sort.by(sortDirection, sortBy)))
-                                                             .map(UserDetailsResponseDTO::fromDomain);
-        return ResponseEntity.ok(adminService.getEntities(allByPage, UserDetailsResponseDTO.class));
+                                                                 .map(UserDetailsResponseDTO::fromDomain);
+        return ResponseEntity.ok(adminUserService.getEntities(allByPage, UserDetailsResponseDTO.class));
     }
 
     @PostMapping("/password_reset")
     ResponseEntity<EntityModel<UserDetailsResponseDTO>> passwordChange(
             @RequestBody @Valid AdminPasswordChangeRequest request
     ) {
-        AppUser updatedUser = adminService.resetUserPassword(request);
-        return ResponseEntity.ok(adminService.getEntityModel(UserDetailsResponseDTO.fromDomain(updatedUser),
-                                                             UserDetailsResponseDTO.class
+        AppUser updatedUser = adminUserService.resetUserPassword(request);
+        return ResponseEntity.ok(adminUserService.getEntityModel(UserDetailsResponseDTO.fromDomain(updatedUser),
+                                                                 UserDetailsResponseDTO.class
         ));
     }
 
@@ -76,55 +75,55 @@ public class AdminController {
     ResponseEntity<EntityModel<UserDetailsResponseDTO>> emailChange(
             @RequestBody @Valid AdminEmailChangeRequest request
     ) {
-        AppUser updatedUser = adminService.patchUserEmail(request);
-        return ResponseEntity.ok(adminService.getEntityModel(UserDetailsResponseDTO.fromDomain(updatedUser),
-                                                             UserDetailsResponseDTO.class
+        AppUser updatedUser = adminUserService.patchUserEmail(request);
+        return ResponseEntity.ok(adminUserService.getEntityModel(UserDetailsResponseDTO.fromDomain(updatedUser),
+                                                                 UserDetailsResponseDTO.class
         ));
     }
 
     @GetMapping("/from_token")
     ResponseEntity<EntityModel<UserDetailsResponseDTO>> getUserFromToken(Authentication authentication) {
-        AppUser user = adminService.findFromToken(authentication.getName());
+        AppUser user = adminUserService.getFromToken(authentication.getName());
         return ResponseEntity.ok(
-                adminService.getEntityModel(UserDetailsResponseDTO.fromDomain(user), UserDetailsResponseDTO.class));
+                adminUserService.getEntityModel(UserDetailsResponseDTO.fromDomain(user), UserDetailsResponseDTO.class));
     }
 
     @GetMapping("/id/{uuid}")
     ResponseEntity<EntityModel<UserDetailsResponseDTO>> getUserById(@PathVariable(name = "uuid") UUID userUUID) {
-        AppUser user = adminService.findByUserId(userUUID);
+        AppUser user = adminUserService.getByUserId(userUUID);
         return ResponseEntity.ok(
-                adminService.getEntityModel(UserDetailsResponseDTO.fromDomain(user), UserDetailsResponseDTO.class));
+                adminUserService.getEntityModel(UserDetailsResponseDTO.fromDomain(user), UserDetailsResponseDTO.class));
     }
 
     @GetMapping("/logins/{login}")
     ResponseEntity<EntityModel<UserDetailsResponseDTO>> getUserByLogin(@PathVariable(name = "login") String login) {
-        AppUser user = adminService.findUserByLogin(login);
+        AppUser user = adminUserService.getUserByLogin(login);
         return ResponseEntity.ok(
-                adminService.getEntityModel(UserDetailsResponseDTO.fromDomain(user), UserDetailsResponseDTO.class));
+                adminUserService.getEntityModel(UserDetailsResponseDTO.fromDomain(user), UserDetailsResponseDTO.class));
     }
 
     @GetMapping("/emails/{email}")
     ResponseEntity<EntityModel<UserDetailsResponseDTO>> getUserByEmail(@PathVariable(name = "email") String email) {
-        AppUser user = adminService.findUserByEmail(email);
+        AppUser user = adminUserService.getUserByEmail(email);
         return ResponseEntity.ok(
-                adminService.getEntityModel(UserDetailsResponseDTO.fromDomain(user), UserDetailsResponseDTO.class));
+                adminUserService.getEntityModel(UserDetailsResponseDTO.fromDomain(user), UserDetailsResponseDTO.class));
     }
 
     @DeleteMapping("ids/{uuid}")
     ResponseEntity<EntityModel<UserDetailsResponseDTO>> removeUserByUserId(@PathVariable(name = "uuid") UUID userUUID) {
-        adminService.removeUserByUserId(userUUID);
+        adminUserService.removeUserByUserId(userUUID);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{email}")
     ResponseEntity<EntityModel<UserDetailsResponseDTO>> removeUserByEmail(@PathVariable(name = "email") String email) {
-        adminService.removeUserByEmail(email);
+        adminUserService.removeUserByEmail(email);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("logins/{login}")
     ResponseEntity<EntityModel<AdminOperationResponse>> removeUserByLogin(@PathVariable(name = "login") String login) {
-        adminService.removeUserByLogin(login);
+        adminUserService.removeUserByLogin(login);
         return ResponseEntity.noContent().build();
     }
 
@@ -132,7 +131,7 @@ public class AdminController {
     ResponseEntity<EntityModel<UserDetailsResponseDTO>> removeAllExceptAdmin(
             @RequestBody AuthenticationRequest confirmation
     ) {
-        adminService.removeAllUsers(confirmation);
+        adminUserService.removeAllUsers(confirmation);
         return ResponseEntity.noContent().build();
     }
 
@@ -140,7 +139,7 @@ public class AdminController {
     ResponseEntity<EntityModel<UserDetailsResponseDTO>> removeAll(
             @RequestBody AuthenticationRequest confirmation
     ) {
-        adminService.databaseRestart(confirmation);
+        adminUserService.databaseRestart(confirmation);
         return ResponseEntity.noContent().build();
     }
 }

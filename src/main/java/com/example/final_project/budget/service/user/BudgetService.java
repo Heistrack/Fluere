@@ -41,7 +41,9 @@ public interface BudgetService {
 
     Page<BudgetStatusDTO> getBudgetsStatuses(Pageable pageable, Authentication authentication);
 
-    BudgetUserMoneySavedDTO getAllMoneySaved(Authentication authentication);
+    BudgetUserMoneySavedDTO getAllMoneySavedByUser(Authentication authentication);
+
+    BudgetUserMoneySavedDTO getAllMoneySaved();
 
     Budget updateBudgetById(BudgetIdWrapper budgetId,
                             String title,

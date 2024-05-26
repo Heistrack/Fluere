@@ -10,7 +10,9 @@ import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
 import com.example.final_project.expense.repository.ExpenseRepository;
 import com.example.final_project.security.service.JwtService;
+import com.example.final_project.userentity.model.AppUser;
 import com.example.final_project.userentity.model.UserIdWrapper;
+import com.example.final_project.userentity.service.admin.AdminUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -37,6 +39,7 @@ public class DefaultBudgetService implements BudgetService {
     private final ExpenseRepository expenseRepository;
     private final Supplier<BudgetIdWrapper> budgetIdSupplier;
     private final BudgetInnerServiceLogic innerServiceLogic;
+    private final AdminUserService adminUserService;
     private final JwtService jwtService;
 
     @Override
@@ -127,18 +130,19 @@ public class DefaultBudgetService implements BudgetService {
     }
 
     @Override
-    public BudgetUserMoneySavedDTO getAllMoneySaved(Authentication authentication) {
+    public BudgetUserMoneySavedDTO getAllMoneySavedByUser(Authentication authentication) {
         UserIdWrapper userId = jwtService.extractUserIdFromRequestAuth(authentication);
-        List<Budget> allBudgetsByUserId = budgetRepository.findAllByUserId(userId);
-        LocalDate now = LocalDate.now();
-        List<Budget> closedBudgets = allBudgetsByUserId.stream().filter(budget -> budget.budgetDetails().budgetPeriod()
-                                                                                        .getEndTime()
-                                                                                        .isBefore(now)).toList();
-        BigDecimal sum = BigDecimal.ZERO;
-        for (Budget budget : closedBudgets) {
-            sum = sum.add(innerServiceLogic.showBalanceByCurrency(budget.budgetDetails().defaultCurrency(), budget));
-        }
-        return BudgetUserMoneySavedDTO.newOf(userId.id(), sum);
+        return innerServiceLogic.getMoneySavedBySingleUser(userId);
+    }
+
+    @Override
+    public BudgetUserMoneySavedDTO getAllMoneySaved() {
+        List<AppUser> allUsersToList = adminUserService.getAllUsersToList();
+        BigDecimal totalMoneySaved = allUsersToList.stream().map(AppUser::getUserId)
+                                                   .map(innerServiceLogic::getMoneySavedBySingleUser)
+                                                   .map(BudgetUserMoneySavedDTO::getMoneySaved)
+                                                   .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return BudgetUserMoneySavedDTO.newOf("Total_money_saved", totalMoneySaved);
     }
 
     @Override

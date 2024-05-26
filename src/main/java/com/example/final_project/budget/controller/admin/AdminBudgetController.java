@@ -87,10 +87,9 @@ public class AdminBudgetController {
     }
 
     @GetMapping("/saved_money/{user_uuid}")
-    ResponseEntity<EntityModel<BudgetUserMoneySavedDTO>> getAllMoneySaved(
+    ResponseEntity<EntityModel<BudgetUserMoneySavedDTO>> getAllMoneySavedByUser(
             @PathVariable(name = "user_uuid") UUID userUUID
     ) {
-        //FIXME: I want to get paged user list with the value how much money was saved by any one of them
         BudgetUserMoneySavedDTO allMoneySaved = adminBudgetService.getAllMoneySavedByUser(userUUID);
         return ResponseEntity.ok(adminBudgetService.getEntityModel(allMoneySaved, BudgetUserMoneySavedDTO.class));
     }

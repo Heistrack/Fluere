@@ -12,20 +12,23 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 
+import java.util.List;
 import java.util.UUID;
 
-public interface AdminService {
+public interface AdminUserService {
     AppUser registerNewUser(RegisterUserRequest request);
 
-    AppUser findByUserId(UUID userId);
+    AppUser getByUserId(UUID userId);
 
-    AppUser findFromToken(String userId);
+    AppUser getFromToken(String userId);
 
-    AppUser findUserByLogin(String login);
+    AppUser getUserByLogin(String login);
 
     Page<AppUser> getAllUsersByPage(Pageable pageable);
 
-    AppUser findUserByEmail(String email);
+    List<AppUser> getAllUsersToList();
+
+    AppUser getUserByEmail(String email);
 
     void removeUserByLogin(String login);
 

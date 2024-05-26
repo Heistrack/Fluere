@@ -2,6 +2,7 @@ package com.example.final_project.budget.service.user;
 
 import com.example.final_project.budget.model.*;
 import com.example.final_project.budget.repository.BudgetRepository;
+import com.example.final_project.budget.response.BudgetUserMoneySavedDTO;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
@@ -121,6 +122,20 @@ public class DefaultInnerBudgetServiceLogic implements BudgetInnerServiceLogic {
     }
 
     @Override
+    public BudgetUserMoneySavedDTO getMoneySavedBySingleUser(UserIdWrapper userId) {
+        List<Budget> allBudgetsByUserId = budgetRepository.findAllByUserId(userId);
+        LocalDate now = LocalDate.now();
+        List<Budget> closedBudgets = allBudgetsByUserId.stream().filter(budget -> budget.budgetDetails().budgetPeriod()
+                                                                                        .getEndTime()
+                                                                                        .isBefore(now)).toList();
+        BigDecimal sum = BigDecimal.ZERO;
+        for (Budget budget : closedBudgets) {
+            sum = sum.add(showBalanceByCurrency(budget.budgetDetails().defaultCurrency(), budget));
+        }
+        return BudgetUserMoneySavedDTO.newOf(userId.toString(), sum);
+    }
+
+    @Override
     public boolean noParamChangeCheck(Budget oldBudget,
                                       Optional<String> newTitle,
                                       Optional<BigDecimal> newLimit,
@@ -153,7 +168,6 @@ public class DefaultInnerBudgetServiceLogic implements BudgetInnerServiceLogic {
         return expenseInnerServiceLogic.sumAllExpensesByCurrency(expectedCurrency, budget);
     }
 
-    //TODO extend HATEOAS links to more road signs
     @Override
     public <T extends LinkableDTO> PagedModel<T> getPagedModel(Page<T> linkableDTOs, Class<T> classCast,
                                                                Class<?> controllerClass

@@ -4,6 +4,7 @@ import com.example.final_project.budget.model.Budget;
 import com.example.final_project.budget.model.BudgetPeriod;
 import com.example.final_project.budget.model.BudgetType;
 import com.example.final_project.budget.model.LinkableDTO;
+import com.example.final_project.budget.response.BudgetUserMoneySavedDTO;
 import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.example.final_project.expense.model.Expense;
 import com.example.final_project.expense.model.ExpenseType;
@@ -34,6 +35,8 @@ public interface BudgetInnerServiceLogic {
     Float budgetFullFillPercentage(BigDecimal base, BigDecimal actual);
 
     String getTrueLimitFromBudget(Budget budget);
+
+    BudgetUserMoneySavedDTO getMoneySavedBySingleUser(UserIdWrapper userId);
 
     boolean noParamChangeCheck(Budget oldBudget,
                                Optional<String> newTitle,

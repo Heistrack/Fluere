@@ -37,7 +37,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @Service
 @RequiredArgsConstructor
-public class DefaultAdminService implements AdminService {
+public class DefaultAdminUserService implements AdminUserService {
     private final AppUserRepository userRepository;
     private final AuthenticationService authenticationService;
     private final PasswordEncoder passwordEncoder;
@@ -69,25 +69,30 @@ public class DefaultAdminService implements AdminService {
     }
 
     @Override
-    public AppUser findFromToken(String userId) {
+    public List<AppUser> getAllUsersToList() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public AppUser getFromToken(String userId) {
         return userRepository.findById(UserIdWrapper.newFromString(userId))
                              .orElseThrow(() -> new JwtException("Invalid token"));
     }
 
     @Override
-    public AppUser findByUserId(UUID userId) {
+    public AppUser getByUserId(UUID userId) {
         return userRepository.findById(UserIdWrapper.newOf(userId))
                              .orElseThrow(() -> new NoSuchElementException("There is no such user id!"));
     }
 
     @Override
-    public AppUser findUserByLogin(String login) {
+    public AppUser getUserByLogin(String login) {
         return userRepository.findByLogin(login)
                              .orElseThrow(() -> new NoSuchElementException("There is no user with such login"));
     }
 
     @Override
-    public AppUser findUserByEmail(String email) {
+    public AppUser getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                              .orElseThrow(() -> new NoSuchElementException("There is no user with such email"));
     }

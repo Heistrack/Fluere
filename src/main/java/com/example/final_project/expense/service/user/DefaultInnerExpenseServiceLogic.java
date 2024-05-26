@@ -142,7 +142,6 @@ public class DefaultInnerExpenseServiceLogic implements ExpenseInnerServiceLogic
         return defaultCurrencyToUSDRatio.divide(expenseCurrencyToUSDRatio, 4, RoundingMode.HALF_UP);
     }
 
-    //TODO extend HATEOAS links to more road signs
     @Override
     public <T extends LinkableDTO> PagedModel<T> getPagedModel(Page<T> linkableDTOs, Class<T> classCast,
                                                                Class<?> controllerClass

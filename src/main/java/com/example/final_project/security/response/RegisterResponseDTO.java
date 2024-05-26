@@ -24,7 +24,6 @@ public class RegisterResponseDTO extends RepresentationModel<RegisterResponseDTO
         this.add(link);
     }
 
-    //TODO should HATEOAS add user id to the path, how it really should look like?
     @Override
     public String PathMessage() {
         return user.getUserId().id().toString();

@@ -7,16 +7,15 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class BudgetUserMoneySavedDTO extends RepresentationModel<BudgetUserMoneySavedDTO> implements LinkableDTO {
 
-    private final UUID userId;
+    private final String userId;
     private final BigDecimal moneySaved;
 
-    public static BudgetUserMoneySavedDTO newOf(UUID userId, BigDecimal moneySaved) {
+    public static BudgetUserMoneySavedDTO newOf(String userId, BigDecimal moneySaved) {
         return new BudgetUserMoneySavedDTO(userId, moneySaved);
     }
 
@@ -27,6 +26,6 @@ public class BudgetUserMoneySavedDTO extends RepresentationModel<BudgetUserMoney
 
     @Override
     public String PathMessage() {
-        return userId.toString();
+        return userId;
     }
 }

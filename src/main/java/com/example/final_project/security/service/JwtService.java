@@ -1,6 +1,6 @@
 package com.example.final_project.security.service;
 
-import com.example.final_project.userentity.service.UserIdWrapper;
+import com.example.final_project.userentity.model.UserIdWrapper;
 import io.jsonwebtoken.Claims;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;

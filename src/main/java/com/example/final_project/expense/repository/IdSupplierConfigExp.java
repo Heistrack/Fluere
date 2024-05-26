@@ -1,6 +1,6 @@
 package com.example.final_project.expense.repository;
 
-import com.example.final_project.expense.service.ExpenseIdWrapper;
+import com.example.final_project.expense.model.ExpenseIdWrapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

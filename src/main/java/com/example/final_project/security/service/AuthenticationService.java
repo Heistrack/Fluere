@@ -1,12 +1,12 @@
 package com.example.final_project.security.service;
 
-import com.example.final_project.userentity.request.appuser.AuthenticationRequest;
-import com.example.final_project.userentity.request.appuser.RegisterUserRequest;
+import com.example.final_project.security.request.AuthenticationRequest;
+import com.example.final_project.security.request.RegisterUserRequest;
 import com.example.final_project.security.response.AuthResponseDTO;
 import com.example.final_project.security.response.RegisterResponseDTO;
-import com.example.final_project.userentity.service.AppUser;
-import com.example.final_project.userentity.service.Role;
-import com.example.final_project.userentity.service.UserIdWrapper;
+import com.example.final_project.userentity.model.AppUser;
+import com.example.final_project.userentity.model.Role;
+import com.example.final_project.userentity.model.UserIdWrapper;
 import com.example.final_project.userentity.repository.AppUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,21 +29,21 @@ public class AuthenticationService {
     private final Supplier<UserIdWrapper> userIdSupplier;
 
     public RegisterResponseDTO register(RegisterUserRequest request) {
-        AppUser user = AppUser.builder()
-                              .userId(userIdSupplier.get())
-                              .login(request.login())
-                              .email(request.email())
-                              .password(passwordEncoder.encode(request.password()))
-                              .role(Role.USER)
-                              .enabled(Boolean.TRUE)
-                              .creationTime(LocalDateTime.now())
-                              .build();
+        AppUser user = AppUser.newOf(
+                userIdSupplier.get(),
+                request.login(),
+                request.email(),
+                passwordEncoder.encode(request.password()),
+                Role.USER,
+                Boolean.TRUE,
+                LocalDateTime.now()
+        );
 
         repository.save(user);
 
         String jwtToken = jwtService.generateToken(user);
 
-        return RegisterResponseDTO.builder().user(user).token(jwtToken).build();
+        return RegisterResponseDTO.newOf(user, jwtToken);
     }
 
     public AuthResponseDTO authenticate(AuthenticationRequest request) {
@@ -52,13 +52,13 @@ public class AuthenticationService {
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        user.userId().id().toString(),
+                        user.getUserId().id().toString(),
                         request.password()
                 )
         );
 
         String jwtToken = jwtService.generateToken(user);
 
-        return AuthResponseDTO.builder().token(jwtToken).build();
+        return AuthResponseDTO.newOf(user.getUserId().id(), jwtToken);
     }
 }

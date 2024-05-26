@@ -1,8 +1,12 @@
 package com.example.final_project.budget.request.appuser;
 
-import com.example.final_project.budget.service.BudgetType;
+import com.example.final_project.budget.model.BudgetType;
+import com.example.final_project.currencyapi.model.MKTCurrency;
 import com.mongodb.lang.Nullable;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
@@ -21,6 +25,8 @@ public record UpdateBudgetRequest(
         @NotNull(message = "Budget's max single expense can not be null.")
         @Positive(message = "Budget's max single expense can not be negative or zero.")
         BigDecimal maxSingleExpense,
+        @NotNull(message = "Budget must have defined default currency")
+        MKTCurrency defaultCurrency,
         @Nullable
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         LocalDate budgetStart,

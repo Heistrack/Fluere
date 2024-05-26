@@ -1,18 +1,20 @@
 package com.example.final_project.userentity.controller.admin;
 
+import com.example.final_project.security.request.AuthenticationRequest;
+import com.example.final_project.security.request.RegisterUserRequest;
+import com.example.final_project.userentity.model.AppUser;
 import com.example.final_project.userentity.request.admin.AdminEmailChangeRequest;
 import com.example.final_project.userentity.request.admin.AdminPasswordChangeRequest;
-import com.example.final_project.userentity.request.appuser.AuthenticationRequest;
-import com.example.final_project.userentity.request.appuser.RegisterUserRequest;
 import com.example.final_project.userentity.response.admin.AdminOperationResponse;
-import com.example.final_project.userentity.response.appuser.UserDetailsResponse;
-import com.example.final_project.userentity.service.admin.AdminService;
-import com.example.final_project.userentity.service.AppUser;
+import com.example.final_project.userentity.response.appuser.UserDetailsResponseDTO;
+import com.example.final_project.userentity.service.admin.AdminUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -26,101 +28,118 @@ import static com.example.final_project.userentity.controller.admin.AdminControl
 @RequiredArgsConstructor
 public class AdminController {
     static final String ADMIN_CONTROLLERS_BASE_PATH = "/api/x/users";
-    private final AdminService adminService;
+    private final AdminUserService adminUserService;
 
     @PostMapping()
-    ResponseEntity<AppUser> registerNewUser(
+    ResponseEntity<EntityModel<UserDetailsResponseDTO>> registerNewUser(
             @Valid @RequestBody RegisterUserRequest request
     ) {
-        return ResponseEntity.ok(adminService.registerNewUser(request));
+        AppUser appUser = adminUserService.registerNewUser(request);
+        return ResponseEntity.status(201).body(adminUserService.getEntityModel(UserDetailsResponseDTO.fromDomain(appUser),
+                                                                               UserDetailsResponseDTO.class
+        ));
     }
 
     @GetMapping("/auth_check/{login}")
-    ResponseEntity<AdminOperationResponse> authenticate(
+    ResponseEntity<EntityModel<AdminOperationResponse>> authenticate(
             @PathVariable(name = "login") String login
     ) {
-        return ResponseEntity.ok(adminService.authenticateTest(login));
+        AdminOperationResponse adminOperationResponse = adminUserService.authenticateTest(login);
+        return ResponseEntity.ok(adminUserService.getEntityModel(adminOperationResponse, AdminOperationResponse.class));
     }
 
     @GetMapping
-    ResponseEntity<Page<UserDetailsResponse>> getAllUsers(
+    ResponseEntity<PagedModel<UserDetailsResponseDTO>> getAllUsers(
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "25") Integer size,
             @RequestParam(required = false, defaultValue = "id") String sortBy,
             @RequestParam(required = false, defaultValue = "DESC") Sort.Direction sortDirection
     ) {
-        return ResponseEntity.ok(
-                adminService.getAllUsersByPage(PageRequest.of(page, size, Sort.by(sortDirection, sortBy)))
-                            .map(UserDetailsResponse::fromDomain));
+        Page<UserDetailsResponseDTO> allByPage = adminUserService.getAllUsersByPage(
+                                                                     PageRequest.of(page, size, Sort.by(sortDirection, sortBy)))
+                                                                 .map(UserDetailsResponseDTO::fromDomain);
+        return ResponseEntity.ok(adminUserService.getEntities(allByPage, UserDetailsResponseDTO.class));
     }
 
     @PostMapping("/password_reset")
-    ResponseEntity<AppUser> passwordChange(
+    ResponseEntity<EntityModel<UserDetailsResponseDTO>> passwordChange(
             @RequestBody @Valid AdminPasswordChangeRequest request
     ) {
-        AppUser updatedUser = adminService.resetUserPassword(request);
-        return ResponseEntity.ok(updatedUser);
+        AppUser updatedUser = adminUserService.resetUserPassword(request);
+        return ResponseEntity.ok(adminUserService.getEntityModel(UserDetailsResponseDTO.fromDomain(updatedUser),
+                                                                 UserDetailsResponseDTO.class
+        ));
     }
 
     @PostMapping("/email_change")
-    ResponseEntity<AppUser> emailChange(
+    ResponseEntity<EntityModel<UserDetailsResponseDTO>> emailChange(
             @RequestBody @Valid AdminEmailChangeRequest request
     ) {
-        AppUser updatedUser = adminService.patchUserEmail(request);
-        return ResponseEntity.ok(updatedUser);
+        AppUser updatedUser = adminUserService.patchUserEmail(request);
+        return ResponseEntity.ok(adminUserService.getEntityModel(UserDetailsResponseDTO.fromDomain(updatedUser),
+                                                                 UserDetailsResponseDTO.class
+        ));
     }
 
     @GetMapping("/from_token")
-    ResponseEntity<AppUser> getUserFromToken(Authentication authentication) {
-        return ResponseEntity.ok(adminService.findFromToken(authentication.getName()));
+    ResponseEntity<EntityModel<UserDetailsResponseDTO>> getUserFromToken(Authentication authentication) {
+        AppUser user = adminUserService.getFromToken(authentication.getName());
+        return ResponseEntity.ok(
+                adminUserService.getEntityModel(UserDetailsResponseDTO.fromDomain(user), UserDetailsResponseDTO.class));
     }
 
     @GetMapping("/id/{uuid}")
-    ResponseEntity<AppUser> getUserById(@PathVariable(name = "uuid") UUID userUUID) {
-        return ResponseEntity.ok(adminService.findByUserId(userUUID));
+    ResponseEntity<EntityModel<UserDetailsResponseDTO>> getUserById(@PathVariable(name = "uuid") UUID userUUID) {
+        AppUser user = adminUserService.getByUserId(userUUID);
+        return ResponseEntity.ok(
+                adminUserService.getEntityModel(UserDetailsResponseDTO.fromDomain(user), UserDetailsResponseDTO.class));
     }
 
     @GetMapping("/logins/{login}")
-    ResponseEntity<AppUser> getUserByLogin(@PathVariable(name = "login") String login) {
-        return ResponseEntity.ok(adminService.findUserByLogin(login));
+    ResponseEntity<EntityModel<UserDetailsResponseDTO>> getUserByLogin(@PathVariable(name = "login") String login) {
+        AppUser user = adminUserService.getUserByLogin(login);
+        return ResponseEntity.ok(
+                adminUserService.getEntityModel(UserDetailsResponseDTO.fromDomain(user), UserDetailsResponseDTO.class));
     }
 
     @GetMapping("/emails/{email}")
-    ResponseEntity<AppUser> getUserByEmail(@PathVariable(name = "email") String email) {
-        return ResponseEntity.ok(adminService.findUserByEmail(email));
+    ResponseEntity<EntityModel<UserDetailsResponseDTO>> getUserByEmail(@PathVariable(name = "email") String email) {
+        AppUser user = adminUserService.getUserByEmail(email);
+        return ResponseEntity.ok(
+                adminUserService.getEntityModel(UserDetailsResponseDTO.fromDomain(user), UserDetailsResponseDTO.class));
     }
 
     @DeleteMapping("ids/{uuid}")
-    ResponseEntity<UserDetailsResponse> removeUserByUserId(@PathVariable(name = "uuid") UUID userUUID) {
-        adminService.removeUserByUserId(userUUID);
+    ResponseEntity<EntityModel<UserDetailsResponseDTO>> removeUserByUserId(@PathVariable(name = "uuid") UUID userUUID) {
+        adminUserService.removeUserByUserId(userUUID);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{email}")
-    ResponseEntity<UserDetailsResponse> removeUserByEmail(@PathVariable(name = "email") String email) {
-        adminService.removeUserByEmail(email);
+    ResponseEntity<EntityModel<UserDetailsResponseDTO>> removeUserByEmail(@PathVariable(name = "email") String email) {
+        adminUserService.removeUserByEmail(email);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("logins/{login}")
-    ResponseEntity<AdminOperationResponse> removeUserByLogin(@PathVariable(name = "login") String login) {
-        adminService.removeUserByLogin(login);
+    ResponseEntity<EntityModel<AdminOperationResponse>> removeUserByLogin(@PathVariable(name = "login") String login) {
+        adminUserService.removeUserByLogin(login);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/purge_them")
-    ResponseEntity<UserDetailsResponse> removeAllExceptAdmin(
+    ResponseEntity<EntityModel<UserDetailsResponseDTO>> removeAllExceptAdmin(
             @RequestBody AuthenticationRequest confirmation
     ) {
-        adminService.removeAllUsers(confirmation);
+        adminUserService.removeAllUsers(confirmation);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/purge_them_all")
-    ResponseEntity<UserDetailsResponse> removeAll(
+    ResponseEntity<EntityModel<UserDetailsResponseDTO>> removeAll(
             @RequestBody AuthenticationRequest confirmation
     ) {
-        adminService.databaseRestart(confirmation);
+        adminUserService.databaseRestart(confirmation);
         return ResponseEntity.noContent().build();
     }
 }

@@ -49,7 +49,6 @@ public class DefaultCurrencyService implements CurrencyService {
 
     @PostConstruct
     private void updateData() {
-        System.out.println(fiatCurrency);
         if (!fiatCurrency.previousDateCheck().equals(LocalDate.now())) {
             HashMap<MKTCurrency, BigDecimal> jsonMap = getJSONMap();
             Integer currentValue = fiatCurrency.howMuchRequestLeftAPI();
@@ -58,6 +57,7 @@ public class DefaultCurrencyService implements CurrencyService {
                                                               --currentValue, LocalDate.now(), jsonMap
             ));
         }
+        log.warn(fiatCurrency.toString());
     }
 
     @SuppressWarnings("unchecked")
@@ -73,15 +73,15 @@ public class DefaultCurrencyService implements CurrencyService {
             if (responseCode != 200) {
                 throw new RuntimeException("HttpResponseCode: " + responseCode);
             } else {
-                StringBuilder stringBuilder = new StringBuilder();
+                StringBuffer stringBuffer = new StringBuffer();
                 Scanner scanner = new Scanner(url.openStream());
 
                 while (scanner.hasNext()) {
-                    stringBuilder.append(scanner.nextLine());
+                    stringBuffer.append(scanner.nextLine());
                 }
                 scanner.close();
 
-                String parsedJSON = stringBuilder.toString();
+                String parsedJSON = stringBuffer.toString();
 
                 Map<String, Object> jsonMap = objectMapper.readValue(parsedJSON, Map.class);
 

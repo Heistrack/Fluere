@@ -4,13 +4,15 @@ test:
     password: "test"
 ---
 spring:
-  datasource:
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: sa
-    url: jdbc:h2:mem:db
-  jpa:
-    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
-  h2:
-    console:
-      enabled: true
+  data:
+    mongodb:
+        database: mongodb
+        port: 27018
+        host: mongo_test
+        username: admin
+        password: admin
+#        authentication-database: admin
+---
+admin:
+  key:
+    value: "${ADMIN_KEY_VALUE}"

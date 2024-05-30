@@ -4,12 +4,12 @@ spring:
       matching-strategy: ant-path-matcher
   data:
     mongodb:
-      authentication-database: admin
-      database: mongodb
+      database: flueredb
       port: 27017
-      host: localhost
-      username: adminUser
-      password: root
+      host: "localhost"
+      username: admin
+      password: admin
+      authentication-database: admin
 ---
 spring:
   profiles:

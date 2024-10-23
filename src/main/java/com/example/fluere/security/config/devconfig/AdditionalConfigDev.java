@@ -10,7 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import javax.crypto.SecretKey;
 
 @Configuration
-@Profile("dev")
+@Profile({"dev", "test"})
+//TODO change this config for the profiles. Separate for test, dev and prod
 public class AdditionalConfigDev {
     private final SecretKey SECRET_KEY;
 

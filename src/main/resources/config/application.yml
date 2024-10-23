@@ -1,7 +1,4 @@
 spring:
-  mvc:
-    pathmatch:
-      matching-strategy: ant-path-matcher
   data:
     mongodb:
       database: flueredb

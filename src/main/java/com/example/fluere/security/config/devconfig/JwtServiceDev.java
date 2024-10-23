@@ -18,7 +18,8 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
-@Profile("dev")
+@Profile({"dev", "test"})
+//TODO change this config for the profiles. Separate for test, dev and prod
 @RequiredArgsConstructor
 public class JwtServiceDev implements JwtService {
     private static final int TOKEN_EXPIRATION_TIME_IN_MILI = 1000 * 60 * 60;

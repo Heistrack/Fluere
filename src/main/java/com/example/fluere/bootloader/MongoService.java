@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
-@Profile("dev")
+@Profile({"dev","test"})
 @RequiredArgsConstructor
 public class MongoService {
     private final MongoTemplate mongoTemplate;

@@ -1,17 +1,13 @@
 package com.example.fluere;
 
 import com.example.fluere.bootloader.MongoService;
-import jakarta.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-@Profile("dev")
+@Profile({"dev", "test"})
 @EnableMongoRepositories
 @SpringBootApplication
 public class FluereApplicationDev {

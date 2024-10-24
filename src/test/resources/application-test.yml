@@ -26,7 +26,9 @@ spring:
       password: admin
       authentication-database: admin
 ---
-admin:
-  key:
-    value: "${ADMIN_KEY_VALUE}"
----
+app:
+  property:
+    service:
+      bootloader-info: true
+      security-setup: "demo"
+      currency-hardcoded: false

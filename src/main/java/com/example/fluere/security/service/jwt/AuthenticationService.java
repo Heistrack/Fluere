@@ -1,4 +1,4 @@
-package com.example.fluere.security.service;
+package com.example.fluere.security.service.jwt;
 
 import com.example.fluere.security.request.AuthenticationRequest;
 import com.example.fluere.security.request.RegisterUserRequest;

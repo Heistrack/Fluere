@@ -9,7 +9,7 @@ import com.example.fluere.currencyapi.model.MKTCurrency;
 import com.example.fluere.expense.model.Expense;
 import com.example.fluere.expense.model.ExpenseType;
 import com.example.fluere.expense.repository.ExpenseRepository;
-import com.example.fluere.security.service.JwtService;
+import com.example.fluere.security.service.jwt.JwtService;
 import com.example.fluere.userentity.model.AppUser;
 import com.example.fluere.userentity.model.UserIdWrapper;
 import com.example.fluere.userentity.service.admin.AdminUserService;

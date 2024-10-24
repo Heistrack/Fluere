@@ -2,3 +2,12 @@ prod:
   username: "prod"
   password: "prod"
 ---
+currency:
+  api:
+    key: "${CURRENCY_API_KEY}"
+---
+app:
+  property:
+    service:
+      security-setup: "full"
+      currency-hardcoded: false

@@ -1,4 +1,4 @@
-package com.example.fluere.security.service;
+package com.example.fluere.security.service.jwt;
 
 import com.example.fluere.userentity.model.UserIdWrapper;
 import io.jsonwebtoken.Claims;
@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 public interface JwtService {
+
     String generateToken(
             Map<String, Object> extraClaims,
             UserDetails userDetails

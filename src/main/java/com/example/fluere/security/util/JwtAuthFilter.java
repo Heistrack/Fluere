@@ -1,6 +1,6 @@
 package com.example.fluere.security.util;
 
-import com.example.fluere.security.service.JwtService;
+import com.example.fluere.security.service.jwt.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

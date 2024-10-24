@@ -9,7 +9,7 @@ import com.example.fluere.expense.model.ExpenseDetails;
 import com.example.fluere.expense.model.ExpenseIdWrapper;
 import com.example.fluere.expense.model.ExpenseType;
 import com.example.fluere.expense.repository.ExpenseRepository;
-import com.example.fluere.security.service.JwtService;
+import com.example.fluere.security.service.jwt.JwtService;
 import com.example.fluere.userentity.model.UserIdWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

@@ -4,7 +4,7 @@ import com.example.fluere.security.request.AuthenticationRequest;
 import com.example.fluere.security.request.RegisterUserRequest;
 import com.example.fluere.security.response.AuthResponseDTO;
 import com.example.fluere.security.response.RegisterResponseDTO;
-import com.example.fluere.security.service.AuthenticationService;
+import com.example.fluere.security.service.jwt.AuthenticationService;
 import com.example.fluere.userentity.model.AppUser;
 import com.example.fluere.userentity.request.appuser.EmailChangeRequest;
 import com.example.fluere.userentity.request.appuser.PasswordChangeRequest;

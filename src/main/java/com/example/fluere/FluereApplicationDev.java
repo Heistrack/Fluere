@@ -13,7 +13,6 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 public class FluereApplicationDev {
 
     public static void main(String[] args) {
-        //TODO remove this connectivity check lines
         ConfigurableApplicationContext context = SpringApplication.run(FluereApplicationDev.class, args);
         MongoService mongoService = context.getBean(MongoService.class);
         mongoService.performConnectivityCheck();

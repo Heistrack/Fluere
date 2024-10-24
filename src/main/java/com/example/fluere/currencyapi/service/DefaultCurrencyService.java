@@ -6,7 +6,8 @@ import com.example.fluere.currencyapi.repository.CurrencyRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -22,10 +23,11 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-@Profile("prod")
+@ConditionalOnProperty(name = "app.property.service.currency-hardcoded", havingValue = "false")
 public class DefaultCurrencyService implements CurrencyService {
     private static final UUID CONSTANT_CURRENCY_DATA_ID = UUID.fromString("f3921193-f133-4043-ae9a-08b6f4421af3");
-    private static final String API_KEY = "d28460f556350b8bf782f2d4";
+    @Value("${CURRENCY_API_KEY}")
+    private static String API_KEY;
     private final FiatCurrencyDailyData fiatCurrency;
     private final CurrencyRepository currencyRepository;
     private final ObjectMapper objectMapper;

@@ -14,3 +14,10 @@ logging:
 #logging:
 #  level:
 #    ROOT: DEBUG
+---
+app:
+  property:
+    service:
+      bootloader-info: true
+      security-setup: "demo"
+      currency-hardcoded: false

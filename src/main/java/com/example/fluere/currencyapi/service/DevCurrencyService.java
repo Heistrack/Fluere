@@ -4,7 +4,7 @@ import com.example.fluere.currencyapi.model.FiatCurrencyDailyData;
 import com.example.fluere.currencyapi.model.MKTCurrency;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -14,11 +14,10 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-//TODO I want to have hardcoded test and dev currency service here, to save API requests
 @Slf4j
 @Service
-@Profile({"dev", "test"})
-public class DevelopmentDefaultCurrencyService implements CurrencyService {
+@ConditionalOnProperty(name = "app.property.service.currency-hardcoded", havingValue = "true")
+public class DevCurrencyService implements CurrencyService {
     private static final UUID CONSTANT_CURRENCY_DATA_ID = UUID.fromString("f3921193-f133-4043-ae9a-08b6f4421af3");
     private final FiatCurrencyDailyData currencyDailyData;
     private final String HARDCODED_JSON_CURRENCIES = "XPF=110.4386, LBP=89500.0, BMD=1.0, TND=3.0954, DZD=133.5693, GNF=8680.354, XCD=2.7, TTD=6.7693, BRL=5.6952, KGS=85.502, BHD=0.376, HNL=24.9326, OMR=0.3845, CNY=7.1293, NPR=134.5674, CVE=102.0473, SYP=12889.3691, " +
@@ -38,7 +37,7 @@ public class DevelopmentDefaultCurrencyService implements CurrencyService {
             "KES=129.1178, GYD=209.2182, BIF=2910.2313, MYR=4.3244, GGP=0.7704, ISK=137.9991, EUR=0.9257, ZMW=26.5883";
 
 
-    public DevelopmentDefaultCurrencyService() {
+    public DevCurrencyService() {
         this.currencyDailyData = new FiatCurrencyDailyData(
                 CONSTANT_CURRENCY_DATA_ID,
                 1410,

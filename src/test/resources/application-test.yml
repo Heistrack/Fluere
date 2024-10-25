@@ -16,19 +16,24 @@ test:
 
 
 # TEMPORARY DEV DB CONNECTION BECAUSE I WILL USE DATA CONTAINER SOON
+#spring:
+#  data:
+#    mongodb:
+#      database: flueredb
+#      port: 27017
+#      host: "localhost"
+#      username: admin
+#      password: admin
+#      authentication-database: admin
+---
 spring:
   data:
     mongodb:
-      database: flueredb
-      port: 27017
-      host: "localhost"
-      username: admin
-      password: admin
-      authentication-database: admin
+      uri: ""
 ---
 app:
   property:
     service:
       bootloader-info: true
       security-setup: "demo"
-      currency-hardcoded: false
+      currency-hardcoded: true

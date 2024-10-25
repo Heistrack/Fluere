@@ -1,5 +1,6 @@
 package com.example.fluere.expense.controller;
 
+import com.example.fluere.FluereApplicationDev;
 import com.example.fluere.budget.model.BudgetIdWrapper;
 import com.example.fluere.currencyapi.model.MKTCurrency;
 import com.example.fluere.expense.controller.user.ExpenseController;
@@ -19,6 +20,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -34,7 +36,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 
 @ActiveProfiles("test")
 @WebMvcTest(controllers = ExpenseController.class)
-//@ContextConfiguration(classes = FluereApplicationDev.class)
+@ContextConfiguration(classes = FluereApplicationDev.class)
 //@WithMockUser(username = "admin", password = "colombo")
 class ExpenseUserControllerTest {
     private static final ExpenseIdWrapper EXPENSE_ID = ExpenseIdWrapper.newFromString(
@@ -57,9 +59,8 @@ class ExpenseUserControllerTest {
     private ObjectMapper objectMapper;
     @MockBean
     private JwtAuthFilter jwtAuthFilter;
-
-    @Autowired
-    private MongoTemplate mongoTemplate;
+    @MockBean
+    private MongoTemplate dataBase;
 
 
     @BeforeAll

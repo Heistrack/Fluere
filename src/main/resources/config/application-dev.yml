@@ -20,4 +20,4 @@ app:
     service:
       bootloader-info: true
       security-setup: "demo"
-      currency-hardcoded: false
+      currency-hardcoded: true

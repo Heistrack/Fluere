@@ -1,35 +1,17 @@
 test:
-#  datasource:
-    username: "test"
-    password: "test"
----
-#spring:
-#  data:
-#    mongodb:
-#        database: flueredb_test
-#        port: 27018
-#        host: mongo_test
-#        username: admin
-#        password: admin
-#        authentication-database: admin
-
-
-
-# TEMPORARY DEV DB CONNECTION BECAUSE I WILL USE DATA CONTAINER SOON
-#spring:
-#  data:
-#    mongodb:
-#      database: flueredb
-#      port: 27017
-#      host: "localhost"
-#      username: admin
-#      password: admin
-#      authentication-database: admin
+  #  datasource:
+  username: "test"
+  password: "test"
 ---
 spring:
   data:
     mongodb:
-      uri: ""
+      database: flueredb_test
+      port: 27018
+      host: "localhost"
+      username: test
+      password: test
+      authentication-database: admin
 ---
 app:
   property:

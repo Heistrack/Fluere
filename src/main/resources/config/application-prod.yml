@@ -2,6 +2,16 @@ prod:
   username: "prod"
   password: "prod"
 ---
+spring:
+  data:
+    mongodb:
+      database: flueredb
+      port: 27017
+      host: "localhost"
+      username: admin
+      password: admin
+      authentication-database: admin
+---
 currency:
   api:
     key: "${CURRENCY_API_KEY}"
@@ -9,5 +19,6 @@ currency:
 app:
   property:
     service:
+      bootloader-info: false
       security-setup: "full"
       currency-hardcoded: false

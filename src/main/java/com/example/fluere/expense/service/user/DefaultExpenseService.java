@@ -58,7 +58,8 @@ public class DefaultExpenseService implements ExpenseService {
                                                                                 description == null ? "" : description
                 ));
         innerServiceLogic.addBalance(currency, amount, budgetId);
-        return expenseRepository.save(expense);
+        expenseRepository.save(expense);
+        return expense;
     }
 
     @Override
@@ -112,7 +113,7 @@ public class DefaultExpenseService implements ExpenseService {
 
         innerServiceLogic.updateHistoryChange(oldExpense);
 
-        return expenseRepository.save(Expense.newOf(
+        Expense updatedExpense = Expense.newOf(
                 expenseId,
                 oldExpense.budgetId(),
                 userId,
@@ -124,7 +125,9 @@ public class DefaultExpenseService implements ExpenseService {
                         expenseType == null ? ExpenseType.NO_CATEGORY : expenseType,
                         description == null ? "" : description
                 )
-        ));
+        );
+        expenseRepository.save(updatedExpense);
+        return updatedExpense;
     }
 
 
@@ -157,7 +160,7 @@ public class DefaultExpenseService implements ExpenseService {
 
         innerServiceLogic.updateHistoryChange(oldExpense);
 
-        return expenseRepository.save(expenseRepository.findByExpenseIdAndUserId(expenseId, userId).map(
+        Expense patchedExpense = expenseRepository.findByExpenseIdAndUserId(expenseId, userId).map(
                 expenseFromRepository -> Expense.newOf(
                         expenseId,
                         oldExpense.budgetId(),
@@ -171,7 +174,9 @@ public class DefaultExpenseService implements ExpenseService {
                                 description.orElseGet(() -> expenseFromRepository.expenseDetails().description())
                         )
                 )
-        ).orElseThrow(IllegalArgumentException::new));
+        ).orElseThrow(IllegalArgumentException::new);
+        expenseRepository.save(patchedExpense);
+        return patchedExpense;
     }
 
 

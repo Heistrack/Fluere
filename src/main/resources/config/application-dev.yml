@@ -11,9 +11,15 @@ logging:
             core:
               MongoTemplate: DEBUG
 ---
-#logging:
-#  level:
-#    ROOT: DEBUG
+spring:
+  data:
+    mongodb:
+      database: flueredb
+      port: 27017
+      host: "localhost"
+      username: admin
+      password: admin
+      authentication-database: admin
 ---
 app:
   property:

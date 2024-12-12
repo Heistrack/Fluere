@@ -15,14 +15,14 @@ services:
     image: mongo:latest
     ports:
       - "27018:27017"
-    restart: always
+#    restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin
-      MONGO_INITDB_DATABASE: flueredbtest
+      MONGO_INITDB_ROOT_USERNAME: test
+      MONGO_INITDB_ROOT_PASSWORD: test
+      MONGO_INITDB_DATABASE: flueredb_test
 
-  mongo-express:
-    container_name: mongo-express
+  mongo-express-dev:
+    container_name: mongo-express-dev
     image: mongo-express:latest
     ports:
       - "8081:8081"
@@ -37,6 +37,22 @@ services:
       ME_CONFIG_MONGODB_SERVER: mongo_dev
     depends_on:
       - mongo_dev
+  mongo-express-test:
+    container_name: mongo-express-test
+    image: mongo-express:latest
+    ports:
+      - "8082:8081"
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_PORT: "27017"
+      ME_CONFIG_MONGODB_ADMINUSERNAME: test
+      ME_CONFIG_MONGODB_ADMINPASSWORD: test
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+      ME_CONFIG_MONGODB_URL: mongodb://test:test@mongo_test:27017
+      ME_CONFIG_MONGODB_SERVER: mongo_test
+    depends_on:
+      - mongo_test
 
 volumes:
   mongo_dev:

@@ -11,7 +11,6 @@ import com.example.fluere.expense.service.user.DefaultExpenseService;
 import com.example.fluere.expense.service.user.ExpenseInnerServiceLogic;
 import com.example.fluere.security.service.jwt.JwtService;
 import com.example.fluere.userentity.model.UserIdWrapper;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -19,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -36,7 +36,6 @@ import static org.junit.Assert.assertThrows;
 
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
-@Slf4j
 public class DefaultExpenseServiceTest {
 
     private static final ExpenseIdWrapper EXPENSE_ID = ExpenseIdWrapper.newFromString(
@@ -56,17 +55,6 @@ public class DefaultExpenseServiceTest {
                                                         EXPENSE_DETAILS
     );
     private static final Authentication MOCKED_AUTHENTICATION = null;
-    private static final Expense basicExpense = Expense.newOf(EXPENSE_ID,
-                                                              BUDGET_ID, USER_ID,
-                                                              new ExpenseDetails(
-                                                                      "Pear",
-                                                                      BigDecimal.TEN,
-                                                                      MKTCurrency.EUR,
-                                                                      EXPENSE_DETAILS.historyOfChanges(),
-                                                                      ExpenseType.FOOD,
-                                                                      "Test description to change."
-                                                              )
-    );
 
     @InjectMocks
     private DefaultExpenseService underTest;
@@ -78,6 +66,7 @@ public class DefaultExpenseServiceTest {
     private ExpenseInnerServiceLogic innerServiceLogic;
     @Mock
     private JwtService jwtService;
+
 
     @BeforeAll
     static void startUp() {
@@ -123,10 +112,28 @@ public class DefaultExpenseServiceTest {
 
         NoSuchElementException expected = assertThrows(
                 NoSuchElementException.class,
-                () -> repository.findByExpenseIdAndUserId(
-                        EXPENSE_ID, USER_ID)
+                () -> underTest.getExpenseById(EXPENSE_ID, MOCKED_AUTHENTICATION)
         );
         Assertions.assertEquals("Expense doesn't exist.", expected.getMessage());
+    }
+
+    @Test
+    void GetAllByPage__When_expenses_exist__Should_invoke_repository() {
+        Mockito.when(jwtService.extractUserIdFromRequestAuth(MOCKED_AUTHENTICATION)).thenReturn(USER_ID);
+
+        underTest.getAllByPage(Page.empty().getPageable(), MOCKED_AUTHENTICATION);
+
+        Mockito.verify(repository, Mockito.times(1)).findAllByUserId(USER_ID, Page.empty().getPageable());
+    }
+
+    @Test
+    void GetAllExpensesByBudgetId__When_expenses_exists__Should_invoke_repository() {
+        Mockito.when(jwtService.extractUserIdFromRequestAuth(MOCKED_AUTHENTICATION)).thenReturn(USER_ID);
+
+        underTest.getAllExpensesByBudgetId(BUDGET_ID, Page.empty().getPageable(), MOCKED_AUTHENTICATION);
+
+        Mockito.verify(repository, Mockito.times(1))
+               .findAllByBudgetIdAndUserId(BUDGET_ID, USER_ID, Page.empty().getPageable());
     }
 
     @Test
@@ -216,7 +223,7 @@ public class DefaultExpenseServiceTest {
     }
 
     @Test
-    void PatchExpenseContent__When_proper_expense__Should_return_new_expense() {
+    void PatchExpenseContent__When_proper_expense__Should_return_patched_expense() {
         Expense newExpense = Expense.newOf(EXPENSE_ID,
                                            BUDGET_ID, USER_ID,
                                            new ExpenseDetails(
@@ -231,7 +238,7 @@ public class DefaultExpenseServiceTest {
         Mockito.when(jwtService.extractUserIdFromRequestAuth(MOCKED_AUTHENTICATION))
                .thenReturn(USER_ID);
         Mockito.when(repository.findByExpenseIdAndUserId(Mockito.any(), Mockito.any()))
-               .thenReturn(Optional.of(basicExpense));
+               .thenReturn(Optional.of(ENTITY));
 
 
         Expense expected = underTest.patchExpenseContent(
@@ -252,7 +259,7 @@ public class DefaultExpenseServiceTest {
         Mockito.verify(repository, Mockito.times(2))
                .findByExpenseIdAndUserId(EXPENSE_ID, USER_ID);
         Mockito.verify(innerServiceLogic, Mockito.times(1))
-               .updateHistoryChange(basicExpense);
+               .updateHistoryChange(ENTITY);
     }
 
     @Test
@@ -273,14 +280,14 @@ public class DefaultExpenseServiceTest {
                 ));
         Assertions.assertEquals("There's no such expense.", expected.getMessage());
         Mockito.verify(innerServiceLogic, Mockito.times(0))
-               .updateHistoryChange(basicExpense);
+               .updateHistoryChange(ENTITY);
     }
 
     @Test
     void PatchExpenseContent__When_same_expense__Should_return_expense() {
         Mockito.when(jwtService.extractUserIdFromRequestAuth(MOCKED_AUTHENTICATION)).thenReturn(USER_ID);
         Mockito.when(repository.findByExpenseIdAndUserId(Mockito.any(), Mockito.any())).thenReturn(
-                Optional.of(basicExpense));
+                Optional.of(ENTITY));
         Mockito.when(innerServiceLogic.noParamChangeCheck(Mockito.any(), Mockito.any(),
                                                           Mockito.any(), Mockito.any(),
                                                           Mockito.any(), Mockito.any()
@@ -297,15 +304,15 @@ public class DefaultExpenseServiceTest {
                 MOCKED_AUTHENTICATION
         );
 
-        assertThat(expected).isEqualTo(basicExpense);
-        Mockito.verify(innerServiceLogic, Mockito.times(0)).updateHistoryChange(basicExpense);
+        assertThat(expected).isEqualTo(ENTITY);
+        Mockito.verify(innerServiceLogic, Mockito.times(0)).updateHistoryChange(ENTITY);
     }
 
     @Test
     void PatchExpenseContent__When_change_amount_or_currency__Should_validate() {
         Mockito.when(jwtService.extractUserIdFromRequestAuth(MOCKED_AUTHENTICATION)).thenReturn(USER_ID);
         Mockito.when(repository.findByExpenseIdAndUserId(EXPENSE_ID, USER_ID))
-               .thenReturn(Optional.of(basicExpense));
+               .thenReturn(Optional.of(ENTITY));
 
         Expense expected = underTest.patchExpenseContent(
                 EXPENSE_ID,
@@ -320,7 +327,16 @@ public class DefaultExpenseServiceTest {
         Mockito.verify(innerServiceLogic, Mockito.times(1))
                .validationExpenseAmount(MKTCurrency.PLN, BigDecimal.valueOf(2), BUDGET_ID);
         Mockito.verify(innerServiceLogic, Mockito.times(1))
-               .balanceUpdate(MKTCurrency.PLN, BigDecimal.valueOf(2), basicExpense);
+               .balanceUpdate(MKTCurrency.PLN, BigDecimal.valueOf(2), ENTITY);
+    }
+
+    @Test
+    void DeleteExpenseById__When_method_invoked__Should_invoke_repository() {
+        Mockito.when(jwtService.extractUserIdFromRequestAuth(MOCKED_AUTHENTICATION)).thenReturn(USER_ID);
+
+        underTest.deleteExpenseById(EXPENSE_ID, MOCKED_AUTHENTICATION);
+
+        Mockito.verify(repository, Mockito.times(1)).deleteByExpenseIdAndUserId(EXPENSE_ID, USER_ID);
     }
 
     //TODO do pageable methods' tests

@@ -60,7 +60,8 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
                                                                                 description == null ? "" : description
                 ));
         innerServiceLogic.addBalance(currency, amount, budgetId);
-        return expenseRepository.save(expense);
+        expenseRepository.save(expense);
+        return expense;
     }
 
     @Override
@@ -112,7 +113,7 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
 
         innerServiceLogic.updateHistoryChange(oldExpense);
 
-        return expenseRepository.save(Expense.newOf(
+        Expense entity = Expense.newOf(
                 expenseId,
                 oldExpense.budgetId(),
                 oldExpense.userId(),
@@ -124,7 +125,9 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
                         expenseType == null ? ExpenseType.NO_CATEGORY : expenseType,
                         description == null ? "" : description
                 )
-        ));
+        );
+        expenseRepository.save(entity);
+        return entity;
     }
 
     @Override
@@ -154,7 +157,7 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
 
         innerServiceLogic.updateHistoryChange(oldExpense);
 
-        return expenseRepository.save(expenseRepository.findById(expenseId).map(
+        Expense entity = expenseRepository.findById(expenseId).map(
                 expenseFromRepository -> Expense.newOf(
                         expenseId,
                         oldExpense.budgetId(),
@@ -168,7 +171,9 @@ public class AdminDefaultExpenseService implements AdminExpenseService {
                                 description.orElseGet(() -> expenseFromRepository.expenseDetails().description())
                         )
                 )
-        ).orElseThrow(IllegalArgumentException::new));
+        ).orElseThrow(IllegalArgumentException::new);
+        expenseRepository.save(entity);
+        return entity;
     }
 
     @Override

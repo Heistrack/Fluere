@@ -129,17 +129,16 @@ public class DefaultInnerExpenseServiceLogic implements ExpenseInnerServiceLogic
 
         HashMap<MKTCurrency, BigDecimal> conversionRates = currencyRepository.findAll().getFirst().conversionRates();
 
+        BigDecimal expectedCurrencyToUSDRatio = BigDecimal.ONE;
+        if (!expectedCurrency.equals(MKTCurrency.USD)) {
+            expectedCurrencyToUSDRatio = conversionRates.get(expectedCurrency);
+        }
         BigDecimal expenseCurrencyToUSDRatio = BigDecimal.ONE;
         if (!expenseCurrency.equals(MKTCurrency.USD)) {
             expenseCurrencyToUSDRatio = conversionRates.get(expenseCurrency);
         }
 
-        BigDecimal defaultCurrencyToUSDRatio = BigDecimal.ONE;
-        if (!expectedCurrency.equals(MKTCurrency.USD)) {
-            defaultCurrencyToUSDRatio = conversionRates.get(expectedCurrency);
-        }
-
-        return defaultCurrencyToUSDRatio.divide(expenseCurrencyToUSDRatio, 4, RoundingMode.HALF_UP);
+        return expectedCurrencyToUSDRatio.divide(expenseCurrencyToUSDRatio, 4, RoundingMode.HALF_UP);
     }
 
     @Override

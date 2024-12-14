@@ -32,7 +32,6 @@ import java.util.TreeMap;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
 @ActiveProfiles("test")
@@ -79,16 +78,16 @@ public class AdminDefaultExpenseServiceTest {
         Mockito.when(expenseIdSupplier.get()).thenReturn(EXPENSE_ID);
         LocalDateTime testStartTime = LocalDateTime.now();
 
-        Expense expected = underTest.registerNewExpense(BUDGET_ID, EXPENSE_DETAILS.title(), EXPENSE_DETAILS.amount(),
-                                                        EXPENSE_DETAILS.currency(), EXPENSE_DETAILS.expenseType(),
-                                                        EXPENSE_DETAILS.description()
+        Expense result = underTest.registerNewExpense(BUDGET_ID, EXPENSE_DETAILS.title(), EXPENSE_DETAILS.amount(),
+                                                      EXPENSE_DETAILS.currency(), EXPENSE_DETAILS.expenseType(),
+                                                      EXPENSE_DETAILS.description()
         );
 
-        assertThat(expected).usingRecursiveComparison()
-                            .ignoringFields("expenseDetails.historyOfChanges")
-                            .isEqualTo(ENTITY);
+        assertThat(result).usingRecursiveComparison()
+                          .ignoringFields("expenseDetails.historyOfChanges")
+                          .isEqualTo(ENTITY);
 
-        LocalDateTime testTime = expected.expenseDetails().historyOfChanges().get(1);
+        LocalDateTime testTime = result.expenseDetails().historyOfChanges().get(1);
         assertThat(testTime).isAfterOrEqualTo(testStartTime).isBeforeOrEqualTo(LocalDateTime.now());
         Mockito.verify(innerServiceLogic, Mockito.times(1))
                .validationExpenseAmount(EXPENSE_DETAILS.currency(), EXPENSE_DETAILS.amount(), BUDGET_ID);
@@ -101,7 +100,7 @@ public class AdminDefaultExpenseServiceTest {
     void RegisterNewExpense__When_improper_expense_add__Should_throw_exception() {
         Mockito.when(budgetRepository.findById(BUDGET_ID)).thenReturn(Optional.empty());
 
-        NoSuchElementException expected = assertThrows(
+        NoSuchElementException result = assertThrows(
                 NoSuchElementException.class, () -> underTest.registerNewExpense(
                         BUDGET_ID,
                         EXPENSE_DETAILS.title(),
@@ -110,17 +109,17 @@ public class AdminDefaultExpenseServiceTest {
                         EXPENSE_DETAILS.expenseType(),
                         EXPENSE_DETAILS.description()
                 ));
-        Assertions.assertEquals(expected.getMessage(), "No user found.");
+        Assertions.assertEquals(result.getMessage(), "No user found.");
     }
 
     @Test
     void GetExpenseById__When_no_expense__Should_throw_exception() {
         Mockito.when(expenseRepository.findById(EXPENSE_ID)).thenReturn(Optional.empty());
 
-        NoSuchElementException expected = assertThrows(
+        NoSuchElementException result = assertThrows(
                 NoSuchElementException.class, () -> underTest.getExpenseById(EXPENSE_ID));
 
-        Assertions.assertEquals(expected.getMessage(), "Expense doesn't exist.");
+        Assertions.assertEquals(result.getMessage(), "Expense doesn't exist.");
     }
 
     @Test
@@ -166,12 +165,12 @@ public class AdminDefaultExpenseServiceTest {
         Expense updatedExpense = Expense.newOf(EXPENSE_ID, BUDGET_ID, USER_ID, updatedExpenseDetails);
 
 
-        Expense expected = underTest.updateExpenseById(
+        Expense result = underTest.updateExpenseById(
                 EXPENSE_ID, changeTitle, changedAmount, changedCurrency, changedExpenseType, changedDescription);
 
         assertThat(updatedExpense).usingRecursiveComparison()
                                   .ignoringFields("expenseDetails.historyOfChanges")
-                                  .isEqualTo(expected);
+                                  .isEqualTo(result);
 
         Mockito.verify(expenseRepository, Mockito.times(1)).findById(EXPENSE_ID);
         Mockito.verify(innerServiceLogic, Mockito.times(1)).noParamChangeCheck(Mockito.any(), Mockito.any(),
@@ -182,14 +181,14 @@ public class AdminDefaultExpenseServiceTest {
                .validationExpenseAmount(changedCurrency, changedAmount, BUDGET_ID);
         Mockito.verify(innerServiceLogic, Mockito.times(1)).balanceUpdate(changedCurrency, changedAmount, ENTITY);
         Mockito.verify(innerServiceLogic, Mockito.times(1)).updateHistoryChange(Mockito.any());
-        Mockito.verify(expenseRepository, Mockito.times(1)).save(expected);
+        Mockito.verify(expenseRepository, Mockito.times(1)).save(result);
     }
 
     @Test
     void UpdateExpenseById__When_no_expense__Should_throw_exception() {
         Mockito.when(expenseRepository.findById(EXPENSE_ID)).thenReturn(Optional.empty());
 
-        NoSuchElementException expected = assertThrows(
+        NoSuchElementException result = assertThrows(
                 NoSuchElementException.class, () -> underTest.updateExpenseById(EXPENSE_ID, EXPENSE_DETAILS.title(),
                                                                                 EXPENSE_DETAILS.amount(),
                                                                                 EXPENSE_DETAILS.currency(),
@@ -197,7 +196,7 @@ public class AdminDefaultExpenseServiceTest {
                                                                                 EXPENSE_DETAILS.description()
                 ));
 
-        Assertions.assertEquals(expected.getMessage(), "Expense doesn't exist.");
+        Assertions.assertEquals(result.getMessage(), "Expense doesn't exist.");
     }
 
     @Test
@@ -207,14 +206,14 @@ public class AdminDefaultExpenseServiceTest {
                                                           Mockito.any(), Mockito.any()
         )).thenReturn(true);
 
-        Expense expected = underTest.updateExpenseById(EXPENSE_ID, EXPENSE_DETAILS.title(),
-                                                       EXPENSE_DETAILS.amount(),
-                                                       EXPENSE_DETAILS.currency(),
-                                                       EXPENSE_DETAILS.expenseType(),
-                                                       EXPENSE_DETAILS.description()
+        Expense result = underTest.updateExpenseById(EXPENSE_ID, EXPENSE_DETAILS.title(),
+                                                     EXPENSE_DETAILS.amount(),
+                                                     EXPENSE_DETAILS.currency(),
+                                                     EXPENSE_DETAILS.expenseType(),
+                                                     EXPENSE_DETAILS.description()
         );
 
-        assertThat(expected).isEqualTo(ENTITY);
+        assertThat(result).isEqualTo(ENTITY);
         Mockito.verify(innerServiceLogic, Mockito.times(0)).updateHistoryChange(Mockito.any());
     }
 
@@ -233,7 +232,7 @@ public class AdminDefaultExpenseServiceTest {
         );
 
         Expense patchedExpense = Expense.newOf(EXPENSE_ID, BUDGET_ID, USER_ID, updatedExpenseDetails);
-        Expense expected = underTest.patchExpenseContent(
+        Expense result = underTest.patchExpenseContent(
                 EXPENSE_ID,
                 Optional.of(changeTitle),
                 Optional.of(changedAmount),
@@ -242,9 +241,9 @@ public class AdminDefaultExpenseServiceTest {
                 Optional.of(changedDescription)
         );
 
-        assertThat(expected).usingRecursiveComparison()
-                            .ignoringFields("expenseDetails.historyOfChanges")
-                            .isEqualTo(patchedExpense);
+        assertThat(result).usingRecursiveComparison()
+                          .ignoringFields("expenseDetails.historyOfChanges")
+                          .isEqualTo(patchedExpense);
 
         Mockito.verify(innerServiceLogic, Mockito.times(1)).noParamChangeCheck(
                 ENTITY,
@@ -267,7 +266,7 @@ public class AdminDefaultExpenseServiceTest {
     void PatchExpenseContent__When_no_expense__Should_throw_exception() {
         Mockito.when(expenseRepository.findById(EXPENSE_ID)).thenReturn(Optional.empty());
 
-        NoSuchElementException expected = assertThrows(
+        NoSuchElementException result = assertThrows(
                 NoSuchElementException.class,
                 () -> underTest.patchExpenseContent(
                         EXPENSE_ID,
@@ -279,7 +278,7 @@ public class AdminDefaultExpenseServiceTest {
                 )
         );
 
-        assertThat(expected.getMessage()).isEqualTo("There's no such expense.");
+        assertThat(result.getMessage()).isEqualTo("There's no such expense.");
     }
 
     @Test
@@ -299,7 +298,7 @@ public class AdminDefaultExpenseServiceTest {
                 sameDescription
         )).thenReturn(true);
 
-        Expense expected = underTest.patchExpenseContent(
+        Expense result = underTest.patchExpenseContent(
                 EXPENSE_ID,
                 sameTitle,
                 sameAmount,
@@ -308,7 +307,7 @@ public class AdminDefaultExpenseServiceTest {
                 sameDescription
         );
 
-        Assertions.assertEquals(expected, ENTITY);
+        Assertions.assertEquals(result, ENTITY);
         Mockito.verify(innerServiceLogic, Mockito.times(0)).updateHistoryChange(Mockito.any());
     }
 
@@ -317,19 +316,19 @@ public class AdminDefaultExpenseServiceTest {
         Mockito.when(expenseRepository.findById(EXPENSE_ID))
                .thenReturn(Optional.of(ENTITY));
 
-        Expense expected = underTest.patchExpenseContent(
+        underTest.patchExpenseContent(
                 EXPENSE_ID,
                 Optional.of(EXPENSE_DETAILS.title()),
                 Optional.of(EXPENSE_DETAILS.amount().add(BigDecimal.ONE)),
-                Optional.of(MKTCurrency.PLN),
+                Optional.of(MKTCurrency.EUR),
                 Optional.of(EXPENSE_DETAILS.expenseType()),
                 Optional.of(EXPENSE_DETAILS.description())
         );
 
         Mockito.verify(innerServiceLogic, Mockito.times(1))
-               .validationExpenseAmount(MKTCurrency.PLN, BigDecimal.valueOf(2), BUDGET_ID);
+               .validationExpenseAmount(MKTCurrency.EUR, BigDecimal.valueOf(2), BUDGET_ID);
         Mockito.verify(innerServiceLogic, Mockito.times(1))
-               .balanceUpdate(MKTCurrency.PLN, BigDecimal.valueOf(2), ENTITY);
+               .balanceUpdate(MKTCurrency.EUR, BigDecimal.valueOf(2), ENTITY);
     }
 
     @Test
